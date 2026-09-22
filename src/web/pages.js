@@ -92,6 +92,7 @@ function shell(title, body) {
 
 const NAV_ITEMS = [
   ['/', 'Panel', '🛒'],
+  ['/ledger', 'Muhasebe', '💰'],
   ['/settings', 'Ayarlar', '⚙️'],
   ['/probe', 'Kesif', '🔍'],
   ['/stats', 'Istatistik', '📊'],
@@ -318,6 +319,25 @@ ${navHtml('/settings')}
       <span class="hint">En ucuz God Helmet'tan kaç $ ucuza koyulsun</span>
     </div>
     <div style="flex:1">
+      <label>Minimum Kâr Garantisi ($)</label>
+      <input type="number" id="godHelmetMinProfit">
+      <span class="hint">Maliyetin üzerine eklenecek garanti kâr (Zarar önleme)</span>
+    </div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div style="flex:1">
+      <label>XP Şişesi Sipariş Fiyatı ($)</label>
+      <input type="number" id="xpBottleOrderPrice">
+      <span class="hint">Envanterde bitince /orders'tan alınacak birim fiyat</span>
+    </div>
+    <div style="flex:1">
+      <label>XP Şişesi Sipariş Miktarı</label>
+      <input type="number" id="xpBottleOrderAmount">
+      <span class="hint">Tek seferde sipariş edilecek şişe adedi (Örn: 64)</span>
+    </div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div style="flex:1">
       <label>Örs İçin Tavan Fiyat ($)</label>
       <input type="number" id="godHelmetMaxAnvilPrice">
       <span class="hint">Örs yoksa /ah üzerinden alınabilecek maksimum örs fiyatı</span>
@@ -410,7 +430,10 @@ var FIELDS = [
   ['godHelmetMinSellPrice', 'number'],
   ['godHelmetUndercut', 'number'],
   ['godHelmetAutoBuyAnvil', 'checkbox'],
-  ['godHelmetMaxAnvilPrice', 'number']
+  ['godHelmetMaxAnvilPrice', 'number'],
+  ['godHelmetMinProfit', 'number'],
+  ['xpBottleOrderPrice', 'number'],
+  ['xpBottleOrderAmount', 'number']
 ];
 
 var inputs = {};
@@ -917,4 +940,125 @@ document.getElementById('reset').onclick = function(){
 </script>`);
 }
 
-module.exports = { homePage, settingsPage, probePage, statsPage };
+// ---------------- MUHASEBE / FINANS ----------------
+function ledgerPage() {
+  return shell('Muhasebe', `
+<div class="header"><h1>💰 Finans & Muhasebe Raporu</h1>
+<p class="subtitle">Aldığı ve harcadığı miktarlar, kalem bazlı giderler ve net kâr/zarar dökümü.</p></div>
+${navHtml('/ledger')}
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Toplam Gelir (Satışlar)</div>
+    <div class="stat-value pos" id="totalEarned">$0</div>
+    <div class="stat-sub" id="salesSub">Tüm satış gelirleri</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Toplam Gider (Alımlar)</div>
+    <div class="stat-value neg" id="totalSpent">$0</div>
+    <div class="stat-sub" id="spentSub">Siparişler, XP şişeleri ve örs</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Net Kâr / Durum</div>
+    <div class="stat-value" id="netProfit">$0</div>
+    <div class="stat-sub" id="profitSub">Gelir - Gider</div>
+  </div>
+</div>
+
+<h3 style="margin-top:24px">📊 Kalem Bazlı Harcama & Gelir Dağılımı</h3>
+<div id="categoryGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:6px"></div>
+
+<h3 style="margin-top:28px">📋 Canlı İşlem Geçmişi (Ledger Defteri)</h3>
+<div class="card" style="padding:0;overflow:hidden;margin-top:6px">
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left">
+      <thead>
+        <tr style="background:var(--panel-2);color:var(--muted);border-bottom:1px solid var(--border)">
+          <th style="padding:10px 14px">Zaman</th>
+          <th style="padding:10px 14px">İşlem Türü</th>
+          <th style="padding:10px 14px">Kategori</th>
+          <th style="padding:10px 14px">Eşya / Kalem</th>
+          <th style="padding:10px 14px">Miktar</th>
+          <th style="padding:10px 14px">Birim Fiyat</th>
+          <th style="padding:10px 14px">Toplam Tutar</th>
+          <th style="padding:10px 14px">Açıklama</th>
+        </tr>
+      </thead>
+      <tbody id="ledgerBody">
+        <tr><td colspan="8" style="padding:20px;text-align:center;color:var(--muted-2)">Henüz kayıtlı işlem yok.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var s = io();
+
+function fmt(n){ n = Math.round(n || 0); return '$' + n.toLocaleString('tr-TR'); }
+
+function updateView(st){
+  if (!st) return;
+  var earned = st.totalEarned || 0;
+  var spent = st.totalSpent || 0;
+  var net = earned - spent;
+
+  document.getElementById('totalEarned').textContent = fmt(earned);
+  document.getElementById('totalSpent').textContent = fmt(spent);
+  var netEl = document.getElementById('netProfit');
+  netEl.textContent = (net >= 0 ? '+' : '') + fmt(net);
+  netEl.className = 'stat-value ' + (net >= 0 ? 'pos' : 'neg');
+
+  // Kategori kartlari
+  var catGrid = document.getElementById('categoryGrid');
+  catGrid.innerHTML = '';
+  var cats = st.categories || {};
+  var catKeys = Object.keys(cats);
+  if (!catKeys.length) {
+    catGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Henüz kategori bazlı harcama veya gelir oluşmadı.</div>';
+  } else {
+    catKeys.forEach(function(k){
+      var c = cats[k];
+      var card = document.createElement('div');
+      card.className = 'card';
+      card.style = 'background:var(--panel-2);padding:14px';
+      var isIncome = (c.earned || 0) > 0;
+      var val = isIncome ? c.earned : c.spent;
+      card.innerHTML = '<div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase">' + k + '</div>' +
+                       '<div style="font-size:18px;font-weight:800;margin:6px 0;color:' + (isIncome ? 'var(--green)' : '#e5555a') + '">' + (isIncome ? '+' : '-') + fmt(val) + '</div>' +
+                       '<div style="font-size:11px;color:var(--muted-2)">' + (c.count || 0) + ' adet işlem</div>';
+      catGrid.appendChild(card);
+    });
+  }
+
+  // Defter tablosu
+  var tb = document.getElementById('ledgerBody');
+  var ledger = Array.isArray(st.ledger) ? st.ledger : [];
+  if (!ledger.length) {
+    tb.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--muted-2)">Henüz işlem kaydı yok.</td></tr>';
+  } else {
+    tb.innerHTML = '';
+    ledger.forEach(function(row){
+      var tr = document.createElement('tr');
+      tr.style = 'border-bottom:1px solid var(--border)';
+      var isIncome = row.type === 'INCOME';
+      var timeStr = new Date(row.time).toLocaleTimeString('tr-TR');
+      tr.innerHTML = '<td style="padding:10px 14px;color:var(--muted);white-space:nowrap">' + timeStr + '</td>' +
+                     '<td style="padding:10px 14px"><span class="badge ' + (isIncome ? 'on' : 'off') + '">' + (isIncome ? '🟢 GELİR' : '🔴 GİDER') + '</span></td>' +
+                     '<td style="padding:10px 14px;font-weight:600">' + row.category + '</td>' +
+                     '<td style="padding:10px 14px;color:var(--amber);font-weight:600">' + row.item + '</td>' +
+                     '<td style="padding:10px 14px">' + row.amount + '</td>' +
+                     '<td style="padding:10px 14px">' + fmt(row.unitPrice) + '</td>' +
+                     '<td style="padding:10px 14px;font-weight:700;color:' + (isIncome ? 'var(--green)' : '#e5555a') + '">' + (isIncome ? '+' : '-') + fmt(row.total) + '</td>' +
+                     '<td style="padding:10px 14px;color:var(--muted-2);font-size:11.5px">' + (row.note || '-') + '</td>';
+      tb.appendChild(tr);
+    });
+  }
+}
+
+s.on('stats', updateView);
+fetch('/api/stats').then(function(r){ return r.json(); }).then(updateView);
+</script>`);
+}
+
+module.exports = { homePage, ledgerPage, settingsPage, probePage, statsPage };

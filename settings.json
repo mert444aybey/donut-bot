@@ -22,10 +22,21 @@
   "orderMarkup": 100,
   "maxOrderPrice": 1000000000000,
   "orderSearchCmd": "/order",
+  "autoOutbidRelist": true,
+  "orderTimeoutMin": 10,
+  "outbidCheckIntervalSec": 60,
   "humanDelays": true,
   "antiAfk": true,
   "relistEnabled": true,
   "portfolioEnabled": true,
+  "godHelmetSellPrice": 250000,
+  "godHelmetMinSellPrice": 100000,
+  "godHelmetUndercut": 1000,
+  "godHelmetMinProfit": 25000,
+  "godHelmetAutoBuyAnvil": true,
+  "godHelmetMaxAnvilPrice": 500000,
+  "xpBottleOrderPrice": 250,
+  "xpBottleOrderAmount": 64,
   "portfolio": [
     {
       "item": "Block of Gold",
@@ -71,10 +82,5 @@
       "undercutAmount": 100,
       "minSellPrice": 1
     }
-  ],
-  "godHelmetSellPrice": 250000,
-  "godHelmetMinSellPrice": 100000,
-  "godHelmetUndercut": 1000,
-  "godHelmetAutoBuyAnvil": true,
-  "godHelmetMaxAnvilPrice": 500000
+  ]
 }

@@ -5,5 +5,84 @@
   "itemsOrdered": 0,
   "cyclesCompleted": 0,
   "itemsCollected": {},
-  "history": []
+  "history": [
+    {
+      "time": 1790082282900,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082324869,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082369878,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082414906,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082459869,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082504821,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082550036,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082594873,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082642019,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082684881,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082729871,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082774870,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082819836,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    }
+  ]
 }

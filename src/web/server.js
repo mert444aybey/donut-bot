@@ -22,12 +22,14 @@ app.use(express.json());
 
 // ---------------- SAYFALAR ----------------
 app.get('/', (_req, res) => res.send(pages.homePage()));
+app.get('/ledger', (_req, res) => res.send(pages.ledgerPage()));
 app.get('/settings', (_req, res) => res.send(pages.settingsPage()));
 app.get('/probe', (_req, res) => res.send(pages.probePage()));
 app.get('/stats', (_req, res) => res.send(pages.statsPage()));
 
-// ---------------- API: ISTATISTIK ----------------
+// ---------------- API: ISTATISTIK & MUHASEBE ----------------
 app.get('/api/stats', (_req, res) => res.json(state.STATS));
+app.get('/api/ledger', (_req, res) => res.json(state.STATS.ledger || []));
 
 app.post('/api/stats/reset', (_req, res) => {
   const stats = resetStats();

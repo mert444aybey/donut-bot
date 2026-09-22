@@ -3,7 +3,7 @@
 const CFG = require('../config');
 const state = require('../state');
 const { log, dlog } = require('../logger');
-const { bumpStats } = require('../stats');
+const { bumpStats, recordTransaction } = require('../stats');
 const { sleep, humanSleep, titleOf } = require('../utils/text');
 const { loreOf, snapshotWindow } = require('../utils/inspect');
 const { assertActive, waitForWindow, closeWindowSafe } = require('../utils/windows');
@@ -224,17 +224,39 @@ async function fetchLowestGodHelmetPrice(token) {
   return lowest;
 }
 
+function calculateGodHelmetCost() {
+  const S = state.S || {};
+  const helmetCost = S.diamondHelmetCost || 25000;
+  const blastCost = S.bookBlastCost || 15000;
+  const respCost = S.bookRespCost || 15000;
+  const mendingCost = S.bookMendingCost || 25000;
+  const unbCost = S.bookUnbCost || 15000;
+  const aquaCost = S.bookAquaCost || 10000;
+  const bottlePrice = S.xpBottleOrderPrice || 250;
+  const xpCost = bottlePrice * 60; // 5 adimda harcanan yaklasik sise maliyeti
+  const anvilDepreciation = 5000;  // Ors payi
+
+  return helmetCost + blastCost + respCost + mendingCost + unbCost + aquaCost + xpCost + anvilDepreciation;
+}
+
 function computeGodHelmetSellPrice(lowest) {
   const S = state.S || {};
   const fallback = S.godHelmetSellPrice || 250000;
-  const minPrice = S.godHelmetMinSellPrice || 100000;
+  const minPriceSetting = S.godHelmetMinSellPrice || 120000;
   const undercut = S.godHelmetUndercut || 1000;
+  const totalCost = calculateGodHelmetCost();
+  const minProfitMargin = S.godHelmetMinProfit || 25000; // Asla zarara girmemek icin garanti kar
+  const absoluteFloor = Math.max(minPriceSetting, totalCost + minProfitMargin);
 
   if (lowest === null || lowest === undefined) {
-    return fallback;
+    return Math.max(fallback, absoluteFloor);
   }
+
   let price = lowest - undercut;
-  if (price < minPrice) price = minPrice;
+  if (price < absoluteFloor) {
+    log(`🛡️ ZARAR ONLEME KORUMASI DEVREDE: Piyasadaki en ucuz God Helmet ($${lowest.toLocaleString()}) toplam maliyetimiz ($${totalCost.toLocaleString()}) ve kar hedefimizin altinda! Asla zarar etmemek icin taban fiyattan ($${absoluteFloor.toLocaleString()}) listeleniyor.`);
+    price = absoluteFloor;
+  }
   return Math.round(price);
 }
 
@@ -297,6 +319,17 @@ async function sellGodHelmet(token) {
 
   log(`God Helmet basariyla ilana koyuldu: $${sellPrice.toLocaleString()}`);
   bumpStats({ listingsCreated: 1, itemsListed: 1 });
+
+  const totalCost = calculateGodHelmetCost();
+  recordTransaction({
+    type: 'INCOME',
+    category: 'God Helmet Satışı',
+    item: 'God Helmet (5 Büyülü)',
+    amount: 1,
+    unitPrice: sellPrice,
+    total: sellPrice,
+    note: `/ah üzerinde satışa konuldu (Tahmini kâr: $${(sellPrice - totalCost).toLocaleString()})`,
+  });
 }
 
 module.exports = {
@@ -304,6 +337,7 @@ module.exports = {
   isGodHelmet,
   checkHelmetMaterials,
   craftGodHelmet,
+  calculateGodHelmetCost,
   fetchLowestGodHelmetPrice,
   computeGodHelmetSellPrice,
   sellGodHelmet,

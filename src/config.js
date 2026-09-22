@@ -58,7 +58,7 @@ const CFG = {
   salesHeartbeatMs: 10 * 60 * 1000,
 
   // Bakiye ve Anti-AFK
-  balanceCheckIntervalMs: 45 * 1000,
+  balanceCheckIntervalMs: 10 * 60 * 1000, // 10 dakikada bir kontrol
   antiAfkIntervalMs: 25 * 1000,
 
   // Ilan guncelleme / Undercut kontrolu

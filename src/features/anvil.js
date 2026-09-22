@@ -5,7 +5,10 @@ const CFG = require('../config');
 const state = require('../state');
 const { log, dlog } = require('../logger');
 const { sleep, humanSleep, titleOf, filledSlots } = require('../utils/text');
-const { snapshotWindow } = require('../utils/inspect');
+const { loreOf, snapshotWindow } = require('../utils/inspect');
+const { recordTransaction } = require('../stats');
+const { runCustomOrderFlow, waitForOrderComplete } = require('./order');
+const { collectItems } = require('./collect');
 const {
   assertActive,
   waitForWindow,
@@ -29,9 +32,31 @@ async function ensureExperienceLevel(targetLevel, token) {
   while (bot.experience.level < targetLevel) {
     assertActive(token);
 
-    const xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
+    let xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
     if (!xpItem) {
-      throw new Error(`Yetersiz XP sisesi! Seviye ${bot.experience.level}/${targetLevel}. Envanterde experience_bottle kalmadi.`);
+      log('Envanterde XP sisesi bulunamadi. /orders uzerinden otomatik temin ediliyor...');
+      const S = state.S || {};
+      const bottlePrice = S.xpBottleOrderPrice || 250;
+      const bottleQty = S.xpBottleOrderAmount || 64;
+
+      await runCustomOrderFlow("Bottle o' Enchanting", bottleQty, bottlePrice, token);
+      recordTransaction({
+        type: 'EXPENSE',
+        category: 'XP Şişesi',
+        item: "Bottle o' Enchanting",
+        amount: bottleQty,
+        unitPrice: bottlePrice,
+        total: bottleQty * bottlePrice,
+        note: 'Eksik XP için otomatik /orders alımı',
+      });
+
+      await waitForOrderComplete(token, bottlePrice);
+      await collectItems(token);
+
+      xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
+      if (!xpItem) {
+        throw new Error('XP sisesi siparis edildi ve toplandi ancak envanterde experience_bottle bulunamadi!');
+      }
     }
 
     if (!bot.heldItem || bot.heldItem.name !== 'experience_bottle') {
@@ -193,7 +218,16 @@ async function buyAnvilFromAh(token) {
     throw new Error('Ors satin alindi fakat envanterde gorunmuyor!');
   }
 
-  log('Ors basariyla satin alindi.');
+  log(`Ors basariyla satin alindi: $${lowestListing.price.toLocaleString()}`);
+  recordTransaction({
+    type: 'EXPENSE',
+    category: 'Örs',
+    item: lowestListing.display || lowestListing.name || 'Anvil',
+    amount: 1,
+    unitPrice: lowestListing.price,
+    total: lowestListing.price,
+    note: `/ah üzerinden en ucuz örs satın alımı`,
+  });
 }
 
 async function ensureAnvil(token) {

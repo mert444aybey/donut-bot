@@ -272,11 +272,60 @@ async function waitForOrderComplete(token, placedPrice) {
   return { completed: true };
 }
 
+function buildCustomSteps(itemName, amount, price) {
+  return [
+    { name: 'Siparis menusu',   type: 'CLICK', slot: 51, expectWindow: true },
+    { name: 'Alt menu',         type: 'CLICK', slot: 3,  expectWindow: true },
+    { name: 'Kategori',         type: 'CLICK', slot: 12, expectWindow: true },
+    { name: 'Item arama',       type: 'SIGN',  slot: 50, text: itemName },
+    { name: 'Done',             type: 'CLICK', slot: 0,  expectWindow: true },
+    { name: 'Miktar',           type: 'SIGN',  slot: 13, text: String(amount) },
+    { name: 'Fiyat',            type: 'SIGN',  slot: 14, text: String(price) },
+    { name: 'Siparis onayi',    type: 'CLICK', slot: 16, expectWindow: false },
+  ];
+}
+
+async function runCustomOrderFlow(itemName, amount, price, token) {
+  const bot = state.bot;
+  log(`Ozel siparis veriliyor: ${amount}x ${itemName} @ $${price}...`);
+  assertActive(token);
+  closeWindowSafe();
+  await humanSleep(500);
+
+  const steps = buildCustomSteps(itemName, amount, price);
+  bot.chat('/orders');
+
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+    assertActive(token);
+    dlog(`Adim ${i + 1}/${steps.length}: ${step.name}`);
+
+    if (step.type === 'SIGN') {
+      const pkt = await waitForSignEditor();
+      assertActive(token);
+      await humanSleep(CFG.signTypeDelayMs);
+      submitSign(pkt, step.text);
+    } else if (step.type === 'CLICK') {
+      await safeClick(step.slot);
+      if (step.expectWindow) {
+        await waitForWindow();
+        assertActive(token);
+      }
+    }
+  }
+
+  log(`Siparis basariyla verildi: ${amount}x ${itemName} @ $${price}`);
+  bumpStats({ ordersPlaced: 1, itemsOrdered: amount });
+  return price;
+}
+
 module.exports = {
   buildSteps,
+  buildCustomSteps,
   fetchOrderReferencePrice,
   computeOrderPrice,
   cancelActiveOrder,
   runOrderFlow,
+  runCustomOrderFlow,
   waitForOrderComplete,
 };
