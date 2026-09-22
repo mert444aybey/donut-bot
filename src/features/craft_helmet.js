@@ -116,8 +116,41 @@ function checkHelmetMaterials() {
   };
 }
 
-// Toplama: /orders -> 51 -> 0 -> 13 (Gold block sistemiyle ayni teslimat sandigi)
-// Once botun ustune (envanterine) bakar, sadece 1 God Helmet icin eksik olanlari sandiktan ceker!
+// Bir esyanin hedeflenen siparis ile eslesip eslesmedigini kontrol eder
+function matchesTargetOrder(target, it) {
+  if (!it) return false;
+  if (it.name.includes('glass') || it.name === 'barrier') return false;
+
+  if (target.id === 'helmet') {
+    return isCleanHelmet(it) || it.name === 'diamond_helmet' || (it.displayName && it.displayName.toLowerCase().includes('diamond helmet'));
+  }
+  if (target.id === 'xp') {
+    return it.name === 'experience_bottle' || (it.displayName && it.displayName.toLowerCase().includes('bottle'));
+  }
+
+  if (it.name === 'enchanted_book') {
+    if (target.predicate && target.predicate(it)) return true;
+    const enchants = getEnchants(it);
+    if (target.id === 'blast') return enchants.includes('blast_prot_4');
+    if (target.id === 'resp') return enchants.includes('resp_3');
+    if (target.id === 'mending') return enchants.includes('mending');
+    if (target.id === 'unb') return enchants.includes('unbreaking_3');
+    if (target.id === 'aqua') return enchants.includes('aqua_affinity');
+
+    // Metin uzerinden son care
+    const text = ((it.displayName || '') + ' ' + (loreOf(it) || []).join(' ')).toLowerCase();
+    if (target.id === 'blast' && (text.includes('blast protection') || text.includes('blast prot'))) return true;
+    if (target.id === 'resp' && text.includes('respiration')) return true;
+    if (target.id === 'mending' && text.includes('mending')) return true;
+    if (target.id === 'unb' && text.includes('unbreaking')) return true;
+    if (target.id === 'aqua' && text.includes('aqua affinity')) return true;
+  }
+  return false;
+}
+
+// Toplama: Botun ustune (envanterine) bakar, 1 God Helmet icin eksik olanlari tespit eder.
+// /orders -> 51 (Your Orders) menusunden her eksik esyanin siparis slotunu bulur,
+// siparis sandigina girip (slot 13) 1'er adet eksik esyayi ceker!
 async function collectHelmetMaterials(token) {
   const bot = state.bot;
   assertActive(token);
@@ -126,162 +159,166 @@ async function collectHelmetMaterials(token) {
 
   // 1. Botun ustune bak: Hangileri eksik?
   const items = bot.inventory.items();
-  let needHelmet = !items.some(isCleanHelmet) && !items.some(isStep1Helmet) && !items.some(isStep3Helmet) && !items.some(isGodHelmet);
-  let needBlast = !items.some(isBlastProt4Book) && !items.some(isStep1Helmet) && !items.some(isStep3Helmet) && !items.some(isGodHelmet);
-  let needResp = !items.some(isResp3Book) && !items.some(isStep2Book) && !items.some(isStep3Helmet) && !items.some(isGodHelmet);
-  let needMending = !items.some(isMendingBook) && !items.some(isStep2Book) && !items.some(isStep3Helmet) && !items.some(isGodHelmet);
-  let needUnb = !items.some(isUnbreaking3Book) && !items.some(isStep4Book) && !items.some(isGodHelmet);
-  let needAqua = !items.some(isAquaAffinityBook) && !items.some(isStep4Book) && !items.some(isGodHelmet);
+  const needHelmet = !items.some(isCleanHelmet) && !items.some(isStep1Helmet) && !items.some(isStep3Helmet) && !items.some(isGodHelmet);
+  const needBlast = !items.some(isBlastProt4Book) && !items.some(isStep1Helmet) && !items.some(isStep3Helmet) && !items.some(isGodHelmet);
+  const needResp = !items.some(isResp3Book) && !items.some(isStep2Book) && !items.some(isStep3Helmet) && !items.some(isGodHelmet);
+  const needMending = !items.some(isMendingBook) && !items.some(isStep2Book) && !items.some(isStep3Helmet) && !items.some(isGodHelmet);
+  const needUnb = !items.some(isUnbreaking3Book) && !items.some(isStep4Book) && !items.some(isGodHelmet);
+  const needAqua = !items.some(isAquaAffinityBook) && !items.some(isStep4Book) && !items.some(isGodHelmet);
   const xpCount = items.filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
-  let needXP = xpCount < 30 && bot.experience.level < 10;
+  const needXP = xpCount < 30 && bot.experience.level < 10;
 
-  const neededList = [];
-  if (needHelmet) neededList.push('Diamond Helmet');
-  if (needBlast) neededList.push('Blast Protection 4');
-  if (needResp) neededList.push('Respiration 3');
-  if (needMending) neededList.push('Mending');
-  if (needUnb) neededList.push('Unbreaking 3');
-  if (needAqua) neededList.push('Aqua Affinity');
-  if (needXP) neededList.push('XP Şişesi');
+  const targets = [];
+  if (needHelmet) targets.push({ id: 'helmet', name: 'Diamond Helmet', predicate: isCleanHelmet });
+  if (needBlast) targets.push({ id: 'blast', name: 'Blast Protection 4 Kitabı', predicate: isBlastProt4Book });
+  if (needResp) targets.push({ id: 'resp', name: 'Respiration 3 Kitabı', predicate: isResp3Book });
+  if (needMending) targets.push({ id: 'mending', name: 'Mending Kitabı', predicate: isMendingBook });
+  if (needUnb) targets.push({ id: 'unb', name: 'Unbreaking 3 Kitabı', predicate: isUnbreaking3Book });
+  if (needAqua) targets.push({ id: 'aqua', name: 'Aqua Affinity Kitabı', predicate: isAquaAffinityBook });
+  if (needXP) targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle' });
 
-  if (neededList.length === 0) {
-    log('✅ God Helmet icin gereken tum malzemeler zaten ustunde/envanterde mevcut.');
+  if (targets.length === 0) {
+    log('✅ God Helmet için gereken tüm malzemeler zaten üstünde/envanterde mevcut.');
     return;
   }
 
-  log(`📦 Depodan sadece ustunde eksik olanlar cekilecek: ${neededList.join(', ')}`);
+  log(`📦 Depodan sadece üstünde eksik olan ${targets.length} kalem malzeme çekilecek: ${targets.map((t) => t.name).join(', ')}`);
 
-  // Gold blockta calisan ayni teslimat sandigi adimlari (/orders -> 51 -> 0 -> 13)
-  await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
+  if (!state.existingOrderTypes) state.existingOrderTypes = new Set();
 
-  for (const step of CFG.COLLECT_PATH) {
+  for (const target of targets) {
     assertActive(token);
-    const nextWin = step.expectWindow ? waitForWindow() : null;
-    if (nextWin) nextWin.catch(() => {});
-    await safeClick(step.slot);
-    if (nextWin) await nextWin;
-  }
 
-  await waitForSlot(CFG.collectSlot || 0, CFG.slotWaitMs);
-  const win = bot.currentWindow;
-  if (!win) {
-    log('Toplama sandigi penceresi acilamadi.');
+    // Botun envanterine tekrar bak: onceki adimda geldiyse veya varsa atla
+    const curItems = bot.inventory.items();
+    if (target.id === 'helmet') {
+      if (curItems.some(isCleanHelmet) || curItems.some(isStep1Helmet) || curItems.some(isStep3Helmet) || curItems.some(isGodHelmet)) {
+        dlog(`Diamond Helmet zaten envanterde mevcut, atlanıyor.`);
+        continue;
+      }
+    } else if (target.id === 'xp') {
+      const curXp = curItems.filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
+      if (curXp >= 30 || bot.experience.level >= 10) continue;
+    } else if (curItems.some(target.predicate)) {
+      dlog(`${target.name} zaten envanterde mevcut, atlanıyor.`);
+      continue;
+    }
+
+    // 1. /orders penceresini ac
     closeWindowSafe();
-    return;
-  }
-
-  // Sandik icindeki slotlari tara ve sadece eksik olanlari shift-click ile al
-  for (let s = 0; s < win.inventoryStart; s++) {
+    await humanSleep(300);
+    try {
+      await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
+    } catch (e) {
+      log(`Sipariş penceresi (/orders) açılamadı (${e.message}), sonraki malzemeye geçiliyor.`);
+      continue;
+    }
     assertActive(token);
-    const it = win.slots[s];
-    if (!it) continue;
-    if (it.name.includes('glass') || it.name === 'barrier') continue;
 
-    dlog(`[Depo Slot ${s}] ${it.name} (${displayOf(it)})`);
+    // 2. Slot 51'e tıkla ("Orders -> Your Orders" acilir)
+    const yourOrdersPromise = waitForWindow();
+    yourOrdersPromise.catch(() => {});
+    await safeClick(51);
+    let yourOrdersWin;
+    try {
+      yourOrdersWin = await yourOrdersPromise;
+    } catch (e) {
+      log(`"Your Orders" penceresi açılamadı (${e.message}).`);
+      closeWindowSafe();
+      continue;
+    }
+    await humanSleep(500);
+    assertActive(token);
 
-    // Kask: envanterde yoksa SADECE 1 adet al
-    if (needHelmet && isCleanHelmet(it)) {
-      log(`📦 Sandıktan Diamond Helmet alınıyor (slot ${s})...`);
-      const before = bot.inventory.items().filter(isCleanHelmet).length;
-      await humanSleep(state.S.clickDelayMs || 500);
-      await bot.clickWindow(s, 0, 1);
-      await humanSleep(CFG.shiftWaitMs || 1000);
-      const after = bot.inventory.items().filter(isCleanHelmet).length;
-      if (after > before) {
-        log(`✅ Diamond Helmet başarıyla envantere alındı.`);
-        needHelmet = false;
+    // 3. Your Orders icinde tum aktif siparisleri tara ve hedefi bul
+    let orderSlot = -1;
+    for (let s = 0; s < yourOrdersWin.inventoryStart; s++) {
+      const it = yourOrdersWin.slots[s];
+      if (!it || it.name.includes('glass') || it.name === 'barrier') continue;
+
+      // Tum aktif siparis tiplerini kaydet (cift siparis acilmasini onler)
+      for (const checkType of ['helmet', 'blast', 'resp', 'mending', 'unb', 'aqua', 'xp']) {
+        if (matchesTargetOrder({ id: checkType }, it)) {
+          state.existingOrderTypes.add(checkType);
+        }
       }
+
+      if (orderSlot === -1 && matchesTargetOrder(target, it)) {
+        orderSlot = s;
+      }
+    }
+
+    if (orderSlot === -1) {
+      log(`⚠️ Depoda ${target.name} siparişi bulunamadı (henüz sipariş açılmamış olabilir).`);
+      closeWindowSafe();
+      await humanSleep(300);
       continue;
     }
 
-    // Büyü kitapları: eksik olanlari 1'er adet al (extractItemEnchantments sayesinde %100 dogru taninir)
-    if (it.name === 'enchanted_book') {
-      if (needBlast && isBlastProt4Book(it)) {
-        log(`📦 Sandıktan Blast Protection 4 kitabı alınıyor (slot ${s})...`);
-        const before = bot.inventory.items().filter(isBlastProt4Book).length;
+    log(`📦 Depoda ${target.name} siparişi bulundu (Slot ${orderSlot}). Teslimat sandığı açılıyor...`);
+
+    // 4. Order slotuna tikla ("Orders -> Edit Order" acilir)
+    const editOrderPromise = waitForWindow();
+    editOrderPromise.catch(() => {});
+    await safeClick(orderSlot);
+    let editOrderWin;
+    try {
+      editOrderWin = await editOrderPromise;
+    } catch (e) {
+      log(`"Edit Order" penceresi açılamadı (${e.message}).`);
+      closeWindowSafe();
+      continue;
+    }
+    await humanSleep(400);
+    assertActive(token);
+
+    // 5. Slot 13'e tikla (Chest - "Orders -> Collect Items" acilir)
+    const collectPromise = waitForWindow();
+    collectPromise.catch(() => {});
+    await safeClick(13);
+    let collectWin;
+    try {
+      collectWin = await collectPromise;
+    } catch (e) {
+      log(`"Collect Items" teslimat penceresi açılamadı (${e.message}).`);
+      closeWindowSafe();
+      continue;
+    }
+    await humanSleep(500);
+    assertActive(token);
+
+    // 6. Teslimat sandigi icinde esyayi bul ve shift-click yap
+    let itemTaken = false;
+    for (let cs = 0; cs < collectWin.inventoryStart; cs++) {
+      const it = collectWin.slots[cs];
+      if (!it || it.name.includes('glass') || it.name === 'barrier') continue;
+
+      if (matchesTargetOrder(target, it) || (target.predicate && target.predicate(it))) {
+        log(`📦 Teslimat sandığından 1 adet ${target.name} alınıyor (slot ${cs})...`);
         await humanSleep(state.S.clickDelayMs || 500);
-        await bot.clickWindow(s, 0, 1);
+        await bot.clickWindow(cs, 0, 1); // shift-click
         await humanSleep(CFG.shiftWaitMs || 1000);
-        const after = bot.inventory.items().filter(isBlastProt4Book).length;
-        if (after > before) {
-          log(`✅ Blast Protection 4 kitabı başarıyla envantere alındı.`);
-          needBlast = false;
-        }
-        continue;
-      }
-      if (needResp && isResp3Book(it)) {
-        log(`📦 Sandıktan Respiration 3 kitabı alınıyor (slot ${s})...`);
-        const before = bot.inventory.items().filter(isResp3Book).length;
-        await humanSleep(state.S.clickDelayMs || 500);
-        await bot.clickWindow(s, 0, 1);
-        await humanSleep(CFG.shiftWaitMs || 1000);
-        const after = bot.inventory.items().filter(isResp3Book).length;
-        if (after > before) {
-          log(`✅ Respiration 3 kitabı başarıyla envantere alındı.`);
-          needResp = false;
-        }
-        continue;
-      }
-      if (needMending && isMendingBook(it)) {
-        log(`📦 Sandıktan Mending kitabı alınıyor (slot ${s})...`);
-        const before = bot.inventory.items().filter(isMendingBook).length;
-        await humanSleep(state.S.clickDelayMs || 500);
-        await bot.clickWindow(s, 0, 1);
-        await humanSleep(CFG.shiftWaitMs || 1000);
-        const after = bot.inventory.items().filter(isMendingBook).length;
-        if (after > before) {
-          log(`✅ Mending kitabı başarıyla envantere alındı.`);
-          needMending = false;
-        }
-        continue;
-      }
-      if (needUnb && isUnbreaking3Book(it)) {
-        log(`📦 Sandıktan Unbreaking 3 kitabı alınıyor (slot ${s})...`);
-        const before = bot.inventory.items().filter(isUnbreaking3Book).length;
-        await humanSleep(state.S.clickDelayMs || 500);
-        await bot.clickWindow(s, 0, 1);
-        await humanSleep(CFG.shiftWaitMs || 1000);
-        const after = bot.inventory.items().filter(isUnbreaking3Book).length;
-        if (after > before) {
-          log(`✅ Unbreaking 3 kitabı başarıyla envantere alındı.`);
-          needUnb = false;
-        }
-        continue;
-      }
-      if (needAqua && isAquaAffinityBook(it)) {
-        log(`📦 Sandıktan Aqua Affinity kitabı alınıyor (slot ${s})...`);
-        const before = bot.inventory.items().filter(isAquaAffinityBook).length;
-        await humanSleep(state.S.clickDelayMs || 500);
-        await bot.clickWindow(s, 0, 1);
-        await humanSleep(CFG.shiftWaitMs || 1000);
-        const after = bot.inventory.items().filter(isAquaAffinityBook).length;
-        if (after > before) {
-          log(`✅ Aqua Affinity kitabı başarıyla envantere alındı.`);
-          needAqua = false;
-        }
-        continue;
+        log(`✅ 1 adet ${target.name} başarıyla depodan envantere alındı.`);
+        itemTaken = true;
+        break;
       }
     }
 
-    // XP Şişesi
-    if (needXP && it.name === 'experience_bottle') {
-      log(`📦 Sandıktan XP şişeleri alınıyor (slot ${s})...`);
-      const before = bot.inventory.items().filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
-      await humanSleep(state.S.clickDelayMs || 500);
-      await bot.clickWindow(s, 0, 1);
-      await humanSleep(CFG.shiftWaitMs || 1000);
-      const after = bot.inventory.items().filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
-      if (after > before) {
-        log(`✅ XP şişeleri alındı (+${after - before} adet).`);
-        if (after >= 30) needXP = false;
-      }
-      continue;
+    if (!itemTaken) {
+      log(`⏳ ${target.name} teslimat sandığında henüz teslim edilmiş ürün yok (oyuncuların teslim etmesi bekleniyor).`);
     }
+
+    closeWindowSafe();
+    await humanSleep(400);
   }
 
-  await humanSleep(400);
-  closeWindowSafe();
-  await humanSleep(400);
+  // Son durum kontrolu
+  const finalStatus = checkHelmetMaterials();
+  if (finalStatus.ready) {
+    log('🎉 Depodan tüm eksikler tamamlandı, God Helmet üretimi için tüm malzemeler hazır!');
+  } else {
+    log(`ℹ️ Depo taraması bitti. Kalan eksikler: ${finalStatus.missing.join(', ')}`);
+  }
 }
 
 // Malzemeleri Kontrol Et ("Üstüne bak"), Eksikleri Sandiktan Cek, Yoksa Toplu Siparis Ver (50x)
@@ -315,12 +352,13 @@ async function ensureAllMaterialsOrOrder(token) {
     return;
   }
 
-  // 4. Hala ustunde eksik olan malzemeler varsa toplu siparis ac (50x)
+  // 4. Hala ustunde eksik olan malzemeler varsa ve depoda henuz siparisi acilmamissa toplu siparis ac (50x)
+  const existingOrders = state.existingOrderTypes || new Set();
   const toOrder = [];
   const items = bot.inventory.items();
 
   const hasHelmet = items.some(isCleanHelmet) || items.some(isStep1Helmet) || items.some(isStep3Helmet);
-  if (!hasHelmet) {
+  if (!hasHelmet && !existingOrders.has('helmet')) {
     toOrder.push({
       item: 'Diamond Helmet',
       itemId: 'diamond_helmet',
@@ -334,7 +372,7 @@ async function ensureAllMaterialsOrOrder(token) {
     });
   }
 
-  if (!items.some(isStep1Helmet) && !items.some(isStep3Helmet) && !items.some(isBlastProt4Book)) {
+  if (!items.some(isStep1Helmet) && !items.some(isStep3Helmet) && !items.some(isBlastProt4Book) && !existingOrders.has('blast')) {
     toOrder.push({
       item: 'Enchanted Book Blast Protection 4',
       itemId: 'enchanted_book',
@@ -350,7 +388,7 @@ async function ensureAllMaterialsOrOrder(token) {
   }
 
   if (!items.some(isStep3Helmet) && !items.some(isStep2Book)) {
-    if (!items.some(isResp3Book)) {
+    if (!items.some(isResp3Book) && !existingOrders.has('resp')) {
       toOrder.push({
         item: 'Enchanted Book Respiration 3',
         itemId: 'enchanted_book',
@@ -364,7 +402,7 @@ async function ensureAllMaterialsOrOrder(token) {
         category: 'Kitap',
       });
     }
-    if (!items.some(isMendingBook)) {
+    if (!items.some(isMendingBook) && !existingOrders.has('mending')) {
       toOrder.push({
         item: 'Enchanted Book Mending',
         itemId: 'enchanted_book',
@@ -381,7 +419,7 @@ async function ensureAllMaterialsOrOrder(token) {
   }
 
   if (!items.some(isStep4Book)) {
-    if (!items.some(isUnbreaking3Book)) {
+    if (!items.some(isUnbreaking3Book) && !existingOrders.has('unb')) {
       toOrder.push({
         item: 'Enchanted Book Unbreaking 3',
         itemId: 'enchanted_book',
@@ -395,7 +433,7 @@ async function ensureAllMaterialsOrOrder(token) {
         category: 'Kitap',
       });
     }
-    if (!items.some(isAquaAffinityBook)) {
+    if (!items.some(isAquaAffinityBook) && !existingOrders.has('aqua')) {
       toOrder.push({
         item: 'Enchanted Book Aqua Affinity',
         itemId: 'enchanted_book',
@@ -412,7 +450,7 @@ async function ensureAllMaterialsOrOrder(token) {
   }
 
   const xpCount = items.filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
-  if (xpCount < 30 && bot.experience.level < 10) {
+  if (xpCount < 30 && bot.experience.level < 10 && !existingOrders.has('xp')) {
     const bottleQty = Math.max(64, S.xpBottleOrderAmount || 64);
     const bottlePrice = S.xpBottleOrderPrice || 250;
     toOrder.push({
