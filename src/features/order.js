@@ -175,102 +175,28 @@ async function cancelActiveOrder(token, itemOverride) {
   } catch (_) {}
 }
 
-// Eger secilen item buyulenebiliyorsa acilan "Pick Enchantments" menusunu yonetir
+// Eger secilen item buyulenebiliyorsa acilan ekranda direk 52. slota basar
 async function handlePickEnchantments(token, itemCfg) {
   const bot = state.bot;
   assertActive(token);
   const win = bot.currentWindow;
   if (!win) return;
 
-  log(`✨ "Pick Enchantments" menusu algilandi ("${titleOf(win)}").`);
+  log(`✨ Büyülenebilir eşya ekranı algılandı ("${titleOf(win)}"). Doğrudan 52. slota basılıyor...`);
+  await humanSleep(350);
 
-  // Penceredeki dolu slotlari logla
-  const filled = [];
-  for (let s = 0; s < win.inventoryStart; s++) {
-    const it = win.slots[s];
-    if (it) {
-      filled.push(`[${s}: ${it.name} "${displayOf(it)}"]`);
-    }
-  }
-  log(`Pick Enchantments slotlari (${filled.length}): ${filled.slice(0, 10).join(' ')}...`);
-
-  // Eger ozel bir buyu istenmisse (orn: Enchanted Book)
-  if (itemCfg.matchLore || itemCfg.enchantment) {
-    const target = (itemCfg.matchLore || itemCfg.enchantment).toLowerCase();
-    let enchantSlot = -1;
-    for (let s = 0; s < win.inventoryStart; s++) {
-      const it = win.slots[s];
-      if (!it) continue;
-      const t = `${it.name} ${displayOf(it)} ${(loreOf(it) || []).join(' ')}`.toLowerCase();
-      if (t.includes(target)) {
-        enchantSlot = s;
-        break;
-      }
-    }
-    if (enchantSlot >= 0) {
-      log(`Istenen buyu bulundu (slot ${enchantSlot}: ${displayOf(win.slots[enchantSlot])}), seciliyor...`);
-      await safeClick(enchantSlot);
-      await humanSleep(500);
-    }
-  } else {
-    log(`Temiz/buyusuz esya (${itemCfg.item}) icin buyu secilmeden onaylanacak.`);
-  }
-
-  // Onay / Done / Continue butonunu tespit et
-  const cur = bot.currentWindow || win;
-  let doneSlot = -1;
-
-  // 1. Isim veya lore'da Onay/Done/Next/Confirm/Tamam arama
-  for (let s = 0; s < cur.inventoryStart; s++) {
-    const it = cur.slots[s];
-    if (!it) continue;
-    const t = `${it.name} ${displayOf(it)} ${(loreOf(it) || []).join(' ')}`.toLowerCase();
-    if (/done|confirm|continue|next|skip|finish|accept|tamam|onay|bitir|gec|ileri|devam/i.test(t)) {
-      doneSlot = s;
-      log(`Onay butonu metinden bulundu: slot ${s} (${displayOf(it)})`);
-      break;
-    }
-  }
-
-  // 2. Yesil/Lime/Emerald item arama (gri cam haric)
-  if (doneSlot === -1) {
-    for (let s = 0; s < cur.inventoryStart; s++) {
-      const it = cur.slots[s];
-      if (!it) continue;
-      if (/lime|emerald|green/i.test(it.name) && !it.name.includes('gray')) {
-        doneSlot = s;
-        log(`Onay butonu renginden bulundu: slot ${s} (${it.name})`);
-        break;
-      }
-    }
-  }
-
-  // 3. Alt bar kontrol slotlari (49, 53, 51, 50, 48)
-  if (doneSlot === -1) {
-    const candidates = [49, 53, 51, 50, 48];
-    for (const c of candidates) {
-      const it = cur.slots[c];
-      if (it && !it.name.includes('gray_stained_glass') && it.name !== 'air') {
-        doneSlot = c;
-        log(`Onay butonu alt kontrol slotundan secildi: slot ${c} (${it.name})`);
-        break;
-      }
-    }
-  }
-
-  if (doneSlot === -1) {
-    doneSlot = 49;
-    log(`Onay butonu bulunamadi, varsayilan slot 49 deneniyor.`);
-  }
-
-  log(`Pick Enchantments onay butonuna tiklaniyor: slot ${doneSlot}...`);
   const nextWinPromise = waitForWindow(5000).catch(() => null);
-  await safeClick(doneSlot);
+  try {
+    await safeClick(52);
+  } catch (err) {
+    log(`safeClick(52) uyarısı: ${err.message}, doğrudan clickWindow(52) gönderiliyor...`);
+    await bot.clickWindow(52, 0, 0);
+  }
   const nextWin = await nextWinPromise;
-  await humanSleep(500);
+  await humanSleep(400);
 
-  if (nextWin) {
-    log(`Pick Enchantments sonrasi pencere acildi: "${titleOf(nextWin)}"`);
+  if (nextWin || bot.currentWindow) {
+    log(`Büyü ekranı geçildi, sipariş penceresi açıldı: "${titleOf(bot.currentWindow || nextWin)}"`);
   }
 }
 
@@ -304,10 +230,10 @@ async function runOrderFlow(token, itemOverride) {
         await safeClick(step.slot);
         if (nextWin) await nextWin;
 
-        // Eger slot 0'a (Done / Item secimi) tiklandiysa ve ardindan "Pick Enchantments" acildiysa
+        // Eger slot 0'a (Done / Item secimi) tiklandiysa ve farkli bir ekran (büyü ekrani) acildiysa:
         if (step.slot === 0 && bot.currentWindow) {
           const title = (titleOf(bot.currentWindow) || '').toLowerCase();
-          if (title.includes('enchant')) {
+          if (title.includes('enchant') || !title.includes('new order')) {
             await handlePickEnchantments(token, itemCfg);
           }
         }
