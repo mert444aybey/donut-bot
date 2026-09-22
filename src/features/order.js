@@ -21,7 +21,7 @@ function buildSteps(orderPrice, itemOverride) {
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : state.S);
   return [
     { name: 'Siparis menusu',   type: 'CLICK', slot: 51, expectWindow: true },
-    { name: 'Alt menu',         type: 'CLICK', slot: 3,  expectWindow: true },
+    { name: 'Alt menu',         type: 'CLICK', slot: 8,  expectWindow: true },
     { name: 'Kategori',         type: 'CLICK', slot: 12, expectWindow: true },
     { name: 'Item arama',       type: 'SIGN',  slot: 50, text: itemCfg.item },
     { name: 'Done',             type: 'CLICK', slot: 0,  expectWindow: true },
@@ -31,13 +31,14 @@ function buildSteps(orderPrice, itemOverride) {
   ];
 }
 
-// /order <itemId> panosunu acar
+// /order <itemId> veya /order enchanted book <büyü> panosunu acar
 async function fetchOrderReferencePrice(token, itemOverride) {
   const S = state.S;
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   assertActive(token);
 
-  const cmd = `${S.orderSearchCmd} ${itemCfg.itemId}`.trim();
+  const query = itemCfg.orderSearchQuery || itemCfg.item || itemCfg.itemId;
+  const cmd = `${S.orderSearchCmd} ${query}`.trim();
   dlog(`Siparis referans fiyati sorgulaniyor: ${cmd}`);
 
   let win;

@@ -110,9 +110,9 @@ async function ensureAllMaterialsOrOrder(token) {
     toOrder.push({
       item: 'Diamond Helmet',
       itemId: 'diamond_helmet',
-      orderSearchQuery: 'diamond_helmet',
+      orderSearchQuery: 'diamond helmet',
       orderAmount: 1, // Non-stackable!
-      orderPrice: S.diamondHelmetOrderPrice || 25000,
+      orderPrice: S.diamondHelmetOrderPrice || 12000,
       fixedPrice: true, // Sadece kask fiyati kullanici tarafindan manuel belirlenir
       category: 'Kask',
     });
@@ -124,7 +124,7 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Blast Protection 4',
         itemId: 'enchanted_book',
-        orderSearchQuery: 'Enchanted Book Blast Protection 4',
+        orderSearchQuery: 'enchanted book blast protection 4',
         matchLore: 'blast protection',
         orderAmount: 1, // Non-stackable!
         orderPrice: S.bookBlastOrderPrice || 15000,
@@ -140,7 +140,7 @@ async function ensureAllMaterialsOrOrder(token) {
         toOrder.push({
           item: 'Enchanted Book Respiration 3',
           itemId: 'enchanted_book',
-          orderSearchQuery: 'Enchanted Book Respiration 3',
+          orderSearchQuery: 'enchanted book respiration 3',
           matchLore: 'respiration',
           orderAmount: 1, // Non-stackable!
           orderPrice: S.bookRespOrderPrice || 15000,
@@ -151,7 +151,7 @@ async function ensureAllMaterialsOrOrder(token) {
         toOrder.push({
           item: 'Enchanted Book Mending',
           itemId: 'enchanted_book',
-          orderSearchQuery: 'Enchanted Book Mending',
+          orderSearchQuery: 'enchanted book mending',
           matchLore: 'mending',
           orderAmount: 1, // Non-stackable!
           orderPrice: S.bookMendingOrderPrice || 25000,
@@ -167,7 +167,7 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Unbreaking 3',
         itemId: 'enchanted_book',
-        orderSearchQuery: 'Enchanted Book Unbreaking 3',
+        orderSearchQuery: 'enchanted book unbreaking 3',
         matchLore: 'unbreaking',
         orderAmount: 1, // Non-stackable!
         orderPrice: S.bookUnbOrderPrice || 15000,
@@ -178,7 +178,7 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Aqua Affinity',
         itemId: 'enchanted_book',
-        orderSearchQuery: 'Enchanted Book Aqua Affinity',
+        orderSearchQuery: 'enchanted book aqua affinity',
         matchLore: 'aqua affinity',
         orderAmount: 1, // Non-stackable!
         orderPrice: S.bookAquaOrderPrice || 10000,
@@ -195,7 +195,7 @@ async function ensureAllMaterialsOrOrder(token) {
     toOrder.push({
       item: "Bottle o' Enchanting",
       itemId: 'experience_bottle',
-      orderSearchQuery: 'experience_bottle',
+      orderSearchQuery: 'bottle o enchanting',
       orderAmount: bottleQty, // Stackable!
       orderPrice: bottlePrice,
       category: 'XP Şişesi',
