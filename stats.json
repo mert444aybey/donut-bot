@@ -1,13 +1,56 @@
 {
   "startedAt": 1790106573615,
-  "totalSpent": 0,
+  "totalSpent": 16900,
   "totalEarned": 0,
   "ordersPlaced": 0,
   "itemsOrdered": 0,
   "cyclesCompleted": 0,
   "godHelmetsCrafted": 0,
   "itemsCollected": {},
-  "categories": {},
-  "ledger": [],
-  "history": []
+  "categories": {
+    "Örs": {
+      "spent": 16900,
+      "earned": 0,
+      "count": 1
+    }
+  },
+  "ledger": [
+    {
+      "id": "1790111331595-gk84",
+      "time": 1790111331595,
+      "type": "EXPENSE",
+      "category": "Örs",
+      "item": "Anvil",
+      "amount": 1,
+      "unitPrice": 16900,
+      "total": 16900,
+      "note": "/ah üzerinden en ucuz örs satın alımı"
+    }
+  ],
+  "history": [
+    {
+      "time": 1790111187533,
+      "balance": 10373474,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790111276931,
+      "balance": 10373474,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790111330284,
+      "balance": 16.9,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790111331595,
+      "balance": 16.9,
+      "spent": 16900,
+      "orders": 0
+    }
+  ]
 }

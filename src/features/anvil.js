@@ -127,6 +127,8 @@ async function placeAnvilFromInventory(token) {
         const placed = findAnvilBlock();
         if (placed) {
           log(`Ors basariyla yerlestirildi: ${placed.name} @ ${placed.position}`);
+          try { await bot.unequip('hand'); } catch (_) {}
+          await humanSleep(300);
           return true;
         }
       } catch (err) {
@@ -215,8 +217,11 @@ async function buyAnvilFromAh(token) {
     await humanSleep(1000);
   }
 
-  closeWindowSafe();
-  await humanSleep(800);
+  // AH satin alma sonrasi sunucunun geri actigi veya acik kalan pencereleri tamamen kapat
+  for (let c = 0; c < 3; c++) {
+    closeWindowSafe();
+    await humanSleep(350);
+  }
 
   const hasAnvil = bot.inventory.items().some((i) => i.name.includes('anvil'));
   if (!hasAnvil) {
@@ -259,22 +264,88 @@ async function ensureAnvil(token) {
   return anvilBlock;
 }
 
+function isAnvilWindow(win) {
+  if (!win) return false;
+  const title = (titleOf(win) || '').toLowerCase();
+  const type = String(win.type || '').toLowerCase();
+  return type.includes('anvil') || title.includes('repair') || title.includes('örs') || title.includes('ors');
+}
+
+// Örs bloğunu açar (önce açık pencereyi kontrol eder, boş elle sağ tıklar, gerekirse bot.openBlock dener)
+async function openAnvilGUI(anvilBlock, token) {
+  const bot = state.bot;
+  assertActive(token);
+
+  // 1. Zaten örs penceresi açıksa doğrudan kullan
+  if (bot.currentWindow && isAnvilWindow(bot.currentWindow)) {
+    dlog(`Örs penceresi zaten açık ("${titleOf(bot.currentWindow)}"), doğrudan kullanılıyor.`);
+    return bot.currentWindow;
+  }
+
+  // 2. Açık olan başka bir GUI (AH, sandık vb.) varsa tamamen kapat
+  while (bot.currentWindow) {
+    dlog(`Örs açılmadan önce açık kalan pencere kapatılıyor: "${titleOf(bot.currentWindow)}"`);
+    closeWindowSafe();
+    await humanSleep(350);
+  }
+
+  // 3. Sneak kesinlikle kapalı olmalı
+  bot.setControlState('sneak', false);
+
+  // 4. Eli boşalt (eli boşken sağ tıklandığında sunucu blok etkileşimini %100 kabul eder)
+  try {
+    await bot.unequip('hand');
+    await humanSleep(250);
+  } catch (_) {}
+
+  const anvilPos = anvilBlock.position;
+  const lookTarget = anvilPos.offset(0.5, 0.8, 0.5);
+
+  // 5. Örsü açmak için 3 deneme yap
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    assertActive(token);
+    log(`🔨 Örs açılıyor (deneme ${attempt}/3): ${anvilBlock.name} @ ${anvilPos}...`);
+
+    await bot.lookAt(lookTarget, true);
+    await humanSleep(250);
+
+    const winPromise = waitForWindow(4000);
+    winPromise.catch(() => {});
+
+    try {
+      await bot.activateBlock(anvilBlock, new Vec3(0, 1, 0), new Vec3(0.5, 1.0, 0.5));
+    } catch (err) {
+      dlog(`activateBlock hatasi: ${err.message}`);
+    }
+
+    try {
+      const win = await winPromise;
+      if (win && isAnvilWindow(win)) {
+        log(`✅ Örs penceresi başarıyla açıldı ("${titleOf(win)}").`);
+        return win;
+      }
+    } catch (_) {
+      dlog(`Örs açılmadı, tekrar deneniyor (${attempt}/3)...`);
+      await humanSleep(500);
+    }
+  }
+
+  // Son çare: bot.openBlock
+  log('Örs standart sağ tıklama ile açılmadı, bot.openBlock deneniyor...');
+  return await bot.openBlock(anvilBlock);
+}
+
 // 3. Orste Iki Esyayi Birlestirme
 async function combineInAnvil(findLeftItemFn, findRightItemFn, token) {
   const bot = state.bot;
   assertActive(token);
-  closeWindowSafe();
-  await humanSleep(300);
 
   const anvilBlock = await ensureAnvil(token);
-  dlog(`Ors aciliyor: ${anvilBlock.name} @ ${anvilBlock.position}...`);
-
-  await bot.openBlock(anvilBlock);
+  const curWin = await openAnvilGUI(anvilBlock, token);
   assertActive(token);
   await humanSleep(500);
 
   try {
-    const curWin = bot.currentWindow;
     if (!curWin) throw new Error('Ors penceresi acilmadi!');
 
     // win.inventoryStart genellikle 3'tur (slot 0: Sol, slot 1: Sag, slot 2: Cikti)
@@ -304,16 +375,16 @@ async function combineInAnvil(findLeftItemFn, findRightItemFn, token) {
     await bot.clickWindow(1, 0, 0);
     await humanSleep(500);
 
-    const outItem = await waitForSlot(2, 4000);
+    const outItem = await waitForSlot(2, 5000);
     if (!outItem) {
       throw new Error('Orste cikti olusmadi! (Yetersiz seviye veya uyumsuz esyalar)');
     }
 
-    dlog(`Ors ciktisi hazir: ${outItem.displayName || outItem.name} (Slot 2). Envantere aliniyor...`);
-    await bot.clickWindow(2, 0, 1);
-    await humanSleep(500);
+    log(`🔨 Örs çıktısı hazır: ${outItem.displayName || outItem.name} (Slot 2). Envantere alınıyor...`);
+    await bot.clickWindow(2, 0, 1); // shift-click
+    await humanSleep(600);
 
-    log(`Orste birlestirildi: ${outItem.displayName || outItem.name}`);
+    log(`✅ Örste birleştirildi: ${outItem.displayName || outItem.name}`);
     return true;
   } finally {
     closeWindowSafe();
