@@ -5,25 +5,49 @@ const state = require('../state');
 const { log, dlog } = require('../logger');
 const { bumpStats, recordTransaction } = require('../stats');
 const { sleep, humanSleep, titleOf } = require('../utils/text');
-const { loreOf, snapshotWindow } = require('../utils/inspect');
+const { loreOf, snapshotWindow, extractItemEnchantments } = require('../utils/inspect');
 const { assertActive, waitForWindow, closeWindowSafe, executeCommandWindow, safeClick, waitForSlot } = require('../utils/windows');
 const { ensureExperienceLevel, combineInAnvil } = require('./anvil');
 const { runOrderFlow, waitForOrderComplete } = require('./order');
 const { collectItems } = require('./collect');
 
-// 1. Buyuleri Tanima
+// 1. Buyuleri Tanima (1.21 Component, NBT, prismarine-item ve Lore destekli)
 function getEnchants(item) {
   if (!item) return [];
+  const enchants = [];
+
+  // 1. 1.20.5+ / 1.21 Component, NBT ve prismarine-item uzerinden kesin tespit
+  try {
+    const rawList = extractItemEnchantments(item);
+    for (const e of rawList) {
+      if (e.name === 'blast_protection' && e.lvl === 4 && !enchants.includes('blast_prot_4')) enchants.push('blast_prot_4');
+      if (e.name === 'respiration' && e.lvl === 3 && !enchants.includes('resp_3')) enchants.push('resp_3');
+      if (e.name === 'mending' && !enchants.includes('mending')) enchants.push('mending');
+      if (e.name === 'unbreaking' && e.lvl === 3 && !enchants.includes('unbreaking_3')) enchants.push('unbreaking_3');
+      if (e.name === 'aqua_affinity' && !enchants.includes('aqua_affinity')) enchants.push('aqua_affinity');
+    }
+  } catch (_) {}
+
+  // 2. Metin analizi yedegi (custom lore ve displayName)
   const lore = (loreOf(item) || []).join(' ').toLowerCase();
   const name = (item.displayName || item.name || '').toLowerCase();
   const allText = `${name} ${lore}`;
 
-  const enchants = [];
-  if (allText.includes('blast protection 4') || allText.includes('blast protection iv')) enchants.push('blast_prot_4');
-  if (allText.includes('respiration 3') || allText.includes('respiration iii')) enchants.push('resp_3');
-  if (allText.includes('mending')) enchants.push('mending');
-  if (allText.includes('unbreaking 3') || allText.includes('unbreaking iii')) enchants.push('unbreaking_3');
-  if (allText.includes('aqua affinity') || allText.includes('aqua affinity 1') || allText.includes('aqua affinity i')) enchants.push('aqua_affinity');
+  if (!enchants.includes('blast_prot_4') && (allText.includes('blast protection 4') || allText.includes('blast protection iv'))) {
+    enchants.push('blast_prot_4');
+  }
+  if (!enchants.includes('resp_3') && (allText.includes('respiration 3') || allText.includes('respiration iii'))) {
+    enchants.push('resp_3');
+  }
+  if (!enchants.includes('mending') && allText.includes('mending')) {
+    enchants.push('mending');
+  }
+  if (!enchants.includes('unbreaking_3') && (allText.includes('unbreaking 3') || allText.includes('unbreaking iii'))) {
+    enchants.push('unbreaking_3');
+  }
+  if (!enchants.includes('aqua_affinity') && (allText.includes('aqua affinity') || allText.includes('aqua affinity 1') || allText.includes('aqua affinity i'))) {
+    enchants.push('aqua_affinity');
+  }
 
   return enchants;
 }
@@ -869,6 +893,12 @@ async function sellGodHelmet(token) {
 
 module.exports = {
   getEnchants,
+  isCleanHelmet,
+  isBlastProt4Book,
+  isResp3Book,
+  isMendingBook,
+  isUnbreaking3Book,
+  isAquaAffinityBook,
   isGodHelmet,
   checkHelmetMaterials,
   collectHelmetMaterials,
