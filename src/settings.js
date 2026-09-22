@@ -35,6 +35,11 @@ const DEFAULT_SETTINGS = {
   maxOrderPrice: 1e12,
   orderSearchCmd: '/order',
 
+  // Akilli Siparis & Outbid Korumasi
+  autoOutbidRelist: true,
+  orderTimeoutMin: 10,
+  outbidCheckIntervalSec: 60,
+
   // Anti-Detection & Davranis
   humanDelays: true,
   antiAfk: true,
@@ -85,6 +90,11 @@ const SCHEMA = {
   orderMarkup:           { type: 'int',  label: 'Siparis fiyati farki',        min: 0, max: 1e9 },
   maxOrderPrice:         { type: 'int',  label: 'Maksimum siparis fiyati',     min: 1, max: 1e12 },
   orderSearchCmd:        { type: 'text', label: 'Siparis panosu arama komutu' },
+
+  // Akilli Siparis & Outbid Korumasi
+  autoOutbidRelist:       { type: 'bool', label: 'Onune gecilince otomatik guncelle (Outbid)' },
+  orderTimeoutMin:        { type: 'int',  label: 'Siparis zaman asimi (dk)',    min: 1, max: 180 },
+  outbidCheckIntervalSec: { type: 'int',  label: 'Piyasa kontrol sikligi (sn)', min: 10, max: 600 },
 
   // Anti-Detection & Davranis
   humanDelays:           { type: 'bool', label: 'Insansi rastgele gecikmeler (jitter)' },

@@ -66,10 +66,21 @@ async function startAutomation(mode) {
         log(`===== Dongu ${cycle}${S.maxCycles > 0 ? '/' + S.maxCycles : ''} =====`);
       }
 
-      await runOrderFlow(token);
-      await waitForOrderComplete(token);
-      await collectItems(token);
+      let orderPrice = await runOrderFlow(token);
+      let orderStatus = await waitForOrderComplete(token, orderPrice);
 
+      // Eger biri onumuze gectiyse (outbid), hemen fiyati guncelleyip siparisi yenile (maks 3 deneme)
+      let outbidRetries = 0;
+      while (!orderStatus.completed && orderStatus.reason === 'outbid' && outbidRetries < 3) {
+        assertActive(token);
+        outbidRetries++;
+        log(`Outbid sonrasi siparis yenileniyor (Deneme ${outbidRetries}/3)...`);
+        await humanSleep(1500);
+        orderPrice = await runOrderFlow(token);
+        orderStatus = await waitForOrderComplete(token, orderPrice);
+      }
+
+      await collectItems(token);
       bumpStats({ cyclesCompleted: 1 });
 
       if (S.maxCycles > 0 && cycle >= S.maxCycles) {

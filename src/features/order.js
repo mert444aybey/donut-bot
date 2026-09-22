@@ -104,6 +104,71 @@ async function computeOrderPrice(token) {
   return price;
 }
 
+// Aktif siparisi /orders menusunden iptal eder ve parayi iade alir
+async function cancelActiveOrder(token) {
+  const bot = state.bot;
+  const itemCfg = state.getActiveItem ? state.getActiveItem() : state.S;
+  log(`Aktif siparis iptal ediliyor: ${itemCfg.item}...`);
+  assertActive(token);
+  closeWindowSafe();
+  await humanSleep(500);
+
+  bot.chat('/orders');
+  await waitForWindow();
+  assertActive(token);
+
+  // Slot 51: Your Orders menusu
+  await safeClick(51);
+  const win = await waitForWindow();
+  assertActive(token);
+
+  // Penceredeki ilk aktif siparis slotunu bul
+  let orderSlot = null;
+  for (let i = 0; i < win.inventoryStart; i++) {
+    const it = win.slots[i];
+    if (it && (it.name === itemCfg.itemId || !it.name.includes('glass'))) {
+      orderSlot = i;
+      break;
+    }
+  }
+
+  if (orderSlot !== null) {
+    dlog(`Siparis slotu bulundu (${orderSlot}), iptal icin tiklaniyor`);
+    await humanSleep(300);
+    const nextWin = waitForWindow(3000);
+    nextWin.catch(() => {});
+    await bot.clickWindow(orderSlot, 0, 0);
+
+    let confirmWin = null;
+    try { confirmWin = await nextWin; } catch (_) {}
+
+    // Eger bir onay penceresi acildiysa
+    if (confirmWin && bot.currentWindow) {
+      const cur = bot.currentWindow;
+      for (let s = 0; s < cur.inventoryStart; s++) {
+        const btn = cur.slots[s];
+        if (btn && /lime|green|red|barrier|dye/i.test(btn.name)) {
+          dlog(`Onay butonuna tiklaniyor (slot ${s}: ${btn.name})`);
+          await bot.clickWindow(s, 0, 0);
+          await sleep(500);
+          break;
+        }
+      }
+    }
+    log(`Aktif siparis iptal edildi, para iade alindi.`);
+  } else {
+    log(`Iptal edilecek aktif siparis bulunamadi (onceden tamamlanmis olabilir).`);
+  }
+
+  closeWindowSafe();
+  await humanSleep(500);
+
+  try {
+    const { queryBalance } = require('../bot');
+    queryBalance();
+  } catch (_) {}
+}
+
 async function runOrderFlow(token) {
   const S = state.S;
   const itemCfg = state.getActiveItem ? state.getActiveItem() : S;
@@ -158,19 +223,60 @@ async function runOrderFlow(token) {
 
   log('Siparis verildi.');
   bumpStats({ ordersPlaced: 1, itemsOrdered: itemCfg.orderAmount, totalSpent: itemCfg.orderAmount * orderPrice });
+  return orderPrice;
 }
 
-async function waitForOrderComplete(token) {
-  log('Siparisin tamamlanmasi bekleniyor...');
+// Siparisin tamamlanmasini bekler. Outbid olursa veya sure asilirsa iptal edip bilgi dondurur.
+async function waitForOrderComplete(token, placedPrice) {
+  const S = state.S;
+  const timeoutMs = Math.max(1, S.orderTimeoutMin || 10) * 60 * 1000;
+  const checkIntervalMs = Math.max(10, S.outbidCheckIntervalSec || 60) * 1000;
+
+  log(`Siparisin tamamlanmasi bekleniyor (maks ${S.orderTimeoutMin || 10} dk, outbid kontrolu: ${S.outbidCheckIntervalSec || 60} sn)...`);
+
   const start = Date.now();
+  let lastOutbidCheck = Date.now();
+
   while (!state.orderComplete) {
     assertActive(token);
-    if (Date.now() - start > CFG.orderCompleteTimeoutMs) {
-      throw new Error('siparis tamamlanma mesaji zaman asimina ugradi');
+    const elapsed = Date.now() - start;
+
+    // 1. Zaman asimi kontrolu
+    if (elapsed > timeoutMs) {
+      log(`⏱️ SURE DOLDU: Siparis ${S.orderTimeoutMin || 10} dakika icinde tamamlanmadi. Siparis iptal ediliyor...`);
+      await cancelActiveOrder(token);
+      return { completed: false, reason: 'timeout' };
     }
+
+    // 2. Outbid (onumuze gecilme) kontrolu
+    if (S.autoOutbidRelist && placedPrice && (Date.now() - lastOutbidCheck >= checkIntervalMs)) {
+      lastOutbidCheck = Date.now();
+      try {
+        const highest = await fetchOrderReferencePrice(token);
+        if (highest !== null && highest > placedPrice) {
+          const diff = highest - placedPrice;
+          log(`⚠️ ONUMUZE GECILDI! Biri $${highest.toLocaleString()} fiyatiyla ($${diff.toLocaleString()} daha yuksek) siparis verdi!`);
+          log(`Eski siparis iptal edilip yeni fiyattan acilacak...`);
+          await cancelActiveOrder(token);
+          return { completed: false, reason: 'outbid', newHighest: highest };
+        }
+      } catch (err) {
+        dlog(`Outbid kontrol hatasi: ${err.message}`);
+      }
+    }
+
     await sleep(500);
   }
+
   log('Siparis tamamlandi.');
+  return { completed: true };
 }
 
-module.exports = { buildSteps, fetchOrderReferencePrice, computeOrderPrice, runOrderFlow, waitForOrderComplete };
+module.exports = {
+  buildSteps,
+  fetchOrderReferencePrice,
+  computeOrderPrice,
+  cancelActiveOrder,
+  runOrderFlow,
+  waitForOrderComplete,
+};
