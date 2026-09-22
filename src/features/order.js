@@ -16,8 +16,8 @@ const {
 } = require('../utils/windows');
 
 // Siparis menusu adimlari (slot numaralari Donut SMP'de dogrulandi)
-function buildSteps(orderPrice) {
-  const itemCfg = state.getActiveItem ? state.getActiveItem() : state.S;
+function buildSteps(orderPrice, itemOverride) {
+  const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : state.S);
   return [
     { name: 'Siparis menusu',   type: 'CLICK', slot: 51, expectWindow: true },
     { name: 'Alt menu',         type: 'CLICK', slot: 3,  expectWindow: true },
@@ -31,9 +31,9 @@ function buildSteps(orderPrice) {
 }
 
 // /order <itemId> panosunu acar
-async function fetchOrderReferencePrice(token) {
+async function fetchOrderReferencePrice(token, itemOverride) {
   const S = state.S;
-  const itemCfg = state.getActiveItem ? state.getActiveItem() : S;
+  const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   assertActive(token);
   closeWindowSafe();
   await humanSleep(400);
@@ -80,34 +80,35 @@ async function fetchOrderReferencePrice(token) {
 }
 
 // Siparis panosundaki en yuksek fiyatin uzerine cikip siparis fiyatini belirler.
-async function computeOrderPrice(token) {
+async function computeOrderPrice(token, itemOverride) {
   const S = state.S;
-  const itemCfg = state.getActiveItem ? state.getActiveItem() : S;
+  const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   if (!S.autoOrderPriceEnabled) return itemCfg.orderPrice;
 
-  const highest = await fetchOrderReferencePrice(token);
+  const highest = await fetchOrderReferencePrice(token, itemOverride);
   let price;
   if (highest === null) {
-    log(`Siparis panosunda ilan bulunamadi, yedek fiyat kullaniliyor: ${itemCfg.orderPrice}`);
+    log(`Siparis panosunda ilan bulunamadi, yedek fiyat kullaniliyor: $${itemCfg.orderPrice}`);
     price = itemCfg.orderPrice;
   } else {
-    price = Math.round(highest + (itemCfg.orderMarkup !== undefined ? itemCfg.orderMarkup : S.orderMarkup));
-    log(`Siparis panosu tarandi: en yuksek ${highest} -> siparis fiyati ${price} olarak belirlendi.`);
+    const markup = itemCfg.orderMarkup !== undefined ? itemCfg.orderMarkup : (S.orderMarkup || 100);
+    price = Math.round(highest + markup);
+    log(`Siparis panosu tarandi: en yuksek $${highest.toLocaleString()} -> siparis fiyati $${price.toLocaleString()} olarak belirlendi.`);
   }
 
   if (price < 1) price = 1;
-  const maxPrice = itemCfg.maxOrderPrice !== undefined ? itemCfg.maxOrderPrice : S.maxOrderPrice;
+  const maxPrice = itemCfg.maxOrderPrice !== undefined ? itemCfg.maxOrderPrice : (S.maxOrderPrice || 1000000000000);
   if (price > maxPrice) {
-    log(`UYARI: hesaplanan siparis fiyati (${price}) tavani (${maxPrice}) asiyor, tavana cekiliyor.`);
+    log(`UYARI: hesaplanan siparis fiyati ($${price.toLocaleString()}) tavani ($${maxPrice.toLocaleString()}) asiyor, tavana cekiliyor.`);
     price = maxPrice;
   }
   return price;
 }
 
 // Aktif siparisi /orders menusunden iptal eder ve parayi iade alir
-async function cancelActiveOrder(token) {
+async function cancelActiveOrder(token, itemOverride) {
   const bot = state.bot;
-  const itemCfg = state.getActiveItem ? state.getActiveItem() : state.S;
+  const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : state.S);
   log(`Aktif siparis iptal ediliyor: ${itemCfg.item}...`);
   assertActive(token);
   closeWindowSafe();
@@ -169,16 +170,20 @@ async function cancelActiveOrder(token) {
   } catch (_) {}
 }
 
-async function runOrderFlow(token) {
+async function runOrderFlow(token, itemOverride) {
   const S = state.S;
-  const itemCfg = state.getActiveItem ? state.getActiveItem() : S;
+  const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   const bot = state.bot;
   state.orderComplete = false;
-  const orderPrice = await computeOrderPrice(token);
+
+  closeWindowSafe();
+  await humanSleep(400);
+
+  const orderPrice = await computeOrderPrice(token, itemOverride);
   assertActive(token);
 
-  const steps = buildSteps(orderPrice);
-  log(`Siparis veriliyor: ${itemCfg.orderAmount}x ${itemCfg.item} @ ${orderPrice}`);
+  const steps = buildSteps(orderPrice, itemOverride);
+  log(`Siparis veriliyor: ${itemCfg.orderAmount}x ${itemCfg.item} @ $${orderPrice}`);
 
   bot.chat('/orders');
   await waitForWindow();
@@ -221,18 +226,19 @@ async function runOrderFlow(token) {
     }
   }
 
-  log('Siparis verildi.');
+  log(`Siparis verildi: ${itemCfg.orderAmount}x ${itemCfg.item} @ $${orderPrice}`);
   bumpStats({ ordersPlaced: 1, itemsOrdered: itemCfg.orderAmount, totalSpent: itemCfg.orderAmount * orderPrice });
   return orderPrice;
 }
 
 // Siparisin tamamlanmasini bekler. Outbid olursa veya sure asilirsa iptal edip bilgi dondurur.
-async function waitForOrderComplete(token, placedPrice) {
+async function waitForOrderComplete(token, placedPrice, itemOverride) {
   const S = state.S;
+  const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   const timeoutMs = Math.max(1, S.orderTimeoutMin || 10) * 60 * 1000;
   const checkIntervalMs = Math.max(10, S.outbidCheckIntervalSec || 60) * 1000;
 
-  log(`Siparisin tamamlanmasi bekleniyor (maks ${S.orderTimeoutMin || 10} dk, outbid kontrolu: ${S.outbidCheckIntervalSec || 60} sn)...`);
+  log(`Siparisin tamamlanmasi bekleniyor: ${itemCfg.orderAmount}x ${itemCfg.item} (maks ${S.orderTimeoutMin || 10} dk, outbid kontrolu: ${S.outbidCheckIntervalSec || 60} sn)...`);
 
   const start = Date.now();
   let lastOutbidCheck = Date.now();
@@ -244,7 +250,7 @@ async function waitForOrderComplete(token, placedPrice) {
     // 1. Zaman asimi kontrolu
     if (elapsed > timeoutMs) {
       log(`⏱️ SURE DOLDU: Siparis ${S.orderTimeoutMin || 10} dakika icinde tamamlanmadi. Siparis iptal ediliyor...`);
-      await cancelActiveOrder(token);
+      await cancelActiveOrder(token, itemOverride);
       return { completed: false, reason: 'timeout' };
     }
 
@@ -252,12 +258,12 @@ async function waitForOrderComplete(token, placedPrice) {
     if (S.autoOutbidRelist && placedPrice && (Date.now() - lastOutbidCheck >= checkIntervalMs)) {
       lastOutbidCheck = Date.now();
       try {
-        const highest = await fetchOrderReferencePrice(token);
+        const highest = await fetchOrderReferencePrice(token, itemOverride);
         if (highest !== null && highest > placedPrice) {
           const diff = highest - placedPrice;
           log(`⚠️ ONUMUZE GECILDI! Biri $${highest.toLocaleString()} fiyatiyla ($${diff.toLocaleString()} daha yuksek) siparis verdi!`);
           log(`Eski siparis iptal edilip yeni fiyattan acilacak...`);
-          await cancelActiveOrder(token);
+          await cancelActiveOrder(token, itemOverride);
           return { completed: false, reason: 'outbid', newHighest: highest };
         }
       } catch (err) {
@@ -268,60 +274,22 @@ async function waitForOrderComplete(token, placedPrice) {
     await sleep(500);
   }
 
-  log('Siparis tamamlandi.');
+  log(`Siparis tamamlandi: ${itemCfg.item}`);
   return { completed: true };
 }
 
-function buildCustomSteps(itemName, amount, price) {
-  return [
-    { name: 'Siparis menusu',   type: 'CLICK', slot: 51, expectWindow: true },
-    { name: 'Alt menu',         type: 'CLICK', slot: 3,  expectWindow: true },
-    { name: 'Kategori',         type: 'CLICK', slot: 12, expectWindow: true },
-    { name: 'Item arama',       type: 'SIGN',  slot: 50, text: itemName },
-    { name: 'Done',             type: 'CLICK', slot: 0,  expectWindow: true },
-    { name: 'Miktar',           type: 'SIGN',  slot: 13, text: String(amount) },
-    { name: 'Fiyat',            type: 'SIGN',  slot: 14, text: String(price) },
-    { name: 'Siparis onayi',    type: 'CLICK', slot: 16, expectWindow: false },
-  ];
-}
-
+// Eski veya ozel cagrilari runOrderFlow'a yonlendir
 async function runCustomOrderFlow(itemName, amount, price, token) {
-  const bot = state.bot;
-  log(`Ozel siparis veriliyor: ${amount}x ${itemName} @ $${price}...`);
-  assertActive(token);
-  closeWindowSafe();
-  await humanSleep(500);
-
-  const steps = buildCustomSteps(itemName, amount, price);
-  bot.chat('/orders');
-
-  for (let i = 0; i < steps.length; i++) {
-    const step = steps[i];
-    assertActive(token);
-    dlog(`Adim ${i + 1}/${steps.length}: ${step.name}`);
-
-    if (step.type === 'SIGN') {
-      const pkt = await waitForSignEditor();
-      assertActive(token);
-      await humanSleep(CFG.signTypeDelayMs);
-      submitSign(pkt, step.text);
-    } else if (step.type === 'CLICK') {
-      await safeClick(step.slot);
-      if (step.expectWindow) {
-        await waitForWindow();
-        assertActive(token);
-      }
-    }
-  }
-
-  log(`Siparis basariyla verildi: ${amount}x ${itemName} @ $${price}`);
-  bumpStats({ ordersPlaced: 1, itemsOrdered: amount });
-  return price;
+  return await runOrderFlow(token, {
+    item: itemName,
+    itemId: itemName.toLowerCase().replace(/\s+/g, '_'),
+    orderAmount: amount,
+    orderPrice: price,
+  });
 }
 
 module.exports = {
   buildSteps,
-  buildCustomSteps,
   fetchOrderReferencePrice,
   computeOrderPrice,
   cancelActiveOrder,

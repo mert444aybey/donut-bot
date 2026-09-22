@@ -8,7 +8,7 @@ const { sleep, humanSleep, titleOf } = require('../utils/text');
 const { loreOf, snapshotWindow } = require('../utils/inspect');
 const { assertActive, waitForWindow, closeWindowSafe } = require('../utils/windows');
 const { ensureExperienceLevel, combineInAnvil } = require('./anvil');
-const { runCustomOrderFlow, waitForOrderComplete } = require('./order');
+const { runOrderFlow, waitForOrderComplete } = require('./order');
 const { collectItems } = require('./collect');
 
 // 1. Buyuleri Tanima
@@ -108,10 +108,11 @@ async function ensureAllMaterialsOrOrder(token) {
   const hasHelmet = items.some(isCleanHelmet) || items.some(isStep1Helmet) || items.some(isStep3Helmet);
   if (!hasHelmet) {
     toOrder.push({
-      name: 'Diamond Helmet',
-      searchName: 'Diamond Helmet',
-      amount: 1,
-      price: S.diamondHelmetOrderPrice || 25000,
+      item: 'Diamond Helmet',
+      itemId: 'diamond_helmet',
+      orderSearchQuery: 'diamond_helmet',
+      orderAmount: 1, // Non-stackable!
+      orderPrice: S.diamondHelmetOrderPrice || 25000,
       category: 'Kask',
     });
   }
@@ -120,10 +121,12 @@ async function ensureAllMaterialsOrOrder(token) {
   if (!items.some(isStep1Helmet) && !items.some(isStep3Helmet)) {
     if (!items.some(isBlastProt4Book)) {
       toOrder.push({
-        name: 'Enchanted Book Blast Protection 4',
-        searchName: 'Enchanted Book Blast Protection 4',
-        amount: 1,
-        price: S.bookBlastOrderPrice || 15000,
+        item: 'Enchanted Book Blast Protection 4',
+        itemId: 'enchanted_book',
+        orderSearchQuery: 'Enchanted Book Blast Protection 4',
+        matchLore: 'blast protection',
+        orderAmount: 1, // Non-stackable!
+        orderPrice: S.bookBlastOrderPrice || 15000,
         category: 'Kitap',
       });
     }
@@ -134,19 +137,23 @@ async function ensureAllMaterialsOrOrder(token) {
     if (!items.some(isStep2Book)) {
       if (!items.some(isResp3Book)) {
         toOrder.push({
-          name: 'Enchanted Book Respiration 3',
-          searchName: 'Enchanted Book Respiration 3',
-          amount: 1,
-          price: S.bookRespOrderPrice || 15000,
+          item: 'Enchanted Book Respiration 3',
+          itemId: 'enchanted_book',
+          orderSearchQuery: 'Enchanted Book Respiration 3',
+          matchLore: 'respiration',
+          orderAmount: 1, // Non-stackable!
+          orderPrice: S.bookRespOrderPrice || 15000,
           category: 'Kitap',
         });
       }
       if (!items.some(isMendingBook)) {
         toOrder.push({
-          name: 'Enchanted Book Mending',
-          searchName: 'Enchanted Book Mending',
-          amount: 1,
-          price: S.bookMendingOrderPrice || 25000,
+          item: 'Enchanted Book Mending',
+          itemId: 'enchanted_book',
+          orderSearchQuery: 'Enchanted Book Mending',
+          matchLore: 'mending',
+          orderAmount: 1, // Non-stackable!
+          orderPrice: S.bookMendingOrderPrice || 25000,
           category: 'Kitap',
         });
       }
@@ -157,19 +164,23 @@ async function ensureAllMaterialsOrOrder(token) {
   if (!items.some(isStep4Book)) {
     if (!items.some(isUnbreaking3Book)) {
       toOrder.push({
-        name: 'Enchanted Book Unbreaking 3',
-        searchName: 'Enchanted Book Unbreaking 3',
-        amount: 1,
-        price: S.bookUnbOrderPrice || 15000,
+        item: 'Enchanted Book Unbreaking 3',
+        itemId: 'enchanted_book',
+        orderSearchQuery: 'Enchanted Book Unbreaking 3',
+        matchLore: 'unbreaking',
+        orderAmount: 1, // Non-stackable!
+        orderPrice: S.bookUnbOrderPrice || 15000,
         category: 'Kitap',
       });
     }
     if (!items.some(isAquaAffinityBook)) {
       toOrder.push({
-        name: 'Enchanted Book Aqua Affinity',
-        searchName: 'Enchanted Book Aqua Affinity',
-        amount: 1,
-        price: S.bookAquaOrderPrice || 10000,
+        item: 'Enchanted Book Aqua Affinity',
+        itemId: 'enchanted_book',
+        orderSearchQuery: 'Enchanted Book Aqua Affinity',
+        matchLore: 'aqua affinity',
+        orderAmount: 1, // Non-stackable!
+        orderPrice: S.bookAquaOrderPrice || 10000,
         category: 'Kitap',
       });
     }
@@ -181,10 +192,11 @@ async function ensureAllMaterialsOrOrder(token) {
     const bottleQty = S.xpBottleOrderAmount || 64;
     const bottlePrice = S.xpBottleOrderPrice || 250;
     toOrder.push({
-      name: "Bottle o' Enchanting",
-      searchName: "Bottle o' Enchanting",
-      amount: bottleQty,
-      price: bottlePrice,
+      item: "Bottle o' Enchanting",
+      itemId: 'experience_bottle',
+      orderSearchQuery: 'experience_bottle',
+      orderAmount: bottleQty, // Stackable!
+      orderPrice: bottlePrice,
       category: 'XP Şişesi',
     });
   }
@@ -198,22 +210,31 @@ async function ensureAllMaterialsOrOrder(token) {
 
   for (const itemOrder of toOrder) {
     assertActive(token);
-    log(`Siparis veriliyor: ${itemOrder.amount}x ${itemOrder.name} @ $${itemOrder.price}...`);
+    log(`Siparis hazirlaniyor: ${itemOrder.orderAmount}x ${itemOrder.item}...`);
 
-    await runCustomOrderFlow(itemOrder.searchName, itemOrder.amount, itemOrder.price, token);
+    let placedPrice;
+    while (true) {
+      assertActive(token);
+      placedPrice = await runOrderFlow(token, itemOrder);
 
-    recordTransaction({
-      type: 'EXPENSE',
-      category: itemOrder.category,
-      item: itemOrder.name,
-      amount: itemOrder.amount,
-      unitPrice: itemOrder.price,
-      total: itemOrder.amount * itemOrder.price,
-      note: 'God Helmet uretimi icin otomatik /orders alimi',
-    });
+      recordTransaction({
+        type: 'EXPENSE',
+        category: itemOrder.category,
+        item: itemOrder.item,
+        amount: itemOrder.orderAmount,
+        unitPrice: placedPrice,
+        total: itemOrder.orderAmount * placedPrice,
+        note: 'God Helmet uretimi icin otomatik /orders alimi',
+      });
 
-    log(`Siparisin teslim edilmesi bekleniyor: ${itemOrder.name}...`);
-    await waitForOrderComplete(token, itemOrder.price);
+      const res = await waitForOrderComplete(token, placedPrice, itemOrder);
+      if (res.completed) break;
+
+      log(`Siparis tamamlanamadi (${res.reason}), yeniden deneniyor...`);
+      await humanSleep(2000);
+    }
+
+    log(`Siparis tamamlandi, toplanıyor: ${itemOrder.item}...`);
     await collectItems(token);
     await humanSleep(1000);
   }

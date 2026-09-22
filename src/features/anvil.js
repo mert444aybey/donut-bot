@@ -7,7 +7,7 @@ const { log, dlog } = require('../logger');
 const { sleep, humanSleep, titleOf, filledSlots } = require('../utils/text');
 const { loreOf, snapshotWindow } = require('../utils/inspect');
 const { recordTransaction } = require('../stats');
-const { runCustomOrderFlow, waitForOrderComplete } = require('./order');
+const { runOrderFlow, waitForOrderComplete } = require('./order');
 const { collectItems } = require('./collect');
 const {
   assertActive,
@@ -36,21 +36,26 @@ async function ensureExperienceLevel(targetLevel, token) {
     if (!xpItem) {
       log('Envanterde XP sisesi bulunamadi. /orders uzerinden otomatik temin ediliyor...');
       const S = state.S || {};
-      const bottlePrice = S.xpBottleOrderPrice || 250;
-      const bottleQty = S.xpBottleOrderAmount || 64;
+      const xpOrder = {
+        item: "Bottle o' Enchanting",
+        itemId: 'experience_bottle',
+        orderAmount: S.xpBottleOrderAmount || 64,
+        orderPrice: S.xpBottleOrderPrice || 250,
+        category: 'XP Şişesi',
+      };
 
-      await runCustomOrderFlow("Bottle o' Enchanting", bottleQty, bottlePrice, token);
+      const placedPrice = await runOrderFlow(token, xpOrder);
       recordTransaction({
         type: 'EXPENSE',
         category: 'XP Şişesi',
         item: "Bottle o' Enchanting",
-        amount: bottleQty,
-        unitPrice: bottlePrice,
-        total: bottleQty * bottlePrice,
+        amount: xpOrder.orderAmount,
+        unitPrice: placedPrice,
+        total: xpOrder.orderAmount * placedPrice,
         note: 'Eksik XP için otomatik /orders alımı',
       });
 
-      await waitForOrderComplete(token, bottlePrice);
+      await waitForOrderComplete(token, placedPrice, xpOrder);
       await collectItems(token);
 
       xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
