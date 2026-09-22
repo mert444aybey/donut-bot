@@ -1,14 +1,108 @@
 {
   "startedAt": 1790088147031,
-  "totalSpent": 0,
+  "totalSpent": 972000,
   "totalEarned": 0,
-  "ordersPlaced": 0,
-  "itemsOrdered": 0,
+  "ordersPlaced": 7,
+  "itemsOrdered": 70,
   "cyclesCompleted": 0,
   "godHelmetsCrafted": 0,
   "itemsCollected": {},
-  "categories": {},
-  "ledger": [],
+  "categories": {
+    "Kask": {
+      "spent": 12000,
+      "earned": 0,
+      "count": 1
+    },
+    "Kitap": {
+      "spent": 179600,
+      "earned": 0,
+      "count": 5
+    },
+    "XP Şişesi": {
+      "spent": 294400,
+      "earned": 0,
+      "count": 64
+    }
+  },
+  "ledger": [
+    {
+      "id": "1790100960491-kex2",
+      "time": 1790100960491,
+      "type": "EXPENSE",
+      "category": "XP Şişesi",
+      "item": "Bottle o' Enchanting",
+      "amount": 64,
+      "unitPrice": 4600,
+      "total": 294400,
+      "note": "God Helmet uretimi icin toplu /orders alimi"
+    },
+    {
+      "id": "1790100943610-lis7",
+      "time": 1790100943610,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Aqua Affinity",
+      "amount": 1,
+      "unitPrice": 19100,
+      "total": 19100,
+      "note": "God Helmet uretimi icin toplu /orders alimi"
+    },
+    {
+      "id": "1790100925256-slxe",
+      "time": 1790100925256,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Unbreaking 3",
+      "amount": 1,
+      "unitPrice": 40100,
+      "total": 40100,
+      "note": "God Helmet uretimi icin toplu /orders alimi"
+    },
+    {
+      "id": "1790100906612-2xwb",
+      "time": 1790100906612,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Mending",
+      "amount": 1,
+      "unitPrice": 35200,
+      "total": 35200,
+      "note": "God Helmet uretimi icin toplu /orders alimi"
+    },
+    {
+      "id": "1790100888281-mxve",
+      "time": 1790100888281,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Respiration 3",
+      "amount": 1,
+      "unitPrice": 50100,
+      "total": 50100,
+      "note": "God Helmet uretimi icin toplu /orders alimi"
+    },
+    {
+      "id": "1790100869978-jcxd",
+      "time": 1790100869978,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Blast Protection 4",
+      "amount": 1,
+      "unitPrice": 35100,
+      "total": 35100,
+      "note": "God Helmet uretimi icin toplu /orders alimi"
+    },
+    {
+      "id": "1790100851347-8yge",
+      "time": 1790100851347,
+      "type": "EXPENSE",
+      "category": "Kask",
+      "item": "Diamond Helmet",
+      "amount": 1,
+      "unitPrice": 12000,
+      "total": 12000,
+      "note": "God Helmet uretimi icin toplu /orders alimi"
+    }
+  ],
   "history": [
     {
       "time": 1790088493713,
@@ -33,6 +127,96 @@
       "balance": 21878833,
       "spent": 0,
       "orders": 0
+    },
+    {
+      "time": 1790100832356,
+      "balance": 21878833,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790100851345,
+      "balance": 21878833,
+      "spent": 12000,
+      "orders": 1
+    },
+    {
+      "time": 1790100851348,
+      "balance": 21878833,
+      "spent": 24000,
+      "orders": 1
+    },
+    {
+      "time": 1790100869977,
+      "balance": 21878833,
+      "spent": 59100,
+      "orders": 2
+    },
+    {
+      "time": 1790100869978,
+      "balance": 21878833,
+      "spent": 94200,
+      "orders": 2
+    },
+    {
+      "time": 1790100888280,
+      "balance": 21878833,
+      "spent": 144300,
+      "orders": 3
+    },
+    {
+      "time": 1790100888281,
+      "balance": 21878833,
+      "spent": 194400,
+      "orders": 3
+    },
+    {
+      "time": 1790100906610,
+      "balance": 21878833,
+      "spent": 229600,
+      "orders": 4
+    },
+    {
+      "time": 1790100906612,
+      "balance": 21878833,
+      "spent": 264800,
+      "orders": 4
+    },
+    {
+      "time": 1790100925253,
+      "balance": 21878833,
+      "spent": 304900,
+      "orders": 5
+    },
+    {
+      "time": 1790100925256,
+      "balance": 21878833,
+      "spent": 345000,
+      "orders": 5
+    },
+    {
+      "time": 1790100943583,
+      "balance": 21878833,
+      "spent": 364100,
+      "orders": 6
+    },
+    {
+      "time": 1790100943610,
+      "balance": 21878833,
+      "spent": 383200,
+      "orders": 6
+    },
+    {
+      "time": 1790100960489,
+      "balance": 21878833,
+      "spent": 677600,
+      "orders": 7
+    },
+    {
+      "time": 1790100960491,
+      "balance": 21878833,
+      "spent": 972000,
+      "orders": 7
     }
   ]
 }

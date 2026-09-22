@@ -78,6 +78,7 @@ const DEFAULT_SETTINGS = {
   bookMendingOrderPrice: 25000,
   bookUnbOrderPrice: 15000,
   bookAquaOrderPrice: 10000,
+  godHelmetBatchOrderAmount: 50,
 };
 
 const SCHEMA = {
@@ -137,6 +138,7 @@ const SCHEMA = {
   bookMendingOrderPrice:   { type: 'int',  label: 'Mending Kitap Siparis ($)',       min: 1, max: 1e8 },
   bookUnbOrderPrice:       { type: 'int',  label: 'Unbreaking 3 Kitap Siparis ($)',  min: 1, max: 1e8 },
   bookAquaOrderPrice:      { type: 'int',  label: 'Aqua Affinity Kitap Siparis ($)', min: 1, max: 1e8 },
+  godHelmetBatchOrderAmount: { type: 'int', label: 'God Helmet Toplu Siparis Miktari', min: 1, max: 1000 },
 };
 
 function sanitize(input, base) {
