@@ -191,20 +191,42 @@ async function collectHelmetMaterials(token) {
 
   dlog(`Toplama sandigindan sadece eksikler alinacak: ${neededList.join(', ')}`);
 
+  // Adim 1: /orders ac
   await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
 
-  for (const step of CFG.COLLECT_PATH) {
-    assertActive(token);
-    const nextWin = step.expectWindow ? waitForWindow() : null;
-    if (nextWin) nextWin.catch(() => {});
-    await safeClick(step.slot);
-    if (nextWin) await nextWin;
+  // Adim 2: Slot 51 (Your Orders) tikla
+  const yourOrdersPromise = waitForWindow();
+  yourOrdersPromise.catch(() => {});
+  await safeClick(51);
+  const yourOrdersWin = await yourOrdersPromise;
+  await humanSleep(350);
+
+  // Slot 0 kontrolu: Eger bos/cam ise siparis yok demektir, tiklama!
+  const firstSlot = yourOrdersWin.slots[0];
+  if (!firstSlot || firstSlot.name.includes('glass') || firstSlot.name === 'barrier') {
+    dlog('Your Orders ekraninda aktif siparis slotu bulunamadi (bos veya cam).');
+    closeWindowSafe();
+    await humanSleep(300);
+    return;
   }
 
-  await waitForSlot(CFG.collectSlot, CFG.slotWaitMs);
-  const win = bot.currentWindow;
+  // Adim 3: Ilk siparis slotuna tikla (siparis detay penceresi acilir)
+  const detailsPromise = waitForWindow();
+  detailsPromise.catch(() => {});
+  await safeClick(0);
+  const detailsWin = await detailsPromise;
+  await humanSleep(350);
+
+  // Adim 4: Slot 13'e tikla (Collect Items sandigi acilir)
+  const collectPromise = waitForWindow();
+  collectPromise.catch(() => {});
+  await safeClick(13);
+  const win = await collectPromise;
+  await humanSleep(350);
+
   if (!win) {
-    log('Toplama penceresi acilamadi.');
+    log('Toplama sandigi penceresi acilamadi.');
+    closeWindowSafe();
     return;
   }
 
@@ -297,17 +319,21 @@ async function ensureAllMaterialsOrOrder(token) {
     return;
   }
 
-  // 2. Once depoda teslim edilmis hazir malzemeler var mi diye kontrol et ve eksikleri al
-  log('📦 Teslimat sandigi kontrol ediliyor, envanterde olmayan eksikler cekiliyor...');
-  await collectHelmetMaterials(token);
-  status = checkHelmetMaterials();
-  if (status.ready) {
-    log('🎉 Envanterdeki malzemelerle God Helmet uretimi icin her sey hazir!');
-    return;
+  // 2. Panodaki aktif siparisleri tara (Slot 0-6)
+  const activeOrders = await inspectActiveOrders(token);
+
+  // Eger panoda zaten aktif siparis varsa, depodaki hazir teslimatlari cekmeyi dene
+  if (activeOrders.count > 0) {
+    log('📦 Panoda aktif siparisler var. Teslimat sandigi kontrol ediliyor...');
+    await collectHelmetMaterials(token);
+    status = checkHelmetMaterials();
+    if (status.ready) {
+      log('🎉 Envanterdeki malzemelerle God Helmet uretimi icin her sey hazir!');
+      return;
+    }
   }
 
-  // 3. Hala eksikler varsa panodaki aktif siparisleri tara (Slot 0-6)
-  const activeOrders = await inspectActiveOrders(token);
+  // 3. Hala eksikler varsa panoda olmayan malzemeler icin toplu siparis ac (50x)
   const toOrder = [];
   const items = bot.inventory.items();
 
