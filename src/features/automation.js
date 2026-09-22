@@ -8,7 +8,7 @@ const { sleep, humanSleep } = require('../utils/text');
 const { assertActive, closeWindowSafe } = require('../utils/windows');
 const { runOrderFlow, waitForOrderComplete } = require('./order');
 const { collectItems } = require('./collect');
-const { craftGodHelmet, craftGodHelmetOnly, collectHelmetMaterials, sellGodHelmet, checkHelmetMaterials } = require('./craft_helmet');
+const { craftGodHelmet, craftGodHelmetOnly, collectHelmetMaterials, sellGodHelmet, sellAllGodHelmets, checkHelmetMaterials } = require('./craft_helmet');
 
 const MODES = ['full', 'collect', 'god_helmet', 'god_helmet_craft', 'god_helmet_collect', 'god_helmet_sell'];
 const MODE_LABELS = {
@@ -77,8 +77,8 @@ async function startAutomation(mode) {
     }
 
     if (mode === 'god_helmet_sell') {
-      log('🏷️ Test: Envanterdeki God Helmet satışa sunuluyor...');
-      await sellGodHelmet(token);
+      log('🏷️ Test: Envanterdeki God Helmet(lar) satışa sunuluyor...');
+      await sellAllGodHelmets(token);
       log('✅ Satış testi tamamlandı.');
       return;
     }
@@ -92,7 +92,7 @@ async function startAutomation(mode) {
         log(`===== God Helmet Dongusu ${helmetCycle}${S.maxCycles > 0 ? '/' + S.maxCycles : ''} =====`);
         await craftGodHelmet(token);
         await humanSleep(1000);
-        await sellGodHelmet(token);
+        await sellAllGodHelmets(token);
         bumpStats({ cyclesCompleted: 1 });
         log(`God Helmet dongusu ${helmetCycle} tamamlandi.`);
         if (S.maxCycles > 0 && helmetCycle >= S.maxCycles) {
