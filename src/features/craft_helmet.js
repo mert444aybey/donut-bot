@@ -157,6 +157,9 @@ async function ensureAllMaterialsOrOrder(token) {
         toOrder.push({
           item: 'Enchanted Book Mending',
           itemId: 'enchanted_book',
+          signText: 'enchanted book',
+          pageClicks: [53, 53],
+          selectSlot: 8,
           orderSearchQuery: 'enchanted book mending',
           matchLore: 'mending',
           orderAmount: 1, // Non-stackable!
@@ -173,6 +176,9 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Unbreaking 3',
         itemId: 'enchanted_book',
+        signText: 'enchanted book',
+        pageClicks: [53, 53],
+        selectSlot: 37,
         orderSearchQuery: 'enchanted book unbreaking 3',
         matchLore: 'unbreaking',
         orderAmount: 1, // Non-stackable!
@@ -184,6 +190,9 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Aqua Affinity',
         itemId: 'enchanted_book',
+        signText: 'enchanted book',
+        pageClicks: [53],
+        selectSlot: 16,
         orderSearchQuery: 'enchanted book aqua affinity',
         matchLore: 'aqua affinity',
         orderAmount: 1, // Non-stackable!
@@ -201,6 +210,8 @@ async function ensureAllMaterialsOrOrder(token) {
     toOrder.push({
       item: "Bottle o' Enchanting",
       itemId: 'experience_bottle',
+      signText: "Bottle o' Enchanting",
+      selectSlot: 0,
       orderSearchQuery: 'bottle o enchanting',
       orderAmount: bottleQty, // Stackable!
       orderPrice: bottlePrice,
