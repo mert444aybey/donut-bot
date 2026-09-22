@@ -13,6 +13,7 @@ const {
   collectHelmetMaterials,
   sellGodHelmet,
   sellAllGodHelmets,
+  preOrderNextBatch,
   checkHelmetMaterials,
   isGodHelmet,
   isCleanHelmet,
@@ -152,6 +153,7 @@ async function startAutomation(mode) {
         await sellAllGodHelmets(token);
         bumpStats({ cyclesCompleted: 1 });
         log(`God Helmet dongusu ${helmetCycle} tamamlandi.`);
+        try { await preOrderNextBatch(token); } catch (_) {}
         if (S.maxCycles > 0 && helmetCycle >= S.maxCycles) {
           log('Dongu sayisina ulasildi.');
           break;

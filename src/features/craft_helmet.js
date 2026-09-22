@@ -350,7 +350,7 @@ async function collectHelmetMaterials(token) {
 }
 
 // Depoda siparişi olmayan malzemeler için sipariş açar (XP için 3200, diğerleri için 50)
-async function ensureMissingOrders(token, specificTargets = null) {
+async function ensureMissingOrders(token, specificTargets = null, forcePreOrder = false) {
   const bot = state.bot;
   assertActive(token);
   const S = state.S || {};
@@ -364,7 +364,7 @@ async function ensureMissingOrders(token, specificTargets = null) {
     return specificTargets.some((t) => t.id === id);
   };
 
-  const hasHelmet = items.some(isCleanHelmet) || items.some(isStep1Helmet) || items.some(isStep3Helmet);
+  const hasHelmet = !forcePreOrder && (items.some(isCleanHelmet) || items.some(isStep1Helmet) || items.some(isStep3Helmet));
   if (!hasHelmet && !existingOrders.has('helmet') && isNeeded('helmet')) {
     toOrder.push({
       item: 'Diamond Helmet',
@@ -378,7 +378,8 @@ async function ensureMissingOrders(token, specificTargets = null) {
     });
   }
 
-  if (!items.some(isStep1Helmet) && !items.some(isStep3Helmet) && !items.some(isBlastProt4Book) && !existingOrders.has('blast') && isNeeded('blast')) {
+  const hasBlast = !forcePreOrder && (items.some(isStep1Helmet) || items.some(isStep3Helmet) || items.some(isBlastProt4Book));
+  if (!hasBlast && !existingOrders.has('blast') && isNeeded('blast')) {
     toOrder.push({
       item: 'Enchanted Book Blast Protection 4',
       itemId: 'enchanted_book',
@@ -394,70 +395,72 @@ async function ensureMissingOrders(token, specificTargets = null) {
     });
   }
 
-  if (!items.some(isStep3Helmet) && !items.some(isStep2Book)) {
-    if (!items.some(isResp3Book) && !existingOrders.has('resp') && isNeeded('resp')) {
-      toOrder.push({
-        item: 'Enchanted Book Respiration 3',
-        itemId: 'enchanted_book',
-        signText: 'respiration',
-        targetEnchant: 'resp_3',
-        matchLore: 'respiration',
-        orderSearchQuery: 'enchanted book respiration 3',
-        orderAmount: batchAmount,
-        orderPrice: S.bookRespOrderPrice || 15000,
-        isEnchantException: true,
-        fixedPrice: true,
-        category: 'Kitap',
-      });
-    }
-    if (!items.some(isMendingBook) && !existingOrders.has('mending') && isNeeded('mending')) {
-      toOrder.push({
-        item: 'Enchanted Book Mending',
-        itemId: 'enchanted_book',
-        signText: 'mending',
-        targetEnchant: 'mending',
-        matchLore: 'mending',
-        orderSearchQuery: 'enchanted book mending',
-        orderAmount: batchAmount,
-        orderPrice: S.bookMendingOrderPrice || 25000,
-        isEnchantException: true,
-        fixedPrice: true,
-        category: 'Kitap',
-      });
-    }
+  const hasResp = !forcePreOrder && (items.some(isStep3Helmet) || items.some(isStep2Book) || items.some(isResp3Book));
+  if (!hasResp && !existingOrders.has('resp') && isNeeded('resp')) {
+    toOrder.push({
+      item: 'Enchanted Book Respiration 3',
+      itemId: 'enchanted_book',
+      signText: 'respiration',
+      targetEnchant: 'resp_3',
+      matchLore: 'respiration',
+      orderSearchQuery: 'enchanted book respiration 3',
+      orderAmount: batchAmount,
+      orderPrice: S.bookRespOrderPrice || 15000,
+      isEnchantException: true,
+      fixedPrice: true,
+      category: 'Kitap',
+    });
   }
 
-  if (!items.some(isStep4Book)) {
-    if (!items.some(isUnbreaking3Book) && !existingOrders.has('unb') && isNeeded('unb')) {
-      toOrder.push({
-        item: 'Enchanted Book Unbreaking 3',
-        itemId: 'enchanted_book',
-        signText: 'unbreaking',
-        targetEnchant: 'unbreaking_3',
-        matchLore: 'unbreaking',
-        orderSearchQuery: 'enchanted book unbreaking 3',
-        orderAmount: batchAmount,
-        orderPrice: S.bookUnbOrderPrice || 15000,
-        isEnchantException: true,
-        fixedPrice: true,
-        category: 'Kitap',
-      });
-    }
-    if (!items.some(isAquaAffinityBook) && !existingOrders.has('aqua') && isNeeded('aqua')) {
-      toOrder.push({
-        item: 'Enchanted Book Aqua Affinity',
-        itemId: 'enchanted_book',
-        signText: 'aqua affinity',
-        targetEnchant: 'aqua_affinity',
-        matchLore: 'aqua affinity',
-        orderSearchQuery: 'enchanted book aqua affinity',
-        orderAmount: batchAmount,
-        orderPrice: S.bookAquaOrderPrice || 10000,
-        isEnchantException: true,
-        fixedPrice: true,
-        category: 'Kitap',
-      });
-    }
+  const hasMending = !forcePreOrder && (items.some(isStep3Helmet) || items.some(isStep2Book) || items.some(isMendingBook));
+  if (!hasMending && !existingOrders.has('mending') && isNeeded('mending')) {
+    toOrder.push({
+      item: 'Enchanted Book Mending',
+      itemId: 'enchanted_book',
+      signText: 'mending',
+      targetEnchant: 'mending',
+      matchLore: 'mending',
+      orderSearchQuery: 'enchanted book mending',
+      orderAmount: batchAmount,
+      orderPrice: S.bookMendingOrderPrice || 25000,
+      isEnchantException: true,
+      fixedPrice: true,
+      category: 'Kitap',
+    });
+  }
+
+  const hasUnb = !forcePreOrder && (items.some(isStep4Book) || items.some(isUnbreaking3Book));
+  if (!hasUnb && !existingOrders.has('unb') && isNeeded('unb')) {
+    toOrder.push({
+      item: 'Enchanted Book Unbreaking 3',
+      itemId: 'enchanted_book',
+      signText: 'unbreaking',
+      targetEnchant: 'unbreaking_3',
+      matchLore: 'unbreaking',
+      orderSearchQuery: 'enchanted book unbreaking 3',
+      orderAmount: batchAmount,
+      orderPrice: S.bookUnbOrderPrice || 15000,
+      isEnchantException: true,
+      fixedPrice: true,
+      category: 'Kitap',
+    });
+  }
+
+  const hasAqua = !forcePreOrder && (items.some(isStep4Book) || items.some(isAquaAffinityBook));
+  if (!hasAqua && !existingOrders.has('aqua') && isNeeded('aqua')) {
+    toOrder.push({
+      item: 'Enchanted Book Aqua Affinity',
+      itemId: 'enchanted_book',
+      signText: 'aqua affinity',
+      targetEnchant: 'aqua_affinity',
+      matchLore: 'aqua affinity',
+      orderSearchQuery: 'enchanted book aqua affinity',
+      orderAmount: batchAmount,
+      orderPrice: S.bookAquaOrderPrice || 10000,
+      isEnchantException: true,
+      fixedPrice: true,
+      category: 'Kitap',
+    });
   }
 
   // XP sisesi depoda siparisi yoksa 3200 adetlik toplu siparis ac (canli /orders panosundan dinamik fiyatla)
@@ -504,6 +507,63 @@ async function ensureMissingOrders(token, specificTargets = null) {
   }
 }
 
+// 🚀 PIPELINING: Sıradaki partiler için eksik olan siparişleri arka planda açar
+async function preOrderNextBatch(token) {
+  const bot = state.bot;
+  assertActive(token);
+  dlog('📦 Ön Sipariş (Pipelining) kontrolü yapılıyor...');
+
+  closeWindowSafe();
+  await humanSleep(300);
+
+  try {
+    await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
+  } catch (e) {
+    dlog(`Ön sipariş için /orders açılamadı (${e.message}).`);
+    return;
+  }
+  assertActive(token);
+
+  const yourOrdersPromise = waitForWindow();
+  yourOrdersPromise.catch(() => {});
+  await safeClick(51);
+  let yourOrdersWin;
+  try {
+    yourOrdersWin = await yourOrdersPromise;
+  } catch (e) {
+    dlog(`Ön sipariş için "Your Orders" penceresi açılamadı (${e.message}).`);
+    closeWindowSafe();
+    return;
+  }
+  await humanSleep(500);
+  assertActive(token);
+
+  const activeOrders = new Set();
+  for (let s = 0; s < yourOrdersWin.inventoryStart; s++) {
+    const it = yourOrdersWin.slots[s];
+    if (!it || it.name.includes('glass') || it.name === 'barrier') continue;
+    for (const checkType of ['helmet', 'blast', 'resp', 'mending', 'unb', 'aqua', 'xp']) {
+      if (matchesTargetOrder({ id: checkType }, it)) {
+        activeOrders.add(checkType);
+      }
+    }
+  }
+
+  closeWindowSafe();
+  await humanSleep(300);
+
+  const allReq = ['helmet', 'blast', 'resp', 'mending', 'unb', 'aqua', 'xp'];
+  const missingTypes = allReq.filter((t) => !activeOrders.has(t));
+  if (missingTypes.length > 0) {
+    log(`🚀 ÖN SİPARİŞ (Pipelining): Sıradaki partiler için panoda eksik ${missingTypes.length} sipariş açılıyor: ${missingTypes.join(', ')}...`);
+    const missingTargets = missingTypes.map((id) => ({ id }));
+    await ensureMissingOrders(token, missingTargets, true);
+    log('✅ Ön siparişler panoya verildi. Birleştirme veya satış sürerken teslimatlar arka planda sandığa akacak.');
+  } else {
+    dlog('Ön sipariş: 7 temel malzemenin siparişleri panoda zaten aktif.');
+  }
+}
+
 // Malzemeleri Kontrol Et ("Üstüne bak"), Eksikleri Sandiktan Cek, Yoksa Toplu Siparis Ver (50x / 3200x)
 async function ensureAllMaterialsOrOrder(token) {
   const bot = state.bot;
@@ -533,6 +593,7 @@ async function ensureAllMaterialsOrOrder(token) {
   status = checkHelmetMaterials();
   if (status.ready) {
     log('🎉 Malzemeler hazır, örste birleştirmeye geçilebilir!');
+    try { await preOrderNextBatch(token); } catch (_) {}
     return;
   }
 
@@ -553,6 +614,7 @@ async function ensureAllMaterialsOrOrder(token) {
     status = checkHelmetMaterials();
     if (status.ready) {
       log('🎉 God Helmet icin tum malzemeler eksiksiz tamamlandi! Ors birlestirmeye geciliyor...');
+      try { await preOrderNextBatch(token); } catch (_) {}
       break;
     } else {
       log(`⏳ Eksik malzemeler bekleniyor (${status.missing.length} kalem): ${status.missing.join(', ')}...`);
@@ -924,4 +986,5 @@ module.exports = {
   computeGodHelmetSellPrice,
   sellGodHelmet,
   sellAllGodHelmets,
+  preOrderNextBatch,
 };

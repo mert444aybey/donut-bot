@@ -29,56 +29,75 @@ async function ensureExperienceLevel(targetLevel, token) {
 
   log(`XP yukleniyor: Mevcut Seviye ${bot.experience.level} ➔ Hedef: ${targetLevel}`);
 
+  let xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
+  if (!xpItem) {
+    log('Envanterde XP sisesi bulunamadi. /orders uzerinden otomatik temin ediliyor...');
+    const S = state.S || {};
+    const xpOrder = {
+      item: "Bottle o' Enchanting",
+      itemId: 'experience_bottle',
+      orderAmount: S.xpBottleOrderAmount || 64,
+      orderPrice: S.xpBottleOrderPrice || 250,
+      category: 'XP Şişesi',
+    };
+
+    const placedPrice = await runOrderFlow(token, xpOrder);
+    recordTransaction({
+      type: 'EXPENSE',
+      category: 'XP Şişesi',
+      item: "Bottle o' Enchanting",
+      amount: xpOrder.orderAmount,
+      unitPrice: placedPrice,
+      total: xpOrder.orderAmount * placedPrice,
+      note: 'Eksik XP için otomatik /orders alımı',
+    });
+
+    await waitForOrderComplete(token, placedPrice, xpOrder);
+    await collectItems(token);
+
+    xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
+    if (!xpItem) {
+      throw new Error('XP sisesi siparis edildi ve toplandi ancak envanterde experience_bottle bulunamadi!');
+    }
+  }
+
+  // 1. Şişeyi eline al
+  if (!bot.heldItem || bot.heldItem.name !== 'experience_bottle') {
+    await bot.equip(xpItem, 'hand');
+    await humanSleep(100);
+  }
+
+  // 2. Yere (tam ayak ucuna) bak: +Math.PI / 2 doğrudan aşağı/ayak ucuna bakar.
+  // Bu sayede atılan şişe havada süzülmeden anında ayak ucunda kırılır ve sıfır gecikmeyle XP verir!
+  try {
+    await bot.look(bot.entity.yaw, Math.PI / 2, true);
+  } catch (_) {}
+
+  // 3. Ultra Hızlı Şişe Kırma (Fast Splash: 45ms seri tick)
+  const startTime = Date.now();
   while (bot.experience.level < targetLevel) {
     assertActive(token);
 
-    let xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
-    if (!xpItem) {
-      log('Envanterde XP sisesi bulunamadi. /orders uzerinden otomatik temin ediliyor...');
-      const S = state.S || {};
-      const xpOrder = {
-        item: "Bottle o' Enchanting",
-        itemId: 'experience_bottle',
-        orderAmount: S.xpBottleOrderAmount || 64,
-        orderPrice: S.xpBottleOrderPrice || 250,
-        category: 'XP Şişesi',
-      };
-
-      const placedPrice = await runOrderFlow(token, xpOrder);
-      recordTransaction({
-        type: 'EXPENSE',
-        category: 'XP Şişesi',
-        item: "Bottle o' Enchanting",
-        amount: xpOrder.orderAmount,
-        unitPrice: placedPrice,
-        total: xpOrder.orderAmount * placedPrice,
-        note: 'Eksik XP için otomatik /orders alımı',
-      });
-
-      await waitForOrderComplete(token, placedPrice, xpOrder);
-      await collectItems(token);
-
-      xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
-      if (!xpItem) {
-        throw new Error('XP sisesi siparis edildi ve toplandi ancak envanterde experience_bottle bulunamadi!');
-      }
-    }
-
+    // Eldeki şişe stack'i bittiyse diğer stack'i ele al
     if (!bot.heldItem || bot.heldItem.name !== 'experience_bottle') {
-      await bot.equip(xpItem, 'hand');
-      await humanSleep(200);
+      const nextXp = bot.inventory.items().find((i) => i.name === 'experience_bottle');
+      if (!nextXp) {
+        log('Envanterdeki tüm XP şişeleri tükendi!');
+        break;
+      }
+      await bot.equip(nextXp, 'hand');
+      await sleep(50);
     }
 
-    // Yere (ayak ucuna) bak
-    try {
-      await bot.look(bot.entity.yaw, -Math.PI / 2, true);
-    } catch (_) {}
-
-    // Sise kir
+    // Seri şişe fırlat
     bot.activateItem();
-    await humanSleep(120);
+    await sleep(45);
 
-    if (bot.experience.level >= targetLevel) break;
+    // Güvenlik zaman aşımı
+    if (Date.now() - startTime > 10000) {
+      log('UYARI: XP yükleme zaman aşımına uğradı (10 sn), mevcut seviye ile devam ediliyor.');
+      break;
+    }
   }
 
   log(`Hedef seviyeye ulasildi: Seviye ${bot.experience.level} (Hedef ${targetLevel})`);

@@ -1,17 +1,17 @@
 {
   "startedAt": 1790120048041,
-  "totalSpent": 1143100,
+  "totalSpent": 1770300,
   "totalEarned": 0,
-  "ordersPlaced": 2,
-  "itemsOrdered": 128,
+  "ordersPlaced": 3,
+  "itemsOrdered": 192,
   "cyclesCompleted": 0,
   "godHelmetsCrafted": 0,
   "itemsCollected": {},
   "categories": {
     "XP Şişesi": {
-      "spent": 563200,
+      "spent": 876800,
       "earned": 0,
-      "count": 128
+      "count": 192
     },
     "Örs": {
       "spent": 16700,
@@ -20,6 +20,17 @@
     }
   },
   "ledger": [
+    {
+      "id": "1790120921845-agrp",
+      "time": 1790120921845,
+      "type": "EXPENSE",
+      "category": "XP Şişesi",
+      "item": "Bottle o' Enchanting",
+      "amount": 64,
+      "unitPrice": 4900,
+      "total": 313600,
+      "note": "Eksik XP için otomatik /orders alımı"
+    },
     {
       "id": "1790120294617-5kb6",
       "time": 1790120294617,
@@ -90,6 +101,30 @@
       "balance": 16.7,
       "spent": 1143100,
       "orders": 2
+    },
+    {
+      "time": 1790120866354,
+      "balance": 999,
+      "spent": 1143100,
+      "orders": 2
+    },
+    {
+      "time": 1790120869493,
+      "balance": 12675675,
+      "spent": 1143100,
+      "orders": 2
+    },
+    {
+      "time": 1790120921841,
+      "balance": 12675675,
+      "spent": 1456700,
+      "orders": 3
+    },
+    {
+      "time": 1790120921845,
+      "balance": 12675675,
+      "spent": 1770300,
+      "orders": 3
     }
   ]
 }
