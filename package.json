@@ -1,7 +1,7 @@
 {
   "name": "donut-bot",
-  "version": "1.0.0",
-  "description": "Donut SMP orders + AH otomasyonu",
+  "version": "2.1.0",
+  "description": "Donut SMP orders bot with live analytics and outbid protection",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
