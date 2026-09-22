@@ -113,6 +113,7 @@ async function ensureAllMaterialsOrOrder(token) {
       orderSearchQuery: 'diamond_helmet',
       orderAmount: 1, // Non-stackable!
       orderPrice: S.diamondHelmetOrderPrice || 25000,
+      fixedPrice: true, // Sadece kask fiyati kullanici tarafindan manuel belirlenir
       category: 'Kask',
     });
   }

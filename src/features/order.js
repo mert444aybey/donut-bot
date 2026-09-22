@@ -83,7 +83,12 @@ async function fetchOrderReferencePrice(token, itemOverride) {
 async function computeOrderPrice(token, itemOverride) {
   const S = state.S;
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
-  if (!S.autoOrderPriceEnabled) return itemCfg.orderPrice;
+  if (!S.autoOrderPriceEnabled || itemCfg.fixedPrice) {
+    if (itemCfg.fixedPrice) {
+      log(`Sabit siparis fiyati devrede: ${itemCfg.item || itemCfg.itemId} icin kullanici fiyati $${Number(itemCfg.orderPrice).toLocaleString()} uygulaniyor.`);
+    }
+    return itemCfg.orderPrice;
+  }
 
   const highest = await fetchOrderReferencePrice(token, itemOverride);
   let price;
@@ -255,7 +260,7 @@ async function waitForOrderComplete(token, placedPrice, itemOverride) {
     }
 
     // 2. Outbid (onumuze gecilme) kontrolu
-    if (S.autoOutbidRelist && placedPrice && (Date.now() - lastOutbidCheck >= checkIntervalMs)) {
+    if (S.autoOutbidRelist && placedPrice && !itemCfg.fixedPrice && (Date.now() - lastOutbidCheck >= checkIntervalMs)) {
       lastOutbidCheck = Date.now();
       try {
         const highest = await fetchOrderReferencePrice(token, itemOverride);

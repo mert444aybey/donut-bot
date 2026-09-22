@@ -338,9 +338,9 @@ ${navHtml('/settings')}
   </div>
   <div class="row" style="margin-top:8px">
     <div style="flex:1">
-      <label>Elmas Kask Sipariş Fiyatı ($)</label>
+      <label>🛡️ Elmas Kask Sipariş Fiyatı ($ - Manuel / Sabit)</label>
       <input type="number" id="diamondHelmetOrderPrice">
-      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
+      <span class="hint">Kask için otomatik fiyat çekilmez; doğrudan bu belirlediğiniz sabit fiyat verilir</span>
     </div>
     <div style="flex:1">
       <label>Blast Protection 4 Kitap ($)</label>
