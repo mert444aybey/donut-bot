@@ -126,6 +126,10 @@ async function collectItems(token) {
   const collected = total - before;
   if (collected > 0) {
     log(`Toplandi: +${collected} ${itemCfg.itemId} (envanterde toplam ${total})`);
+    try {
+      const { recordItemCollected } = require('../stats');
+      recordItemCollected(itemCfg.itemId, collected);
+    } catch (_) {}
   } else {
     log(`Toplama tamamlandi (envanterdeki ${itemCfg.itemId}: ${total}).`);
   }

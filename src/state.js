@@ -55,6 +55,10 @@ const state = {
   setBalance(b) {
     state.balance = b;
     if (state.io) state.io.emit('balance', b);
+    try {
+      const { recordHistoryPoint } = require('./stats');
+      recordHistoryPoint(b);
+    } catch (_) {}
   },
 
   // Aktif item ayarlarini dondurur (portfoy devredeyse secili portfoy elemanini, degilse tekil ayarlari)

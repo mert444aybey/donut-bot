@@ -221,13 +221,34 @@ ${navHtml('/settings')}
 </div>
 
 <div class="settings-group">
-  <h3>🎯 Temel Siparis Ayarlari</h3>
+  <h3>🎯 Temel Siparis Ayarlari & Outbid Korumasi</h3>
   <div class="field checkbox-field">
     <label>
       <input type="checkbox" id="autoOrderPriceEnabled">
       <span><b>Otomatik Siparis Fiyati (Tavsiye Edilir)</b></span>
     </label>
     <span class="hint">Siparis panosundaki (/order) en yuksek mevcut fiyatin ustune cikarak en one gecer.</span>
+  </div>
+
+  <div class="field checkbox-field" style="margin-top:8px">
+    <label>
+      <input type="checkbox" id="autoOutbidRelist">
+      <span><b>Akilli Outbid Korumasi (Onune Gecilirse Siparisi Yenile)</b></span>
+    </label>
+    <span class="hint">Biri sizden daha yuksek teklif verirse eski siparisi otomatik iptal edip yeni fiyattan acar.</span>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <div style="flex:1">
+      <label>Siparis Bekleme / Zaman Asimi (Dakika)</label>
+      <input type="number" id="orderTimeoutMin">
+      <span class="hint">Bu surede satilmazsa siparis iptal edilip siradakine gecer</span>
+    </div>
+    <div style="flex:1">
+      <label>Piyasa Kontrol Sikligi (Saniye)</label>
+      <input type="number" id="outbidCheckIntervalSec">
+      <span class="hint">Outbid kontrolu kac saniyede bir yapilsin</span>
+    </div>
   </div>
 
   <div class="row" style="margin-top:10px">
@@ -334,6 +355,9 @@ var FIELDS = [
   ['orderAmount', 'number'],
   ['orderPrice', 'number'],
   ['autoOrderPriceEnabled', 'checkbox'],
+  ['autoOutbidRelist', 'checkbox'],
+  ['orderTimeoutMin', 'number'],
+  ['outbidCheckIntervalSec', 'number'],
   ['orderMarkup', 'number'],
   ['maxOrderPrice', 'number'],
   ['orderSearchCmd', 'text'],
@@ -685,8 +709,8 @@ document.getElementById('copy').onclick = function(){
 // ---------------- ISTATISTIK ----------------
 function statsPage() {
   return shell('Istatistik', `
-<div class="header"><h1>📊 Istatistik</h1>
-<p class="subtitle">Siparis takibi, bakiye ve tamamlanan donguler.</p></div>
+<div class="header"><h1>📊 Canli Analiz & Istatistikler</h1>
+<p class="subtitle">Bakiye degisimi, toplam harcamalar ve toplanan esyalarin gorsel grafigi.</p></div>
 ${navHtml('/stats')}
 
 <div class="stat-grid">
@@ -694,20 +718,147 @@ ${navHtml('/stats')}
   <div class="stat-card"><div class="stat-label">Toplam Harcama</div><div class="stat-value" id="spent">0</div><div class="stat-sub" id="ordersSub">0 siparis</div></div>
   <div class="stat-card"><div class="stat-label">Tamamlanan Dongu</div><div class="stat-value" id="cycles">0</div><div class="stat-sub">Basariyla toplanan</div></div>
 </div>
-<div id="since"></div>
-<button class="red" id="reset" style="margin-top:18px">ISTATISTIGI SIFIRLA</button>
+
+<h3 style="margin-top:24px">📈 Bakiye & Harcama Trendi (Canli)</h3>
+<div class="card" style="padding:16px;height:280px;position:relative">
+  <canvas id="balanceChart"></canvas>
+</div>
+
+<h3 style="margin-top:24px">📦 Toplanan Esyalar Dagilimi</h3>
+<div class="card" style="padding:16px;height:260px;position:relative">
+  <canvas id="itemsChart"></canvas>
+</div>
+
+<div id="since" style="margin-top:20px"></div>
+<button class="red" id="reset" style="margin-top:14px">ISTATISTIGI SIFIRLA</button>
 
 <script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 var s = io();
+var balanceChart = null;
+var itemsChart = null;
 
 function fmt(n){ n = Math.round(n || 0); return n.toLocaleString('tr-TR'); }
+
+function initCharts(){
+  var ctx1 = document.getElementById('balanceChart').getContext('2d');
+  balanceChart = new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Bakiye ($)',
+          borderColor: '#33c17a',
+          backgroundColor: 'rgba(51, 193, 122, 0.12)',
+          fill: true,
+          tension: 0.25,
+          borderWidth: 2,
+          pointRadius: 3,
+          data: []
+        },
+        {
+          label: 'Toplam Harcanan ($)',
+          borderColor: '#e5555a',
+          backgroundColor: 'rgba(229, 85, 90, 0.08)',
+          fill: true,
+          tension: 0.25,
+          borderWidth: 2,
+          pointRadius: 3,
+          data: []
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#8b93a1', maxTicksLimit: 12 }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: {
+            color: '#8b93a1',
+            callback: function(v){ return '$' + (v >= 1e6 ? (v/1e6).toFixed(1)+'M' : (v >= 1e3 ? (v/1e3).toFixed(0)+'K' : v)); }
+          }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#e8eaed', font: { weight: '600' } } }
+      }
+    }
+  });
+
+  var ctx2 = document.getElementById('itemsChart').getContext('2d');
+  itemsChart = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Toplanan Adet',
+        backgroundColor: ['#4f8cff', '#33c17a', '#e0a530', '#a855f7', '#ec4899', '#14b8a6'],
+        borderRadius: 6,
+        data: []
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#e8eaed' } },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#8b93a1', precision: 0 }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+}
+
+initCharts();
+
+function updateCharts(st){
+  if (!st) return;
+
+  // 1. Bakiye & Harcama Cizgi Grafigi
+  if (balanceChart && Array.isArray(st.history) && st.history.length > 0) {
+    var labels = [];
+    var balData = [];
+    var spentData = [];
+    st.history.forEach(function(pt){
+      var d = new Date(pt.time);
+      labels.push(d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0'));
+      balData.push(pt.balance || 0);
+      spentData.push(pt.spent || 0);
+    });
+    balanceChart.data.labels = labels;
+    balanceChart.data.datasets[0].data = balData;
+    balanceChart.data.datasets[1].data = spentData;
+    balanceChart.update();
+  }
+
+  // 2. Toplanan Esyalar Grafigi
+  if (itemsChart && st.itemsCollected && typeof st.itemsCollected === 'object') {
+    var itemLabels = Object.keys(st.itemsCollected);
+    var itemCounts = itemLabels.map(function(k){ return st.itemsCollected[k]; });
+    itemsChart.data.labels = itemLabels;
+    itemsChart.data.datasets[0].data = itemCounts;
+    itemsChart.update();
+  }
+}
 
 function render(st){
   document.getElementById('spent').textContent = '$ ' + fmt(st.totalSpent);
   document.getElementById('ordersSub').textContent = st.ordersPlaced + ' siparis, ' + fmt(st.itemsOrdered) + ' adet';
   document.getElementById('cycles').textContent = st.cyclesCompleted;
   document.getElementById('since').textContent = 'Takip baslangici: ' + new Date(st.startedAt).toLocaleString('tr-TR');
+  updateCharts(st);
 }
 
 s.on('stats', render);
