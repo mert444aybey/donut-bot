@@ -197,6 +197,19 @@ function createBot() {
   });
   state.bot = bot;
 
+  // Sunucu dinamik registry verilerini (enchantment vb.) canli yakala
+  bot._client.on('registry_data', (packet) => {
+    try {
+      if (packet && (packet.id === 'minecraft:enchantment' || packet.id === 'enchantment') && Array.isArray(packet.entries)) {
+        state.serverEnchantments = packet.entries.map((e) => {
+          const key = e.key || e.name || '';
+          return String(key).replace(/^minecraft:/, '').toLowerCase();
+        });
+        dlog(`📡 Sunucu büyü kayıtları alındı (${state.serverEnchantments.length} adet büyü dinamik eşlendi).`);
+      }
+    } catch (_) {}
+  });
+
   bot.once('spawn', () => {
     try { state.ChatMessage = require('prismarine-chat')(bot.registry); } catch (_) { state.ChatMessage = null; }
     state.setBotConnected(true);

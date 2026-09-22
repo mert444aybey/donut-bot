@@ -14,6 +14,42 @@ function formatEnchantLine(e) {
   return `${title}${lvlStr}`;
 }
 
+// Sayisal veya metinsel buyu ID'lerini sunucu ve registry ile dogru esler
+function resolveEnchantmentName(rawId, registry) {
+  if (rawId === undefined || rawId === null) return null;
+  if (typeof rawId === 'string' && isNaN(rawId)) {
+    return rawId.replace(/^minecraft:/, '').toLowerCase();
+  }
+  const id = Number(rawId);
+
+  // 1. Dinamik olarak sunucudan yakalanan registry_data tablosu (varsa 100% kesin)
+  if (Array.isArray(state.serverEnchantments) && state.serverEnchantments[id]) {
+    return state.serverEnchantments[id];
+  }
+
+  // 2. Donut SMP / Paper 1.21 sunucu registry siralamasi:
+  // Sunucu registry sirasinda 4. indeksteki breach/density farki sebebiyle
+  // Mending, Respiration ve Unbreaking ID'leri mcData static tablosuna gore +1 kayiktir:
+  // ID 0 = aqua_affinity
+  // ID 3 = blast_protection
+  // ID 23 = mending (mcData 22)
+  // ID 31 = respiration (mcData 30)
+  // ID 40 = unbreaking (mcData 39 idi, vanishing_curse ile karisiyordu)
+  const DONUT_SMP_ENCHANT_OVERRIDE = {
+    0: 'aqua_affinity',
+    3: 'blast_protection',
+    23: 'mending',
+    31: 'respiration',
+    40: 'unbreaking',
+  };
+  if (DONUT_SMP_ENCHANT_OVERRIDE[id]) {
+    return DONUT_SMP_ENCHANT_OVERRIDE[id];
+  }
+
+  // 3. Fallback: Standart registry tablosu
+  return registry?.enchantments?.[id]?.name || null;
+}
+
 // 1.20.5+ / 1.21 component, NBT, prismarine-item ve lore uzerinden tum buyuleri ceker
 function extractItemEnchantments(item) {
   if (!item) return [];
@@ -61,7 +97,7 @@ function extractItemEnchantments(item) {
           if (!entry) continue;
           let eName = entry.name;
           if (!eName && entry.id !== undefined) {
-            eName = typeof entry.id === 'string' ? entry.id : registry?.enchantments?.[entry.id]?.name;
+            eName = resolveEnchantmentName(entry.id, registry);
           }
           add(eName, entry.level ?? entry.lvl);
         }
@@ -72,7 +108,7 @@ function extractItemEnchantments(item) {
             if (!entry) continue;
             let eName = entry.name;
             if (!eName && entry.id !== undefined) {
-              eName = typeof entry.id === 'string' ? entry.id : registry?.enchantments?.[entry.id]?.name;
+              eName = resolveEnchantmentName(entry.id, registry);
             }
             add(eName, entry.level ?? entry.lvl);
           }
@@ -81,7 +117,7 @@ function extractItemEnchantments(item) {
           const targetMap = (data.levels && typeof data.levels === 'object') ? data.levels : data;
           for (const [key, lvl] of Object.entries(targetMap)) {
             if (key === 'show_in_tooltip' || key === 'levels') continue;
-            let eName = typeof key === 'string' && isNaN(key) ? key : registry?.enchantments?.[key]?.name;
+            let eName = resolveEnchantmentName(key, registry);
             const cleanLvl = typeof lvl === 'object' && lvl !== null ? (lvl.value ?? lvl.lvl ?? lvl.level) : lvl;
             add(eName, cleanLvl);
           }
@@ -104,8 +140,7 @@ function extractItemEnchantments(item) {
       const rawList = simplified?.StoredEnchantments || simplified?.Enchantments || simplified?.ench || [];
       if (Array.isArray(rawList)) {
         for (const entry of rawList) {
-          let eName = entry.id;
-          if (typeof eName === 'number') eName = registry?.enchantments?.[eName]?.name;
+          let eName = resolveEnchantmentName(entry.id, registry);
           add(eName, entry.lvl ?? entry.level);
         }
       }
