@@ -8,15 +8,23 @@ const { sleep, humanSleep } = require('../utils/text');
 const { assertActive, closeWindowSafe } = require('../utils/windows');
 const { runOrderFlow, waitForOrderComplete } = require('./order');
 const { collectItems } = require('./collect');
-const { craftGodHelmet, sellGodHelmet } = require('./craft_helmet');
+const { craftGodHelmet, craftGodHelmetOnly, collectHelmetMaterials, sellGodHelmet, checkHelmetMaterials } = require('./craft_helmet');
 
-const MODES = ['full', 'collect', 'god_helmet'];
-const MODE_LABELS = { full: 'tam dongu', collect: 'sadece topla', god_helmet: 'god helmet uret & sat' };
+const MODES = ['full', 'collect', 'god_helmet', 'god_helmet_craft', 'god_helmet_collect', 'god_helmet_sell'];
+const MODE_LABELS = {
+  full: 'tam dongu',
+  collect: 'sadece topla',
+  god_helmet: 'god helmet uret & sat (tam dongu)',
+  god_helmet_craft: 'sadece ors / buyu yap (test)',
+  god_helmet_collect: 'sadece depodan topla (test)',
+  god_helmet_sell: 'sadece god helmet sat (test)',
+};
 
 // Kullanici DURDUR'a basmadigi surece, hata veya baglanti kesilmesi sonrasi
-// otomasyon kendini yeniden baslatir.
+// otomasyon kendini yeniden baslatir (sadece surekli donguler icin).
 function scheduleAutoRestart(mode, reason) {
   if (state.manualStop) return;
+  if (mode !== 'full' && mode !== 'god_helmet') return; // Tek seferlik test modlari oto yeniden baslamaz
   if (state.autoRestartTimer) return; // zaten bir yeniden baslatma planli
   const mins = Math.round(CFG.autoRestartDelayMs / 60000);
   log(`Otomasyon ${mins} dk sonra otomatik olarak yeniden baslatilacak (${reason}). Iptal icin DURDUR'a basabilirsin.`);
@@ -49,6 +57,29 @@ async function startAutomation(mode) {
     if (mode === 'collect') {
       await collectItems(token);
       log('Toplama tamamlandi.');
+      return;
+    }
+
+    if (mode === 'god_helmet_collect') {
+      log('📦 Test: Depodan God Helmet eksik malzemeleri toplanıyor...');
+      await collectHelmetMaterials(token);
+      const matStatus = checkHelmetMaterials();
+      log(`📋 Güncel Malzeme Durumu: ${matStatus.ready ? 'Tüm malzemeler tam!' : `Eksikler: ${matStatus.missing.join(', ')}`}`);
+      log('✅ Toplama testi tamamlandı.');
+      return;
+    }
+
+    if (mode === 'god_helmet_craft') {
+      log('🔨 Test: Envanterdeki mevcut malzemelerle örs birleştirme başlatılıyor...');
+      await craftGodHelmetOnly(token);
+      log('✅ Örste birleştirme testi tamamlandı.');
+      return;
+    }
+
+    if (mode === 'god_helmet_sell') {
+      log('🏷️ Test: Envanterdeki God Helmet satışa sunuluyor...');
+      await sellGodHelmet(token);
+      log('✅ Satış testi tamamlandı.');
       return;
     }
 

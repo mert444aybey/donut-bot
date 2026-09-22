@@ -210,22 +210,88 @@ async function collectHelmetMaterials(token) {
     return;
   }
 
-  // Adim 3: Ilk siparis slotuna tikla (siparis detay penceresi acilir)
-  const detailsPromise = waitForWindow();
-  detailsPromise.catch(() => {});
-  await safeClick(0);
-  const detailsWin = await detailsPromise;
-  await humanSleep(350);
+  // Your Orders slotlarini tara: Dogrudan bir "Teslimatlari Topla" butonu var mi?
+  let directCollectSlot = -1;
+  for (let s = 0; s < yourOrdersWin.inventoryStart; s++) {
+    const it = yourOrdersWin.slots[s];
+    if (!it || it.name.includes('glass')) continue;
+    const name = (it.displayName || it.name || '').toLowerCase();
+    const lore = (loreOf(it) || []).join(' ').toLowerCase();
+    const all = `${name} ${lore}`;
+    dlog(`[Your Orders Slot ${s}] ${it.name} (${it.displayName || ''})`);
 
-  // Adim 4: Slot 13'e tikla (Collect Items sandigi acilir)
-  const collectPromise = waitForWindow();
-  collectPromise.catch(() => {});
-  await safeClick(13);
-  const win = await collectPromise;
-  await humanSleep(350);
+    // Slot 0-6 disinda veya lore'unda acikca topla/claim yazan bir buton var mi?
+    if (s > 6 && (all.includes('collect') || all.includes('claim') || all.includes('topla') || all.includes('deliveries'))) {
+      directCollectSlot = s;
+    }
+  }
 
+  let collectWin = null;
+  if (directCollectSlot !== -1) {
+    log(`🎯 Your Orders menüsünde doğrudan toplama butonu bulundu: Slot ${directCollectSlot}. Tıklanıyor...`);
+    const p = waitForWindow();
+    p.catch(() => {});
+    await safeClick(directCollectSlot);
+    collectWin = await p;
+  } else {
+    // Adim 3: Ilk siparis slotuna tikla (siparis detay penceresi acilir)
+    const detailsPromise = waitForWindow();
+    detailsPromise.catch(() => {});
+    await safeClick(0);
+    const detailsWin = await detailsPromise;
+    await humanSleep(350);
+
+    if (!detailsWin) {
+      log('Siparis detay penceresi acilamadi.');
+      closeWindowSafe();
+      return;
+    }
+
+    // Edit Order ekranindaki slotlari incele
+    let targetCollectSlot = -1;
+    for (let s = 0; s < detailsWin.inventoryStart; s++) {
+      const it = detailsWin.slots[s];
+      if (!it || it.name.includes('glass')) continue;
+      const rawName = (it.name || '').toLowerCase();
+      const rawDisplay = (it.displayName || '').toLowerCase();
+      const rawLore = (loreOf(it) || []).join(' ').toLowerCase();
+      const allText = `${rawName} ${rawDisplay} ${rawLore}`;
+
+      log(`[Edit Order Slot ${s}] ${it.name} (${it.displayName || ''}) | Lore: ${(loreOf(it) || []).join(' ')}`);
+
+      // GUVELLIK: Asla Iptal (Cancel) butonuna tiklama!
+      if (rawName.includes('terracotta') || rawName.includes('barrier') || allText.includes('cancel') || allText.includes('iptal')) {
+        continue;
+      }
+
+      if (allText.includes('collect') || allText.includes('claim') || allText.includes('deliver') || allText.includes('al') || allText.includes('topla') || rawName.includes('chest') || rawName.includes('hopper')) {
+        targetCollectSlot = s;
+      }
+    }
+
+    if (targetCollectSlot !== -1) {
+      log(`🎯 Sipariş Detayında Toplama Butonu Bulundu: Slot ${targetCollectSlot}. Tıklanıyor...`);
+      const collectPromise = waitForWindow();
+      collectPromise.catch(() => {});
+      await safeClick(targetCollectSlot);
+      collectWin = await collectPromise;
+    } else {
+      log('ℹ️ Edit Order menüsünde belirgin bir toplama butonu bulunamadı. Slot dökümü loga kaydedildi.');
+    }
+  }
+
+  await humanSleep(350);
+  const win = collectWin || bot.currentWindow;
   if (!win) {
     log('Toplama sandigi penceresi acilamadi.');
+    closeWindowSafe();
+    return;
+  }
+
+  // Guvenlik kontrolu: Acilan pencere Cancel Order ise derhal cik!
+  const winTitle = (titleOf(win) || '').toLowerCase();
+  if (winTitle.includes('cancel') || winTitle.includes('iptal')) {
+    log(`⚠️ GUVENLIK: İptal penceresi tespit edildi ("${titleOf(win)}"). Kapatılıyor, sipariş iptal edilmedi.`);
     closeWindowSafe();
     return;
   }
@@ -237,65 +303,95 @@ async function collectHelmetMaterials(token) {
 
     // Kask: envanterde yoksa SADECE 1 adet al
     if (needHelmet && it.name === 'diamond_helmet' && isCleanHelmet(it)) {
-      log(`📦 Sandıktan kask çekildi (slot ${s}).`);
+      const beforeCount = bot.inventory.items().filter(isCleanHelmet).length;
       await humanSleep(state.S.clickDelayMs || 600);
       await bot.clickWindow(s, 0, 1);
       await humanSleep(CFG.shiftWaitMs || 1000);
-      needHelmet = false; // Baska kask alma!
+      const afterCount = bot.inventory.items().filter(isCleanHelmet).length;
+      if (afterCount > beforeCount) {
+        log(`📦 Sandıktan kask başarıyla çekildi (slot ${s}).`);
+        needHelmet = false; // Baska kask alma!
+      } else {
+        dlog(`Kask slotu ${s} tiklandi fakat envantere gelmedi.`);
+      }
       continue;
     }
 
     // Büyü kitapları: envanterde yoksa SADECE 1'er adet al
     if (it.name === 'enchanted_book') {
       if (needBlast && isBlastProt4Book(it)) {
-        log(`📦 Sandıktan Blast Protection 4 kitabı çekildi (slot ${s}).`);
+        const beforeCount = bot.inventory.items().filter(isBlastProt4Book).length;
         await humanSleep(state.S.clickDelayMs || 600);
         await bot.clickWindow(s, 0, 1);
         await humanSleep(CFG.shiftWaitMs || 1000);
-        needBlast = false;
+        const afterCount = bot.inventory.items().filter(isBlastProt4Book).length;
+        if (afterCount > beforeCount) {
+          log(`📦 Sandıktan Blast Protection 4 kitabı çekildi (slot ${s}).`);
+          needBlast = false;
+        }
         continue;
       }
       if (needResp && isResp3Book(it)) {
-        log(`📦 Sandıktan Respiration 3 kitabı çekildi (slot ${s}).`);
+        const beforeCount = bot.inventory.items().filter(isResp3Book).length;
         await humanSleep(state.S.clickDelayMs || 600);
         await bot.clickWindow(s, 0, 1);
         await humanSleep(CFG.shiftWaitMs || 1000);
-        needResp = false;
+        const afterCount = bot.inventory.items().filter(isResp3Book).length;
+        if (afterCount > beforeCount) {
+          log(`📦 Sandıktan Respiration 3 kitabı çekildi (slot ${s}).`);
+          needResp = false;
+        }
         continue;
       }
       if (needMending && isMendingBook(it)) {
-        log(`📦 Sandıktan Mending kitabı çekildi (slot ${s}).`);
+        const beforeCount = bot.inventory.items().filter(isMendingBook).length;
         await humanSleep(state.S.clickDelayMs || 600);
         await bot.clickWindow(s, 0, 1);
         await humanSleep(CFG.shiftWaitMs || 1000);
-        needMending = false;
+        const afterCount = bot.inventory.items().filter(isMendingBook).length;
+        if (afterCount > beforeCount) {
+          log(`📦 Sandıktan Mending kitabı çekildi (slot ${s}).`);
+          needMending = false;
+        }
         continue;
       }
       if (needUnb && isUnbreaking3Book(it)) {
-        log(`📦 Sandıktan Unbreaking 3 kitabı çekildi (slot ${s}).`);
+        const beforeCount = bot.inventory.items().filter(isUnbreaking3Book).length;
         await humanSleep(state.S.clickDelayMs || 600);
         await bot.clickWindow(s, 0, 1);
         await humanSleep(CFG.shiftWaitMs || 1000);
-        needUnb = false;
+        const afterCount = bot.inventory.items().filter(isUnbreaking3Book).length;
+        if (afterCount > beforeCount) {
+          log(`📦 Sandıktan Unbreaking 3 kitabı çekildi (slot ${s}).`);
+          needUnb = false;
+        }
         continue;
       }
       if (needAqua && isAquaAffinityBook(it)) {
-        log(`📦 Sandıktan Aqua Affinity kitabı çekildi (slot ${s}).`);
+        const beforeCount = bot.inventory.items().filter(isAquaAffinityBook).length;
         await humanSleep(state.S.clickDelayMs || 600);
         await bot.clickWindow(s, 0, 1);
         await humanSleep(CFG.shiftWaitMs || 1000);
-        needAqua = false;
+        const afterCount = bot.inventory.items().filter(isAquaAffinityBook).length;
+        if (afterCount > beforeCount) {
+          log(`📦 Sandıktan Aqua Affinity kitabı çekildi (slot ${s}).`);
+          needAqua = false;
+        }
         continue;
       }
     }
 
     // XP Şişesi: envanterde yetersizse al
     if (needXP && it.name === 'experience_bottle') {
-      log(`📦 Sandıktan XP şişeleri çekildi (slot ${s}).`);
+      const beforeCount = bot.inventory.items().filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
       await humanSleep(state.S.clickDelayMs || 600);
       await bot.clickWindow(s, 0, 1);
       await humanSleep(CFG.shiftWaitMs || 1000);
-      needXP = false;
+      const afterCount = bot.inventory.items().filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
+      if (afterCount > beforeCount) {
+        log(`📦 Sandıktan XP şişeleri çekildi (slot ${s}, +${afterCount - beforeCount} adet).`);
+        if (afterCount >= 30) needXP = false;
+      }
       continue;
     }
   }
@@ -512,19 +608,21 @@ async function ensureAllMaterialsOrOrder(token) {
   }
 }
 
-// 2. 5 Adimli Birlestirme Agaci
-async function craftGodHelmet(token) {
+// 2. 5 Adimli Birlestirme Agaci (Envanterdeki malzemelerle dogrudan birlestirir)
+async function craftGodHelmetOnly(token) {
   const bot = state.bot;
   assertActive(token);
 
   let godHelmet = bot.inventory.items().find(isGodHelmet);
   if (godHelmet) {
-    log('Envanterde zaten tamamlanmis bir God Helmet mevcut! Satisa geciliyor...');
+    log('🎉 Envanterde zaten tamamlanmis bir God Helmet mevcut!');
     return godHelmet;
   }
 
-  // Malzemeleri kontrol et, eksik olanlari /orders uzerinden siparis et ve topla
-  await ensureAllMaterialsOrOrder(token);
+  const matStatus = checkHelmetMaterials();
+  if (!matStatus.ready) {
+    log(`⚠️ Dikkat: Envanterde eksik malzemeler olabilir (${matStatus.missing.join(', ')}). Mevcut olanlarla adımlar deneniyor...`);
+  }
 
   log('===== God Helmet Birlestirme Sureci Basliyor =====');
 
@@ -588,6 +686,23 @@ async function craftGodHelmet(token) {
   log('🎉 GOD HELMET BASARIYLA URETILDI!');
   bumpStats({ godHelmetsCrafted: 1 });
   return godHelmet;
+}
+
+// Siparis ve Toplama Dahil Tam Uretim Akisi
+async function craftGodHelmet(token) {
+  const bot = state.bot;
+  assertActive(token);
+
+  let godHelmet = bot.inventory.items().find(isGodHelmet);
+  if (godHelmet) {
+    log('Envanterde zaten tamamlanmis bir God Helmet mevcut! Satisa geciliyor...');
+    return godHelmet;
+  }
+
+  // Malzemeleri kontrol et, eksik olanlari /orders uzerinden siparis et ve topla
+  await ensureAllMaterialsOrOrder(token);
+
+  return await craftGodHelmetOnly(token);
 }
 
 // 3. Piyasa Taramasi ve Satis
@@ -756,7 +871,9 @@ module.exports = {
   getEnchants,
   isGodHelmet,
   checkHelmetMaterials,
+  collectHelmetMaterials,
   craftGodHelmet,
+  craftGodHelmetOnly,
   calculateGodHelmetCost,
   fetchLowestGodHelmetPrice,
   computeGodHelmetSellPrice,

@@ -126,13 +126,25 @@ ${navHtml('/')}
 </div>
 
 <div class="card section">
+  <div style="font-size:13px;font-weight:600;margin-bottom:8px">⚡ Ana Otomasyon Modları</div>
   <div class="btn-group">
     <button class="green" id="start">▶ Tam Dongu</button>
-    <button class="blue" id="collect">📦 Sadece Topla</button>
-    <button class="amber" id="godHelmet">✨ God Helmet Üret & Sat</button>
+    <button class="amber" id="godHelmet">✨ God Helmet Tam Döngü</button>
     <button class="red" id="stop">■ Durdur</button>
   </div>
-  <p class="btn-desc">Tam Dongu: siparis ver → topla. God Helmet: envanterdeki kask ve kitaplarla akilli XP tasarruflu 5 adimli God Helmet uretip AH'de satar.</p>
+  <p class="btn-desc">Tam Dongu: siparis ver → topla. God Helmet: toplu siparis/toplama + 5 adimli örs birleştirme + AH satisi.</p>
+</div>
+
+<div class="card section">
+  <div style="font-size:13px;font-weight:600;margin-bottom:8px">🧪 Moduler Test Butonları (Tek Seferlik Test)</div>
+  <div class="btn-group">
+    <button class="blue" id="testCollect" style="background:#2563eb;color:#fff">📦 Sadece Depodan Topla</button>
+    <button class="purple" id="testCraft" style="background:#7c3aed;color:#fff">🔨 Sadece Örste Birleştir</button>
+    <button class="emerald" id="testSell" style="background:#059669;color:#fff">🏷️ Sadece God Helmet Sat</button>
+  </div>
+  <p class="btn-desc"><b>Sadece Depodan Topla:</b> /orders panosundan teslim edilen malzemeleri çeker ve tüm menü slotlarını loglar.<br>
+  <b>Sadece Örste Birleştir:</b> Sipariş vermeden, envanterdeki mevcut kask/kitaplarla 5 adımlı örs birleştirmesini test eder.<br>
+  <b>Sadece God Helmet Sat:</b> Envanterdeki hazır God Helmet'ı ele alıp /ah piyasa kontrolü ve zarar korumasıyla listeler.</p>
 </div>
 
 <div class="card section">
@@ -178,9 +190,11 @@ s.on('balance', function(b){
 
 document.getElementById('refreshBal').onclick = function(){ s.emit('queryBalance'); };
 document.getElementById('start').onclick = function(){ s.emit('start','full'); };
-document.getElementById('collect').onclick = function(){ s.emit('start','collect'); };
 document.getElementById('godHelmet').onclick = function(){ s.emit('start','god_helmet'); };
 document.getElementById('stop').onclick = function(){ s.emit('stop'); };
+document.getElementById('testCollect').onclick = function(){ s.emit('start','god_helmet_collect'); };
+document.getElementById('testCraft').onclick = function(){ s.emit('start','god_helmet_craft'); };
+document.getElementById('testSell').onclick = function(){ s.emit('start','god_helmet_sell'); };
 
 document.getElementById('btnExit').onclick = function(){
   if (!confirm('Bot oyundan cikartilsin mi?')) return;
