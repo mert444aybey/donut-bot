@@ -124,6 +124,9 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Blast Protection 4',
         itemId: 'enchanted_book',
+        signText: 'enchanted book',
+        pageClicks: [53, 53],
+        selectSlot: 7,
         orderSearchQuery: 'enchanted book blast protection 4',
         matchLore: 'blast protection',
         orderAmount: 1, // Non-stackable!
@@ -140,6 +143,9 @@ async function ensureAllMaterialsOrOrder(token) {
         toOrder.push({
           item: 'Enchanted Book Respiration 3',
           itemId: 'enchanted_book',
+          signText: 'enchanted book',
+          pageClicks: [53, 53],
+          selectSlot: 13,
           orderSearchQuery: 'enchanted book respiration 3',
           matchLore: 'respiration',
           orderAmount: 1, // Non-stackable!

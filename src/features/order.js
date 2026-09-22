@@ -19,16 +19,41 @@ const {
 // Siparis menusu adimlari (slot numaralari Donut SMP'de dogrulandi)
 function buildSteps(orderPrice, itemOverride) {
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : state.S);
-  return [
+  const signText = itemCfg.signText || itemCfg.item;
+  const pageClicks = Array.isArray(itemCfg.pageClicks) ? itemCfg.pageClicks : [];
+  const selectSlot = itemCfg.selectSlot !== undefined ? itemCfg.selectSlot : 0;
+
+  const steps = [
     { name: 'Siparis menusu',   type: 'CLICK', slot: 51, expectWindow: true },
     { name: 'Alt menu',         type: 'CLICK', slot: 8,  expectWindow: true },
     { name: 'Kategori',         type: 'CLICK', slot: 12, expectWindow: true },
-    { name: 'Item arama',       type: 'SIGN',  slot: 50, text: itemCfg.item },
-    { name: 'Done',             type: 'CLICK', slot: 0,  expectWindow: true },
-    { name: 'Miktar',           type: 'SIGN',  slot: 13, text: String(itemCfg.orderAmount) },
-    { name: 'Fiyat',            type: 'SIGN',  slot: 14, text: String(orderPrice) },
-    { name: 'Siparis onayi',    type: 'CLICK', slot: 16, expectWindow: false },
+    { name: 'Item arama',       type: 'SIGN',  slot: 50, text: signText },
   ];
+
+  for (let p = 0; p < pageClicks.length; p++) {
+    steps.push({
+      name: `Sayfa degistir (${p + 1}/${pageClicks.length})`,
+      type: 'CLICK',
+      slot: pageClicks[p],
+      expectWindow: true,
+    });
+  }
+
+  steps.push({
+    name: 'Item secimi',
+    type: 'CLICK',
+    slot: selectSlot,
+    expectWindow: true,
+    isItemSelect: true,
+  });
+
+  steps.push(
+    { name: 'Miktar',        type: 'SIGN',  slot: 13, text: String(itemCfg.orderAmount) },
+    { name: 'Fiyat',         type: 'SIGN',  slot: 14, text: String(orderPrice) },
+    { name: 'Siparis onayi', type: 'CLICK', slot: 16, expectWindow: false }
+  );
+
+  return steps;
 }
 
 // /order <itemId> veya /order enchanted book <büyü> panosunu acar
@@ -222,10 +247,10 @@ async function runOrderFlow(token, itemOverride) {
         await safeClick(step.slot);
         if (nextWin) await nextWin;
 
-        // Eger slot 0'a (Done / Item secimi) tiklandiysa ve farkli bir ekran (büyü ekrani) acildiysa:
-        if (step.slot === 0 && bot.currentWindow) {
+        // Eger item secimi yapildiysa ve farkli bir ekran (büyü secim ekrani vb.) acildiysa:
+        if (step.isItemSelect && bot.currentWindow) {
           const title = (titleOf(bot.currentWindow) || '').toLowerCase();
-          if (title.includes('enchant') || !title.includes('new order')) {
+          if (title.includes('enchant') || (!title.includes('new order') && !title.includes('your orders'))) {
             await handlePickEnchantments(token, itemCfg);
           }
         }
