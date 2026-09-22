@@ -62,6 +62,13 @@ const DEFAULT_SETTINGS = {
       minSellPrice: 1,
     }
   ],
+
+  // God Helmet (Auto-Enchant & Ors)
+  godHelmetSellPrice: 250000,
+  godHelmetMinSellPrice: 100000,
+  godHelmetUndercut: 1000,
+  godHelmetAutoBuyAnvil: true,
+  godHelmetMaxAnvilPrice: 500000,
 };
 
 const SCHEMA = {
@@ -105,6 +112,13 @@ const SCHEMA = {
 
   // Coklu Item / Portfoy
   portfolioEnabled:      { type: 'bool', label: 'Coklu item / Portfoy modu' },
+
+  // God Helmet (Auto-Enchant & Ors)
+  godHelmetSellPrice:     { type: 'int',  label: 'God Helmet Yedek Satis Fiyati',   min: 1, max: 1e12 },
+  godHelmetMinSellPrice:  { type: 'int',  label: 'God Helmet Taban Satis Fiyati',   min: 1, max: 1e12 },
+  godHelmetUndercut:      { type: 'int',  label: 'God Helmet Ucuzlatma (Undercut)', min: 0, max: 1e9 },
+  godHelmetAutoBuyAnvil:  { type: 'bool', label: 'Ors Yoksa AH\'den Otomatik Satin Al' },
+  godHelmetMaxAnvilPrice: { type: 'int',  label: 'AH\'den Ors Alirken Tavan Fiyat', min: 1, max: 1e12 },
 };
 
 function sanitize(input, base) {

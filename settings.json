@@ -71,5 +71,10 @@
       "undercutAmount": 100,
       "minSellPrice": 1
     }
-  ]
+  ],
+  "godHelmetSellPrice": 250000,
+  "godHelmetMinSellPrice": 100000,
+  "godHelmetUndercut": 1000,
+  "godHelmetAutoBuyAnvil": true,
+  "godHelmetMaxAnvilPrice": 500000
 }

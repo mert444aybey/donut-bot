@@ -128,9 +128,10 @@ ${navHtml('/')}
   <div class="btn-group">
     <button class="green" id="start">▶ Tam Dongu</button>
     <button class="blue" id="collect">📦 Sadece Topla</button>
+    <button class="amber" id="godHelmet">✨ God Helmet Üret & Sat</button>
     <button class="red" id="stop">■ Durdur</button>
   </div>
-  <p class="btn-desc">Tam Dongu: siparis ver → bekle → topla → tekrarla (hata olursa otomatik yeniden baslatir). Sadece Topla: tek seferlik toplama yapar.</p>
+  <p class="btn-desc">Tam Dongu: siparis ver → topla. God Helmet: envanterdeki kask ve kitaplarla akilli XP tasarruflu 5 adimli God Helmet uretip AH'de satar.</p>
 </div>
 
 <div class="card section">
@@ -177,6 +178,7 @@ s.on('balance', function(b){
 document.getElementById('refreshBal').onclick = function(){ s.emit('queryBalance'); };
 document.getElementById('start').onclick = function(){ s.emit('start','full'); };
 document.getElementById('collect').onclick = function(){ s.emit('start','collect'); };
+document.getElementById('godHelmet').onclick = function(){ s.emit('start','god_helmet'); };
 document.getElementById('stop').onclick = function(){ s.emit('stop'); };
 
 document.getElementById('btnExit').onclick = function(){
@@ -296,6 +298,43 @@ ${navHtml('/settings')}
 </div>
 
 <div class="settings-group">
+  <h3>✨ God Helmet / Auto-Enchant & Örs Ayarları</h3>
+  <div class="row">
+    <div style="flex:1">
+      <label>God Helmet Satış Fiyatı ($)</label>
+      <input type="number" id="godHelmetSellPrice">
+      <span class="hint">Piyasada ilan yoksa kullanılan varsayılan satış fiyatı</span>
+    </div>
+    <div style="flex:1">
+      <label>Taban Satış Fiyatı ($)</label>
+      <input type="number" id="godHelmetMinSellPrice">
+      <span class="hint">Fiyat kırarken inilebilecek en düşük taban koruması</span>
+    </div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div style="flex:1">
+      <label>Ucuzlatma Miktarı (Undercut $)</label>
+      <input type="number" id="godHelmetUndercut">
+      <span class="hint">En ucuz God Helmet'tan kaç $ ucuza koyulsun</span>
+    </div>
+    <div style="flex:1">
+      <label>Örs İçin Tavan Fiyat ($)</label>
+      <input type="number" id="godHelmetMaxAnvilPrice">
+      <span class="hint">Örs yoksa /ah üzerinden alınabilecek maksimum örs fiyatı</span>
+    </div>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <div class="field checkbox-field" style="margin:0">
+      <label>
+        <input type="checkbox" id="godHelmetAutoBuyAnvil">
+        <span><b>Örs Bulunamazsa /ah'den Otomatik Örs Satın Al</b></span>
+      </label>
+      <span class="hint">Etrafta veya çantada örs kalmadığında AH'den en ucuz örsü çeker ve kurar.</span>
+    </div>
+  </div>
+</div>
+
+<div class="settings-group">
   <div class="collapsible-header" id="advHeader">
     <span style="font-weight:700;font-size:14px;color:var(--muted)">⚙️ Gelismis Teknik Ayarlar</span>
     <span id="advToggle" style="font-size:12px;color:var(--accent)">[Goster ▼]</span>
@@ -366,7 +405,12 @@ var FIELDS = [
   ['humanDelays', 'checkbox'],
   ['antiAfk', 'checkbox'],
   ['portfolioEnabled', 'checkbox'],
-  ['verbose', 'checkbox']
+  ['verbose', 'checkbox'],
+  ['godHelmetSellPrice', 'number'],
+  ['godHelmetMinSellPrice', 'number'],
+  ['godHelmetUndercut', 'number'],
+  ['godHelmetAutoBuyAnvil', 'checkbox'],
+  ['godHelmetMaxAnvilPrice', 'number']
 ];
 
 var inputs = {};

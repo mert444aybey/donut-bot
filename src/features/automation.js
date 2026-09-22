@@ -8,9 +8,10 @@ const { sleep, humanSleep } = require('../utils/text');
 const { assertActive, closeWindowSafe } = require('../utils/windows');
 const { runOrderFlow, waitForOrderComplete } = require('./order');
 const { collectItems } = require('./collect');
+const { craftGodHelmet, sellGodHelmet } = require('./craft_helmet');
 
-const MODES = ['full', 'collect'];
-const MODE_LABELS = { full: 'tam dongu', collect: 'sadece topla' };
+const MODES = ['full', 'collect', 'god_helmet'];
+const MODE_LABELS = { full: 'tam dongu', collect: 'sadece topla', god_helmet: 'god helmet uret & sat' };
 
 // Kullanici DURDUR'a basmadigi surece, hata veya baglanti kesilmesi sonrasi
 // otomasyon kendini yeniden baslatir.
@@ -48,6 +49,27 @@ async function startAutomation(mode) {
     if (mode === 'collect') {
       await collectItems(token);
       log('Toplama tamamlandi.');
+      return;
+    }
+
+    if (mode === 'god_helmet') {
+      let helmetCycle = 0;
+      const S = state.S || {};
+      while (true) {
+        assertActive(token);
+        helmetCycle++;
+        log(`===== God Helmet Dongusu ${helmetCycle}${S.maxCycles > 0 ? '/' + S.maxCycles : ''} =====`);
+        await craftGodHelmet(token);
+        await humanSleep(1000);
+        await sellGodHelmet(token);
+        bumpStats({ cyclesCompleted: 1 });
+        log(`God Helmet dongusu ${helmetCycle} tamamlandi.`);
+        if (S.maxCycles > 0 && helmetCycle >= S.maxCycles) {
+          log('Dongu sayisina ulasildi.');
+          break;
+        }
+        await humanSleep(CFG.cycleDelayMs);
+      }
       return;
     }
 
