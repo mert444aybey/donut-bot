@@ -1,0 +1,14 @@
+{
+  "name": "donut-bot",
+  "version": "1.0.0",
+  "description": "Donut SMP orders + AH otomasyonu",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mineflayer": "latest",
+    "socket.io": "^4.7.5"
+  }
+}
