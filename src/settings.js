@@ -72,6 +72,12 @@ const DEFAULT_SETTINGS = {
   godHelmetMaxAnvilPrice: 500000,
   xpBottleOrderPrice: 250,
   xpBottleOrderAmount: 64,
+  diamondHelmetOrderPrice: 25000,
+  bookBlastOrderPrice: 15000,
+  bookRespOrderPrice: 15000,
+  bookMendingOrderPrice: 25000,
+  bookUnbOrderPrice: 15000,
+  bookAquaOrderPrice: 10000,
 };
 
 const SCHEMA = {
@@ -123,8 +129,14 @@ const SCHEMA = {
   godHelmetMinProfit:     { type: 'int',  label: 'God Helmet Minimum Kar Garantisi', min: 0, max: 1e9 },
   godHelmetAutoBuyAnvil:  { type: 'bool', label: 'Ors Yoksa AH\'den Otomatik Satin Al' },
   godHelmetMaxAnvilPrice: { type: 'int',  label: 'AH\'den Ors Alirken Tavan Fiyat', min: 1, max: 1e12 },
-  xpBottleOrderPrice:     { type: 'int',  label: 'XP Sisesi Siparis Fiyati ($)',    min: 1, max: 1e8 },
-  xpBottleOrderAmount:    { type: 'int',  label: 'XP Sisesi Siparis Miktari',       min: 1, max: 2304 },
+  xpBottleOrderPrice:      { type: 'int',  label: 'XP Sisesi Siparis Fiyati ($)',    min: 1, max: 1e8 },
+  xpBottleOrderAmount:     { type: 'int',  label: 'XP Sisesi Siparis Miktari',       min: 1, max: 2304 },
+  diamondHelmetOrderPrice: { type: 'int',  label: 'Elmas Kask Siparis Fiyati ($)',   min: 1, max: 1e8 },
+  bookBlastOrderPrice:     { type: 'int',  label: 'Blast Prot 4 Kitap Siparis ($)',  min: 1, max: 1e8 },
+  bookRespOrderPrice:      { type: 'int',  label: 'Respiration 3 Kitap Siparis ($)', min: 1, max: 1e8 },
+  bookMendingOrderPrice:   { type: 'int',  label: 'Mending Kitap Siparis ($)',       min: 1, max: 1e8 },
+  bookUnbOrderPrice:       { type: 'int',  label: 'Unbreaking 3 Kitap Siparis ($)',  min: 1, max: 1e8 },
+  bookAquaOrderPrice:      { type: 'int',  label: 'Aqua Affinity Kitap Siparis ($)', min: 1, max: 1e8 },
 };
 
 function sanitize(input, base) {

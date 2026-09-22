@@ -338,6 +338,42 @@ ${navHtml('/settings')}
   </div>
   <div class="row" style="margin-top:8px">
     <div style="flex:1">
+      <label>Elmas Kask Sipariş Fiyatı ($)</label>
+      <input type="number" id="diamondHelmetOrderPrice">
+      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
+    </div>
+    <div style="flex:1">
+      <label>Blast Protection 4 Kitap ($)</label>
+      <input type="number" id="bookBlastOrderPrice">
+      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
+    </div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div style="flex:1">
+      <label>Respiration 3 Kitap ($)</label>
+      <input type="number" id="bookRespOrderPrice">
+      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
+    </div>
+    <div style="flex:1">
+      <label>Mending Kitap ($)</label>
+      <input type="number" id="bookMendingOrderPrice">
+      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
+    </div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div style="flex:1">
+      <label>Unbreaking 3 Kitap ($)</label>
+      <input type="number" id="bookUnbOrderPrice">
+      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
+    </div>
+    <div style="flex:1">
+      <label>Aqua Affinity Kitap ($)</label>
+      <input type="number" id="bookAquaOrderPrice">
+      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
+    </div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div style="flex:1">
       <label>Örs İçin Tavan Fiyat ($)</label>
       <input type="number" id="godHelmetMaxAnvilPrice">
       <span class="hint">Örs yoksa /ah üzerinden alınabilecek maksimum örs fiyatı</span>
@@ -433,7 +469,13 @@ var FIELDS = [
   ['godHelmetMaxAnvilPrice', 'number'],
   ['godHelmetMinProfit', 'number'],
   ['xpBottleOrderPrice', 'number'],
-  ['xpBottleOrderAmount', 'number']
+  ['xpBottleOrderAmount', 'number'],
+  ['diamondHelmetOrderPrice', 'number'],
+  ['bookBlastOrderPrice', 'number'],
+  ['bookRespOrderPrice', 'number'],
+  ['bookMendingOrderPrice', 'number'],
+  ['bookUnbOrderPrice', 'number'],
+  ['bookAquaOrderPrice', 'number']
 ];
 
 var inputs = {};

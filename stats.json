@@ -1,10 +1,19 @@
 {
   "startedAt": 1790080722147,
-  "totalSpent": 0,
-  "ordersPlaced": 0,
-  "itemsOrdered": 0,
-  "cyclesCompleted": 0,
-  "itemsCollected": {},
+  "totalSpent": 1629000,
+  "totalEarned": 0,
+  "ordersPlaced": 6,
+  "itemsOrdered": 60,
+  "cyclesCompleted": 5,
+  "godHelmetsCrafted": 0,
+  "itemsCollected": {
+    "gold_block": 20,
+    "emerald_block": 10,
+    "iron_block": 10,
+    "diamond_block": 10
+  },
+  "categories": {},
+  "ledger": [],
   "history": [
     {
       "time": 1790082282900,
@@ -83,6 +92,96 @@
       "balance": 21929812,
       "spent": 0,
       "orders": 0
+    },
+    {
+      "time": 1790082864863,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082907224,
+      "balance": 21929812,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790082973870,
+      "balance": 21929812,
+      "spent": 271000,
+      "orders": 1
+    },
+    {
+      "time": 1790082991961,
+      "balance": 21929812,
+      "spent": 271000,
+      "orders": 1
+    },
+    {
+      "time": 1790083008624,
+      "balance": 21929812,
+      "spent": 408000,
+      "orders": 2
+    },
+    {
+      "time": 1790083039383,
+      "balance": 21929812,
+      "spent": 408000,
+      "orders": 2
+    },
+    {
+      "time": 1790083055610,
+      "balance": 21929812,
+      "spent": 429000,
+      "orders": 3
+    },
+    {
+      "time": 1790083080786,
+      "balance": 21929812,
+      "spent": 429000,
+      "orders": 3
+    },
+    {
+      "time": 1790083096973,
+      "balance": 21929812,
+      "spent": 1191000,
+      "orders": 4
+    },
+    {
+      "time": 1790083115508,
+      "balance": 21929812,
+      "spent": 1191000,
+      "orders": 4
+    },
+    {
+      "time": 1790083132378,
+      "balance": 21929812,
+      "spent": 1492000,
+      "orders": 5
+    },
+    {
+      "time": 1790083161086,
+      "balance": 21929812,
+      "spent": 1492000,
+      "orders": 5
+    },
+    {
+      "time": 1790083177873,
+      "balance": 21929812,
+      "spent": 1629000,
+      "orders": 6
+    },
+    {
+      "time": 1790083214311,
+      "balance": 1.4,
+      "spent": 1629000,
+      "orders": 6
+    },
+    {
+      "time": 1790083269617,
+      "balance": 21757832,
+      "spent": 1629000,
+      "orders": 6
     }
   ]
 }

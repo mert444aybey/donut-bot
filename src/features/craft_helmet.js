@@ -8,6 +8,8 @@ const { sleep, humanSleep, titleOf } = require('../utils/text');
 const { loreOf, snapshotWindow } = require('../utils/inspect');
 const { assertActive, waitForWindow, closeWindowSafe } = require('../utils/windows');
 const { ensureExperienceLevel, combineInAnvil } = require('./anvil');
+const { runCustomOrderFlow, waitForOrderComplete } = require('./order');
+const { collectItems } = require('./collect');
 
 // 1. Buyuleri Tanima
 function getEnchants(item) {
@@ -90,6 +92,135 @@ function checkHelmetMaterials() {
   };
 }
 
+// Malzemeleri Kontrol Et ve Eksik Olanlari /orders Uzerinden Otomatik Siparis Et
+async function ensureAllMaterialsOrOrder(token) {
+  const bot = state.bot;
+  assertActive(token);
+  const S = state.S || {};
+
+  const items = bot.inventory.items();
+  const toOrder = [];
+
+  // Zaten hazir God Helmet var mi?
+  if (items.some(isGodHelmet)) return;
+
+  // 1. Kask kontrolu
+  const hasHelmet = items.some(isCleanHelmet) || items.some(isStep1Helmet) || items.some(isStep3Helmet);
+  if (!hasHelmet) {
+    toOrder.push({
+      name: 'Diamond Helmet',
+      searchName: 'Diamond Helmet',
+      amount: 1,
+      price: S.diamondHelmetOrderPrice || 25000,
+      category: 'Kask',
+    });
+  }
+
+  // 2. Blast Protection 4 kontrolu
+  if (!items.some(isStep1Helmet) && !items.some(isStep3Helmet)) {
+    if (!items.some(isBlastProt4Book)) {
+      toOrder.push({
+        name: 'Enchanted Book Blast Protection 4',
+        searchName: 'Enchanted Book Blast Protection 4',
+        amount: 1,
+        price: S.bookBlastOrderPrice || 15000,
+        category: 'Kitap',
+      });
+    }
+  }
+
+  // 3. Respiration 3 & Mending kontrolu
+  if (!items.some(isStep3Helmet)) {
+    if (!items.some(isStep2Book)) {
+      if (!items.some(isResp3Book)) {
+        toOrder.push({
+          name: 'Enchanted Book Respiration 3',
+          searchName: 'Enchanted Book Respiration 3',
+          amount: 1,
+          price: S.bookRespOrderPrice || 15000,
+          category: 'Kitap',
+        });
+      }
+      if (!items.some(isMendingBook)) {
+        toOrder.push({
+          name: 'Enchanted Book Mending',
+          searchName: 'Enchanted Book Mending',
+          amount: 1,
+          price: S.bookMendingOrderPrice || 25000,
+          category: 'Kitap',
+        });
+      }
+    }
+  }
+
+  // 4. Unbreaking 3 & Aqua Affinity kontrolu
+  if (!items.some(isStep4Book)) {
+    if (!items.some(isUnbreaking3Book)) {
+      toOrder.push({
+        name: 'Enchanted Book Unbreaking 3',
+        searchName: 'Enchanted Book Unbreaking 3',
+        amount: 1,
+        price: S.bookUnbOrderPrice || 15000,
+        category: 'Kitap',
+      });
+    }
+    if (!items.some(isAquaAffinityBook)) {
+      toOrder.push({
+        name: 'Enchanted Book Aqua Affinity',
+        searchName: 'Enchanted Book Aqua Affinity',
+        amount: 1,
+        price: S.bookAquaOrderPrice || 10000,
+        category: 'Kitap',
+      });
+    }
+  }
+
+  // 5. XP Siseleri kontrolu
+  const xpCount = items.filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
+  if (xpCount < 30 && bot.experience.level < 10) {
+    const bottleQty = S.xpBottleOrderAmount || 64;
+    const bottlePrice = S.xpBottleOrderPrice || 250;
+    toOrder.push({
+      name: "Bottle o' Enchanting",
+      searchName: "Bottle o' Enchanting",
+      amount: bottleQty,
+      price: bottlePrice,
+      category: 'XP Şişesi',
+    });
+  }
+
+  if (toOrder.length === 0) {
+    dlog('God Helmet icin tum malzemeler envanterde hazir.');
+    return;
+  }
+
+  log(`Eksik malzemeler tespit edildi (${toOrder.length} kalem). /orders ile otomatik siparis ediliyor...`);
+
+  for (const itemOrder of toOrder) {
+    assertActive(token);
+    log(`Siparis veriliyor: ${itemOrder.amount}x ${itemOrder.name} @ $${itemOrder.price}...`);
+
+    await runCustomOrderFlow(itemOrder.searchName, itemOrder.amount, itemOrder.price, token);
+
+    recordTransaction({
+      type: 'EXPENSE',
+      category: itemOrder.category,
+      item: itemOrder.name,
+      amount: itemOrder.amount,
+      unitPrice: itemOrder.price,
+      total: itemOrder.amount * itemOrder.price,
+      note: 'God Helmet uretimi icin otomatik /orders alimi',
+    });
+
+    log(`Siparisin teslim edilmesi bekleniyor: ${itemOrder.name}...`);
+    await waitForOrderComplete(token, itemOrder.price);
+    await collectItems(token);
+    await humanSleep(1000);
+  }
+
+  log('Tum eksik malzemeler /orders uzerinden siparis edilip basariyla toplandi!');
+}
+
 // 2. 5 Adimli Birlestirme Agaci
 async function craftGodHelmet(token) {
   const bot = state.bot;
@@ -101,10 +232,8 @@ async function craftGodHelmet(token) {
     return godHelmet;
   }
 
-  const matStatus = checkHelmetMaterials();
-  if (!matStatus.ready) {
-    throw new Error(`Uretim icin eksik malzemeler var:\n  - ${matStatus.missing.join('\n  - ')}`);
-  }
+  // Malzemeleri kontrol et, eksik olanlari /orders uzerinden siparis et ve topla
+  await ensureAllMaterialsOrOrder(token);
 
   log('===== God Helmet Birlestirme Sureci Basliyor =====');
 
@@ -226,12 +355,12 @@ async function fetchLowestGodHelmetPrice(token) {
 
 function calculateGodHelmetCost() {
   const S = state.S || {};
-  const helmetCost = S.diamondHelmetCost || 25000;
-  const blastCost = S.bookBlastCost || 15000;
-  const respCost = S.bookRespCost || 15000;
-  const mendingCost = S.bookMendingCost || 25000;
-  const unbCost = S.bookUnbCost || 15000;
-  const aquaCost = S.bookAquaCost || 10000;
+  const helmetCost = S.diamondHelmetOrderPrice || S.diamondHelmetCost || 25000;
+  const blastCost = S.bookBlastOrderPrice || S.bookBlastCost || 15000;
+  const respCost = S.bookRespOrderPrice || S.bookRespCost || 15000;
+  const mendingCost = S.bookMendingOrderPrice || S.bookMendingCost || 25000;
+  const unbCost = S.bookUnbOrderPrice || S.bookUnbCost || 15000;
+  const aquaCost = S.bookAquaOrderPrice || S.bookAquaCost || 10000;
   const bottlePrice = S.xpBottleOrderPrice || 250;
   const xpCost = bottlePrice * 60; // 5 adimda harcanan yaklasik sise maliyeti
   const anvilDepreciation = 5000;  // Ors payi
