@@ -69,6 +69,7 @@ function extractItemEnchantments(item) {
         const list = Array.isArray(data.enchantments) ? data.enchantments : (Array.isArray(data.value) ? data.value : null);
         if (list) {
           for (const entry of list) {
+            if (!entry) continue;
             let eName = entry.name;
             if (!eName && entry.id !== undefined) {
               eName = typeof entry.id === 'string' ? entry.id : registry?.enchantments?.[entry.id]?.name;
@@ -76,9 +77,13 @@ function extractItemEnchantments(item) {
             add(eName, entry.level ?? entry.lvl);
           }
         } else {
-          for (const [key, lvl] of Object.entries(data)) {
+          // Minecraft 1.20.5+ / 1.21 protocol: buyuler data.levels icindedir!
+          const targetMap = (data.levels && typeof data.levels === 'object') ? data.levels : data;
+          for (const [key, lvl] of Object.entries(targetMap)) {
+            if (key === 'show_in_tooltip' || key === 'levels') continue;
             let eName = typeof key === 'string' && isNaN(key) ? key : registry?.enchantments?.[key]?.name;
-            add(eName, lvl);
+            const cleanLvl = typeof lvl === 'object' && lvl !== null ? (lvl.value ?? lvl.lvl ?? lvl.level) : lvl;
+            add(eName, cleanLvl);
           }
         }
       }

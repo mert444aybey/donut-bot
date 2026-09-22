@@ -576,11 +576,13 @@ async function craftGodHelmetOnly(token) {
     log('--- Adim 1/5: Helmet + Blast Protection 4 (Gereken: 8 Lv) ---');
     await ensureExperienceLevel(8, token);
     await combineInAnvil(isCleanHelmet, isBlastProt4Book, token);
-    s1Helmet = bot.inventory.items().find(isStep1Helmet);
-    if (!s1Helmet) throw new Error('Adim 1 basarisiz oldu (Blast Prot 4 kask olusmadi)!');
-  } else {
-    dlog('Adim 1 (Blast Prot 4 kask) zaten hazir, atlandi.');
+    await humanSleep(800);
+    s1Helmet = bot.inventory.items().find(isStep1Helmet) || bot.inventory.items().find((it) => it && it.name === 'diamond_helmet' && getEnchants(it).includes('blast_prot_4'));
+    if (!s1Helmet && !bot.inventory.items().some(isStep3Helmet)) {
+      throw new Error('Adim 1 basarisiz oldu (Blast Prot 4 kask olusmadi)!');
+    }
   }
+  log('✅ Adım 1 hazır: Blast Protection 4 kask mevcut.');
 
   // Adim 2: Book (Respiration 3) + Book (Mending) [2 lv]
   let s2Book = bot.inventory.items().find(isStep2Book);
@@ -588,22 +590,28 @@ async function craftGodHelmetOnly(token) {
     log('--- Adim 2/5: Respiration 3 + Mending (Gereken: 2 Lv) ---');
     await ensureExperienceLevel(2, token);
     await combineInAnvil(isResp3Book, isMendingBook, token);
-    s2Book = bot.inventory.items().find(isStep2Book);
-    if (!s2Book) throw new Error('Adim 2 basarisiz oldu (Resp 3 + Mending kitabi olusmadi)!');
-  } else {
-    dlog('Adim 2 (Resp 3 + Mending kitabi) veya Adim 3 kaski zaten hazir, atlandi.');
+    await humanSleep(800);
+    s2Book = bot.inventory.items().find(isStep2Book) || bot.inventory.items().find((it) => it && it.name === 'enchanted_book' && getEnchants(it).includes('resp_3') && getEnchants(it).includes('mending'));
+    if (!s2Book && !bot.inventory.items().some(isStep3Helmet)) {
+      throw new Error('Adim 2 basarisiz oldu (Resp 3 + Mending kitabi olusmadi)!');
+    }
   }
+  log('✅ Adım 2 hazır: Respiration 3 + Mending kitabı mevcut.');
 
   // Adim 3: Helmet (Blast Prot 4) + Book (Resp 3, Mending) [10 lv]
   if (!s3Helmet) {
     log('--- Adim 3/5: Helmet (Blast Prot 4) + Book (Resp 3, Mending) (Gereken: 10 Lv) ---');
     await ensureExperienceLevel(10, token);
-    await combineInAnvil(isStep1Helmet, isStep2Book, token);
-    s3Helmet = bot.inventory.items().find(isStep3Helmet);
+    await combineInAnvil(
+      (it) => isStep1Helmet(it) || (it && it.name === 'diamond_helmet' && getEnchants(it).includes('blast_prot_4')),
+      (it) => isStep2Book(it) || (it && it.name === 'enchanted_book' && getEnchants(it).includes('resp_3') && getEnchants(it).includes('mending')),
+      token
+    );
+    await humanSleep(800);
+    s3Helmet = bot.inventory.items().find(isStep3Helmet) || bot.inventory.items().find((it) => it && it.name === 'diamond_helmet' && getEnchants(it).includes('blast_prot_4') && getEnchants(it).includes('resp_3') && getEnchants(it).includes('mending'));
     if (!s3Helmet) throw new Error('Adim 3 basarisiz oldu (3 buyulu kask olusmadi)!');
-  } else {
-    dlog('Adim 3 (3 buyulu kask) zaten hazir, atlandi.');
   }
+  log('✅ Adım 3 hazır: 3 Büyülü Kask mevcut.');
 
   // Adim 4: Book (Unbreaking 3) + Book (Aqua Affinity) [2 lv]
   let s4Book = bot.inventory.items().find(isStep4Book);
@@ -611,18 +619,23 @@ async function craftGodHelmetOnly(token) {
     log('--- Adim 4/5: Unbreaking 3 + Aqua Affinity (Gereken: 2 Lv) ---');
     await ensureExperienceLevel(2, token);
     await combineInAnvil(isUnbreaking3Book, isAquaAffinityBook, token);
-    s4Book = bot.inventory.items().find(isStep4Book);
+    await humanSleep(800);
+    s4Book = bot.inventory.items().find(isStep4Book) || bot.inventory.items().find((it) => it && it.name === 'enchanted_book' && getEnchants(it).includes('unbreaking_3') && getEnchants(it).includes('aqua_affinity'));
     if (!s4Book) throw new Error('Adim 4 basarisiz oldu (Unbreaking 3 + Aqua kitabi olusmadi)!');
-  } else {
-    dlog('Adim 4 (Unbreaking 3 + Aqua kitabi) zaten hazir, atlandi.');
   }
+  log('✅ Adım 4 hazır: Unbreaking 3 + Aqua Affinity kitabı mevcut.');
 
   // Adim 5: Final God Helmet [9 lv]
   log('--- Adim 5/5: Final Birlestirme ➔ GOD HELMET (Gereken: 9 Lv) ---');
   await ensureExperienceLevel(9, token);
-  await combineInAnvil(isStep3Helmet, isStep4Book, token);
+  await combineInAnvil(
+    (it) => isStep3Helmet(it) || (it && it.name === 'diamond_helmet' && getEnchants(it).includes('blast_prot_4') && getEnchants(it).includes('resp_3') && getEnchants(it).includes('mending')),
+    (it) => isStep4Book(it) || (it && it.name === 'enchanted_book' && getEnchants(it).includes('unbreaking_3') && getEnchants(it).includes('aqua_affinity')),
+    token
+  );
+  await humanSleep(800);
 
-  godHelmet = bot.inventory.items().find(isGodHelmet);
+  godHelmet = bot.inventory.items().find(isGodHelmet) || bot.inventory.items().find((it) => it && it.name === 'diamond_helmet' && getEnchants(it).length >= 5);
   if (!godHelmet) throw new Error('Adim 5 basarisiz oldu (God Helmet olusmadi)!');
 
   log('🎉 GOD HELMET BASARIYLA URETILDI!');
