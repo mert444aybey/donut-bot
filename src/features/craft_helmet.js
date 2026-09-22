@@ -207,17 +207,15 @@ async function ensureAllMaterialsOrOrder(token) {
     return;
   }
 
-  log(`Eksik malzemeler tespit edildi (${toOrder.length} kalem). /orders ile otomatik siparis ediliyor...`);
+  log(`🚀 TOPLU SIPARIS: Eksik ${toOrder.length} kalem malzeme icin siparisler pes pese /orders panosuna veriliyor...`);
 
+  // 1. ASAMA: Tum eksik malzemelerin siparisini pes pese (paralel) panoya ver
   for (const itemOrder of toOrder) {
     assertActive(token);
-    log(`Siparis hazirlaniyor: ${itemOrder.orderAmount}x ${itemOrder.item}...`);
+    log(`Siparis panoya veriliyor: ${itemOrder.orderAmount}x ${itemOrder.item}...`);
 
-    let placedPrice;
-    while (true) {
-      assertActive(token);
-      placedPrice = await runOrderFlow(token, itemOrder);
-
+    try {
+      const placedPrice = await runOrderFlow(token, itemOrder);
       recordTransaction({
         type: 'EXPENSE',
         category: itemOrder.category,
@@ -225,22 +223,54 @@ async function ensureAllMaterialsOrOrder(token) {
         amount: itemOrder.orderAmount,
         unitPrice: placedPrice,
         total: itemOrder.orderAmount * placedPrice,
-        note: 'God Helmet uretimi icin otomatik /orders alimi',
+        note: 'God Helmet uretimi icin toplu /orders alimi',
       });
-
-      const res = await waitForOrderComplete(token, placedPrice, itemOrder);
-      if (res.completed) break;
-
-      log(`Siparis tamamlanamadi (${res.reason}), yeniden deneniyor...`);
-      await humanSleep(2000);
+      await humanSleep(1000);
+    } catch (err) {
+      log(`Bilgi: ${itemOrder.item} siparisi verilirken (${err.message}), diger malzemelere devam ediliyor.`);
+      closeWindowSafe();
+      await humanSleep(600);
     }
-
-    log(`Siparis tamamlandi, toplanıyor: ${itemOrder.item}...`);
-    await collectItems(token);
-    await humanSleep(1000);
   }
 
-  log('Tum eksik malzemeler /orders uzerinden siparis edilip basariyla toplandi!');
+  log(`✅ Tum eksik siparisler panoya verildi! Paralel teslimatlar bekleniyor...`);
+
+  // 2. ASAMA: Tum teslimatlari paralel bekle ve periyodik olarak topla
+  const timeoutMs = Math.max(1, S.orderTimeoutMin || 10) * 60 * 1000;
+  const startWait = Date.now();
+  let lastCollect = 0;
+
+  while (true) {
+    assertActive(token);
+
+    const now = Date.now();
+    // Her 25-30 saniyede bir veya siparis tamamlandi sinyali geldiginde stash'ten topla
+    if (state.orderComplete || (now - lastCollect >= 30000)) {
+      state.orderComplete = false;
+      lastCollect = now;
+      log('📦 Siparis teslimatlari kontrol ediliyor, teslim edilenler toplaniyor...');
+      await collectItems(token);
+      await humanSleep(800);
+
+      const status = checkHelmetMaterials();
+      if (status.ready) {
+        log('🎉 Tum malzemeler envanterde eksiksiz hazir! Ors ile birlestirme surecine geciliyor...');
+        break;
+      } else {
+        log(`⏳ Eksik malzemeler bekleniyor (${status.missing.length} kalem): ${status.missing.join(', ')}...`);
+      }
+    }
+
+    if (Date.now() - startWait > timeoutMs) {
+      log(`⏱️ Toplu siparis bekleme suresi (${S.orderTimeoutMin || 10} dk) doldu. Son kontrol yapiliyor...`);
+      await collectItems(token);
+      const status = checkHelmetMaterials();
+      if (status.ready) break;
+      throw new Error(`Toplu siparis suresi doldu, eksikler var: ${status.missing.join(', ')}`);
+    }
+
+    await sleep(1000);
+  }
 }
 
 // 2. 5 Adimli Birlestirme Agaci
