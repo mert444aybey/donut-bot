@@ -20,10 +20,10 @@ function getEnchants(item) {
   try {
     const rawList = extractItemEnchantments(item);
     for (const e of rawList) {
-      if (e.name === 'blast_protection' && e.lvl === 4 && !enchants.includes('blast_prot_4')) enchants.push('blast_prot_4');
-      if (e.name === 'respiration' && e.lvl === 3 && !enchants.includes('resp_3')) enchants.push('resp_3');
+      if (e.name === 'blast_protection' && Number(e.lvl) >= 4 && !enchants.includes('blast_prot_4')) enchants.push('blast_prot_4');
+      if (e.name === 'respiration' && Number(e.lvl) >= 3 && !enchants.includes('resp_3')) enchants.push('resp_3');
       if (e.name === 'mending' && !enchants.includes('mending')) enchants.push('mending');
-      if (e.name === 'unbreaking' && e.lvl === 3 && !enchants.includes('unbreaking_3')) enchants.push('unbreaking_3');
+      if (e.name === 'unbreaking' && Number(e.lvl) >= 3 && !enchants.includes('unbreaking_3')) enchants.push('unbreaking_3');
       if (e.name === 'aqua_affinity' && !enchants.includes('aqua_affinity')) enchants.push('aqua_affinity');
     }
   } catch (_) {}
@@ -33,19 +33,31 @@ function getEnchants(item) {
   const name = (item.displayName || item.name || '').toLowerCase();
   const allText = `${name} ${lore}`;
 
-  if (!enchants.includes('blast_prot_4') && (allText.includes('blast protection 4') || allText.includes('blast protection iv'))) {
+  if (!enchants.includes('blast_prot_4') && (
+    allText.includes('blast protection 4') || allText.includes('blast protection iv') ||
+    allText.includes('blast prot 4') || allText.includes('blast prot iv') ||
+    (allText.includes('blast') && (allText.includes('4') || allText.includes('iv')))
+  )) {
     enchants.push('blast_prot_4');
   }
-  if (!enchants.includes('resp_3') && (allText.includes('respiration 3') || allText.includes('respiration iii'))) {
+  if (!enchants.includes('resp_3') && (
+    allText.includes('respiration 3') || allText.includes('respiration iii') ||
+    (allText.includes('respiration') && (allText.includes('3') || allText.includes('iii')))
+  )) {
     enchants.push('resp_3');
   }
   if (!enchants.includes('mending') && allText.includes('mending')) {
     enchants.push('mending');
   }
-  if (!enchants.includes('unbreaking_3') && (allText.includes('unbreaking 3') || allText.includes('unbreaking iii'))) {
+  if (!enchants.includes('unbreaking_3') && (
+    allText.includes('unbreaking 3') || allText.includes('unbreaking iii') ||
+    (allText.includes('unbreaking') && (allText.includes('3') || allText.includes('iii')))
+  )) {
     enchants.push('unbreaking_3');
   }
-  if (!enchants.includes('aqua_affinity') && (allText.includes('aqua affinity') || allText.includes('aqua affinity 1') || allText.includes('aqua affinity i'))) {
+  if (!enchants.includes('aqua_affinity') && (
+    allText.includes('aqua affinity') || allText.includes('aqua affinity 1') || allText.includes('aqua affinity i')
+  )) {
     enchants.push('aqua_affinity');
   }
 
@@ -284,16 +296,34 @@ async function collectHelmetMaterials(token) {
       closeWindowSafe();
       continue;
     }
-    await humanSleep(500);
+    assertActive(token);
+
+    // Sandık içeriklerinin sunucudan yüklenmesini bekle (en fazla 4 saniye)
+    const startWait = Date.now();
+    while (Date.now() - startWait < 4000) {
+      collectWin = bot.currentWindow || collectWin;
+      const hasItem = collectWin && collectWin.slots && collectWin.slots.slice(0, collectWin.inventoryStart).some(
+        (it) => it && !it.name.includes('glass') && it.name !== 'barrier' && it.name !== 'arrow' && it.name !== 'bedrock'
+      );
+      if (hasItem) break;
+      await sleep(150);
+    }
+    collectWin = bot.currentWindow || collectWin;
+    await humanSleep(300);
     assertActive(token);
 
     // 6. Teslimat sandigi icinde esyayi bul ve shift-click yap
+    // Bu sandik zaten hedef siparisin kendi ozel teslimat sandigidir!
     let itemTaken = false;
     for (let cs = 0; cs < collectWin.inventoryStart; cs++) {
       const it = collectWin.slots[cs];
-      if (!it || it.name.includes('glass') || it.name === 'barrier') continue;
+      if (!it || it.name.includes('glass') || it.name === 'barrier' || it.name === 'arrow' || it.name === 'bedrock') continue;
 
-      if (matchesTargetOrder(target, it) || (target.predicate && target.predicate(it))) {
+      const isTargetItem = (target.id === 'helmet' && it.name === 'diamond_helmet') ||
+                           (target.id === 'xp' && it.name === 'experience_bottle') ||
+                           (['blast', 'resp', 'mending', 'unb', 'aqua'].includes(target.id) && it.name === 'enchanted_book');
+
+      if (isTargetItem) {
         log(`📦 Teslimat sandığından 1 adet ${target.name} alınıyor (slot ${cs})...`);
         await humanSleep(state.S.clickDelayMs || 500);
         await bot.clickWindow(cs, 0, 1); // shift-click
