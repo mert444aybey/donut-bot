@@ -11,6 +11,7 @@ const {
   safeClick,
   itemCount,
   closeWindowSafe,
+  executeCommandWindow,
 } = require('../utils/windows');
 
 function isCollectableItem(it) {
@@ -60,8 +61,7 @@ async function collectItems(token) {
   await humanSleep(400);
 
   const before = itemCount();
-  bot.chat('/orders');
-  await waitForWindow();
+  await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
 
   for (const step of CFG.COLLECT_PATH) {
     assertActive(token);

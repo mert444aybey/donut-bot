@@ -7,7 +7,7 @@ const { log, dlog } = require('./logger');
 const { sleep, titleOf } = require('./utils/text');
 const { pushSnapshot } = require('./features/probe');
 
-const CHAT_INTERESTING = /order|listed|listing|sold|auction|limit|cooldown|not enough|cannot|can't|invalid|error|do not repeat|full|too fast|purchased|bought|balance|bakiye/i;
+const CHAT_INTERESTING = /order|listed|listing|sold|auction|limit|cooldown|not enough|cannot|can't|invalid|error|do not repeat|full|too fast|purchased|bought|balance|bakiye|unknown|disabled|slow down|wait|limbo|lobby|hub|realm/i;
 
 let balanceTimer = null;
 let updateSnapshotDebounce = null;

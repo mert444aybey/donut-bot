@@ -40,6 +40,7 @@ function waitForSignEditor(timeoutMs = CFG.signWaitMs) {
 }
 
 function submitSign(packet, text) {
+  state.lastSignPacket = null;
   state.bot._client.write('update_sign', {
     location: packet.location,
     isFrontText: packet.isFrontText !== undefined ? packet.isFrontText : true,
@@ -89,9 +90,39 @@ function itemCount(targetItemId) {
 
 function closeWindowSafe() {
   try {
+    state.lastSignPacket = null;
     const bot = state.bot;
     if (bot && bot.currentWindow) bot.closeWindow(bot.currentWindow);
   } catch (_) {}
+}
+
+// Bir chat komutu gondererek pencere acilmasini saglar; yaris durumlarini (race condition)
+// onlemek icin listener'i komuttan once kaydeder ve gerekirse tekrar dener.
+async function executeCommandWindow(cmd, timeoutMs = CFG.windowTimeoutMs, maxRetries = 2) {
+  const bot = state.bot;
+  if (!bot) throw new Error('Bot bagli degil');
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    closeWindowSafe();
+    await humanSleep(450);
+
+    const winPromise = waitForWindow(timeoutMs);
+    winPromise.catch(() => {});
+
+    dlog(`Komut gonderiliyor (${attempt}/${maxRetries}): ${cmd}`);
+    bot.chat(cmd);
+
+    try {
+      const win = await winPromise;
+      return win;
+    } catch (err) {
+      if (attempt === maxRetries) {
+        throw new Error(`${cmd} penceresi acilmadi (${err.message})`);
+      }
+      dlog(`"${cmd}" penceresi acilmadi, tekrar deneniyor (${attempt + 1}/${maxRetries})...`);
+      await humanSleep(1500);
+    }
+  }
 }
 
 // AH onay penceresi mi? Once basliga bakar, basarisiz olursa (title decode
@@ -122,5 +153,6 @@ module.exports = {
   safeClick,
   itemCount,
   closeWindowSafe,
+  executeCommandWindow,
   isConfirmWindow,
 };

@@ -225,11 +225,11 @@ async function ensureAllMaterialsOrOrder(token) {
         total: itemOrder.orderAmount * placedPrice,
         note: 'God Helmet uretimi icin toplu /orders alimi',
       });
-      await humanSleep(1000);
+      await humanSleep(2000);
     } catch (err) {
       log(`Bilgi: ${itemOrder.item} siparisi verilirken (${err.message}), diger malzemelere devam ediliyor.`);
       closeWindowSafe();
-      await humanSleep(600);
+      await humanSleep(1500);
     }
   }
 

@@ -9,5 +9,12 @@
   "itemsCollected": {},
   "categories": {},
   "ledger": [],
-  "history": []
+  "history": [
+    {
+      "time": 1790088493713,
+      "balance": 21893833,
+      "spent": 0,
+      "orders": 0
+    }
+  ]
 }

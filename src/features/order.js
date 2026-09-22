@@ -13,6 +13,7 @@ const {
   submitSign,
   safeClick,
   closeWindowSafe,
+  executeCommandWindow,
 } = require('../utils/windows');
 
 // Siparis menusu adimlari (slot numaralari Donut SMP'de dogrulandi)
@@ -35,19 +36,13 @@ async function fetchOrderReferencePrice(token, itemOverride) {
   const S = state.S;
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   assertActive(token);
-  closeWindowSafe();
-  await humanSleep(400);
 
   const cmd = `${S.orderSearchCmd} ${itemCfg.itemId}`.trim();
   dlog(`Siparis referans fiyati sorgulaniyor: ${cmd}`);
 
-  const winPromise = waitForWindow(CFG.marketWindowTimeoutMs);
-  winPromise.catch(() => {});
-  state.bot.chat(cmd);
-
   let win;
   try {
-    win = await winPromise;
+    win = await executeCommandWindow(cmd, CFG.marketWindowTimeoutMs, 2);
   } catch (e) {
     log(`Siparis panosu penceresi acilmadi (${e.message}), yedek fiyat kullanilacak.`);
     return null;
@@ -116,11 +111,8 @@ async function cancelActiveOrder(token, itemOverride) {
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : state.S);
   log(`Aktif siparis iptal ediliyor: ${itemCfg.item}...`);
   assertActive(token);
-  closeWindowSafe();
-  await humanSleep(500);
 
-  bot.chat('/orders');
-  await waitForWindow();
+  await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
   assertActive(token);
 
   // Slot 51: Your Orders menusu
@@ -215,8 +207,7 @@ async function runOrderFlow(token, itemOverride) {
   const steps = buildSteps(orderPrice, itemOverride);
   log(`Siparis veriliyor: ${itemCfg.orderAmount}x ${itemCfg.item} @ $${orderPrice}`);
 
-  bot.chat('/orders');
-  await waitForWindow();
+  await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
 
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];
