@@ -258,6 +258,7 @@ function snapshotWindow(win) {
       display: displayOf(it),
       lore,
       prices: parsePrices(lore.join(' | ')),
+      raw: it,
     });
   }
   return { title: titleOf(win), type: win.type, slots };

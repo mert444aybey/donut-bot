@@ -654,6 +654,37 @@ async function craftGodHelmet(token) {
 }
 
 // 3. Piyasa Taramasi ve Satis
+function isGodHelmetMarketItem(it) {
+  if (!it || it.name !== 'diamond_helmet') return false;
+
+  // 1. Eger raw item varsa getEnchants ile kesin kontrol
+  if (it.raw) {
+    const enchs = getEnchants(it.raw);
+    const hasAll = ['blast_prot_4', 'resp_3', 'mending', 'unbreaking_3', 'aqua_affinity'].every((e) => enchs.includes(e));
+    if (hasAll) return true;
+  }
+
+  // 2. Lore ve display metni uzerinden kontrol (hem Romen rakamlari hem sayisal format destekli)
+  const text = ((it.lore || []).join(' ') + ' ' + (it.display || '')).toLowerCase();
+
+  const hasBlast = text.includes('blast protection 4') || text.includes('blast protection iv') ||
+                   text.includes('blast prot 4') || text.includes('blast prot iv') ||
+                   (text.includes('blast') && (text.includes('4') || text.includes('iv')));
+
+  const hasResp = text.includes('respiration 3') || text.includes('respiration iii') ||
+                  (text.includes('respiration') && (text.includes('3') || text.includes('iii')));
+
+  const hasMending = text.includes('mending');
+
+  const hasUnb = text.includes('unbreaking 3') || text.includes('unbreaking iii') ||
+                 (text.includes('unbreaking') && (text.includes('3') || text.includes('iii')));
+
+  const hasAqua = text.includes('aqua affinity') || text.includes('aqua_affinity');
+
+  return hasBlast && hasResp && hasMending && hasUnb && hasAqua;
+}
+
+// /ah pazarinda en ucuz God Helmet fiyatini sorgular
 async function fetchLowestGodHelmetPrice(token) {
   const bot = state.bot;
   assertActive(token);
@@ -676,7 +707,18 @@ async function fetchLowestGodHelmetPrice(token) {
   }
   assertActive(token);
 
-  await humanSleep(CFG.marketReadDelayMs);
+  // AH slotlarının sunucudan gelmesini bekle (en fazla 3 sn)
+  const startWait = Date.now();
+  while (Date.now() - startWait < 3000) {
+    const curWin = bot.currentWindow || win;
+    const hasItems = curWin && curWin.slots && curWin.slots.slice(0, curWin.inventoryStart).some(
+      (it) => it && it.name === 'diamond_helmet'
+    );
+    if (hasItems) break;
+    await sleep(150);
+  }
+  await humanSleep(400);
+
   const snap = snapshotWindow(bot.currentWindow || win);
   closeWindowSafe();
   await humanSleep(300);
@@ -684,15 +726,10 @@ async function fetchLowestGodHelmetPrice(token) {
   if (!snap) return null;
 
   let lowest = null;
+  let matchCount = 0;
   for (const it of snap.slots) {
-    if (!it || it.name !== 'diamond_helmet') continue;
-    const text = ((it.lore || []).join(' ') + ' ' + (it.display || '')).toLowerCase();
-    const isGod = text.includes('blast protection 4') &&
-                  text.includes('respiration 3') &&
-                  text.includes('mending') &&
-                  text.includes('unbreaking 3') &&
-                  text.includes('aqua affinity');
-    if (!isGod) continue;
+    if (!isGodHelmetMarketItem(it)) continue;
+    matchCount++;
 
     for (const p of it.prices) {
       if (lowest === null || p.value < lowest) lowest = p.value;
@@ -700,9 +737,9 @@ async function fetchLowestGodHelmetPrice(token) {
   }
 
   if (lowest !== null) {
-    log(`Piyasadaki en ucuz God Helmet: $${lowest.toLocaleString()}`);
+    log(`Piyasadaki en ucuz God Helmet: $${lowest.toLocaleString()} (${matchCount} ilan tarandı)`);
   } else {
-    dlog('Piyasada eslesen God Helmet ilani bulunamadi.');
+    log('Piyasada eslesen God Helmet ilani bulunamadi, varsayılan satış fiyatı uygulanacak.');
   }
   return lowest;
 }
