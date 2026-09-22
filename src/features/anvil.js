@@ -309,7 +309,7 @@ async function openAnvilGUI(anvilBlock, token) {
     await bot.lookAt(lookTarget, true);
     await humanSleep(250);
 
-    const winPromise = waitForWindow(4000);
+    const winPromise = waitForWindow(7000);
     winPromise.catch(() => {});
 
     try {

@@ -28,36 +28,22 @@ function getEnchants(item) {
     }
   } catch (_) {}
 
-  // 2. Metin analizi yedegi (custom lore ve displayName)
-  const lore = (loreOf(item) || []).join(' ').toLowerCase();
-  const name = (item.displayName || item.name || '').toLowerCase();
-  const allText = `${name} ${lore}`;
+  // 2. Metin analizi yedegi (satir bazli kesin regex ile)
+  const lines = [item.displayName, item.name, ...(loreOf(item) || [])].filter(Boolean);
 
-  if (!enchants.includes('blast_prot_4') && (
-    allText.includes('blast protection 4') || allText.includes('blast protection iv') ||
-    allText.includes('blast prot 4') || allText.includes('blast prot iv') ||
-    (allText.includes('blast') && (allText.includes('4') || allText.includes('iv')))
-  )) {
+  if (!enchants.includes('blast_prot_4') && lines.some((l) => /\bblast\s+prot(?:ection)?\s+(?:iv|4)\b/i.test(l))) {
     enchants.push('blast_prot_4');
   }
-  if (!enchants.includes('resp_3') && (
-    allText.includes('respiration 3') || allText.includes('respiration iii') ||
-    (allText.includes('respiration') && (allText.includes('3') || allText.includes('iii')))
-  )) {
+  if (!enchants.includes('resp_3') && lines.some((l) => /\brespiration\s+(?:iii|3)\b/i.test(l))) {
     enchants.push('resp_3');
   }
-  if (!enchants.includes('mending') && allText.includes('mending')) {
+  if (!enchants.includes('mending') && lines.some((l) => /\bmending\b/i.test(l))) {
     enchants.push('mending');
   }
-  if (!enchants.includes('unbreaking_3') && (
-    allText.includes('unbreaking 3') || allText.includes('unbreaking iii') ||
-    (allText.includes('unbreaking') && (allText.includes('3') || allText.includes('iii')))
-  )) {
+  if (!enchants.includes('unbreaking_3') && lines.some((l) => /\bunbreaking\s+(?:iii|3)\b/i.test(l))) {
     enchants.push('unbreaking_3');
   }
-  if (!enchants.includes('aqua_affinity') && (
-    allText.includes('aqua affinity') || allText.includes('aqua affinity 1') || allText.includes('aqua affinity i')
-  )) {
+  if (!enchants.includes('aqua_affinity') && lines.some((l) => /\baqua\s+affinity\b/i.test(l))) {
     enchants.push('aqua_affinity');
   }
 
@@ -664,22 +650,14 @@ function isGodHelmetMarketItem(it) {
     if (hasAll) return true;
   }
 
-  // 2. Lore ve display metni uzerinden kontrol (hem Romen rakamlari hem sayisal format destekli)
-  const text = ((it.lore || []).join(' ') + ' ' + (it.display || '')).toLowerCase();
+  // 2. Lore satirlari uzerinden kesin regex kontrolu (fiyat ve diger sayilarla karismayacak sekilde satir satir)
+  const lines = [it.display, ...(Array.isArray(it.lore) ? it.lore : [])].filter(Boolean);
 
-  const hasBlast = text.includes('blast protection 4') || text.includes('blast protection iv') ||
-                   text.includes('blast prot 4') || text.includes('blast prot iv') ||
-                   (text.includes('blast') && (text.includes('4') || text.includes('iv')));
-
-  const hasResp = text.includes('respiration 3') || text.includes('respiration iii') ||
-                  (text.includes('respiration') && (text.includes('3') || text.includes('iii')));
-
-  const hasMending = text.includes('mending');
-
-  const hasUnb = text.includes('unbreaking 3') || text.includes('unbreaking iii') ||
-                 (text.includes('unbreaking') && (text.includes('3') || text.includes('iii')));
-
-  const hasAqua = text.includes('aqua affinity') || text.includes('aqua_affinity');
+  const hasBlast = lines.some((l) => /\bblast\s+prot(?:ection)?\s+(?:iv|4)\b/i.test(l));
+  const hasResp = lines.some((l) => /\brespiration\s+(?:iii|3)\b/i.test(l));
+  const hasMending = lines.some((l) => /\bmending\b/i.test(l));
+  const hasUnb = lines.some((l) => /\bunbreaking\s+(?:iii|3)\b/i.test(l));
+  const hasAqua = lines.some((l) => /\baqua\s+affinity\b/i.test(l));
 
   return hasBlast && hasResp && hasMending && hasUnb && hasAqua;
 }
@@ -688,34 +666,28 @@ function isGodHelmetMarketItem(it) {
 async function fetchLowestGodHelmetPrice(token) {
   const bot = state.bot;
   assertActive(token);
-  closeWindowSafe();
-  await humanSleep(400);
 
   const cmd = '/ah diamond_helmet Blast Protection 4 Respiration 3 Mending Unbreaking 3 Aqua Affinity';
   dlog(`God Helmet piyasa fiyati sorgulaniyor: ${cmd}`);
 
-  const winPromise = waitForWindow(CFG.marketWindowTimeoutMs);
-  winPromise.catch(() => {});
-  bot.chat(cmd);
-
   let win;
   try {
-    win = await winPromise;
+    win = await executeCommandWindow(cmd, 10000, 2);
   } catch (e) {
-    log(`Piyasa penceresi acilmadi (${e.message}), yedek fiyat kullanilacak.`);
+    log(`Piyasa penceresi acilmadi (${e.message}), varsayılan taban fiyat uygulanacak.`);
     return null;
   }
   assertActive(token);
 
-  // AH slotlarının sunucudan gelmesini bekle (en fazla 3 sn)
+  // AH slotlarının sunucudan gelmesini bekle (en fazla 4 sn)
   const startWait = Date.now();
-  while (Date.now() - startWait < 3000) {
+  while (Date.now() - startWait < 4000) {
     const curWin = bot.currentWindow || win;
     const hasItems = curWin && curWin.slots && curWin.slots.slice(0, curWin.inventoryStart).some(
       (it) => it && it.name === 'diamond_helmet'
     );
     if (hasItems) break;
-    await sleep(150);
+    await sleep(200);
   }
   await humanSleep(400);
 
@@ -732,14 +704,17 @@ async function fetchLowestGodHelmetPrice(token) {
     matchCount++;
 
     for (const p of it.prices) {
-      if (lowest === null || p.value < lowest) lowest = p.value;
+      // Bir God Helmet asla $100,000 altinda olamaz; bakiye/harcama gibi sahte sayilari filtrele
+      if (p.value >= 100000 && (lowest === null || p.value < lowest)) {
+        lowest = p.value;
+      }
     }
   }
 
   if (lowest !== null) {
-    log(`Piyasadaki en ucuz God Helmet: $${lowest.toLocaleString()} (${matchCount} ilan tarandı)`);
+    log(`Piyasadaki en ucuz God Helmet: $${lowest.toLocaleString()} (${matchCount} gerçek God Helmet ilanı tarandı)`);
   } else {
-    log('Piyasada eslesen God Helmet ilani bulunamadi, varsayılan satış fiyatı uygulanacak.');
+    log('Piyasada geçerli 5 büyülü God Helmet ilanı bulunamadı, varsayılan taban fiyat uygulanacak.');
   }
   return lowest;
 }
@@ -761,11 +736,11 @@ function calculateGodHelmetCost() {
 
 function computeGodHelmetSellPrice(lowest) {
   const S = state.S || {};
-  const fallback = S.godHelmetSellPrice || 250000;
-  const minPriceSetting = S.godHelmetMinSellPrice || 120000;
+  const fallback = Math.max(900000, S.godHelmetSellPrice || 900000);
+  const minPriceSetting = Math.max(900000, S.godHelmetMinSellPrice || 900000);
   const undercut = S.godHelmetUndercut || 1000;
   const totalCost = calculateGodHelmetCost();
-  const minProfitMargin = S.godHelmetMinProfit || 25000; // Asla zarara girmemek icin garanti kar
+  const minProfitMargin = S.godHelmetMinProfit || 25000;
   const absoluteFloor = Math.max(minPriceSetting, totalCost + minProfitMargin);
 
   if (lowest === null || lowest === undefined) {
@@ -774,7 +749,7 @@ function computeGodHelmetSellPrice(lowest) {
 
   let price = lowest - undercut;
   if (price < absoluteFloor) {
-    log(`🛡️ ZARAR ONLEME KORUMASI DEVREDE: Piyasadaki en ucuz God Helmet ($${lowest.toLocaleString()}) toplam maliyetimiz ($${totalCost.toLocaleString()}) ve kar hedefimizin altinda! Asla zarar etmemek icin taban fiyattan ($${absoluteFloor.toLocaleString()}) listeleniyor.`);
+    log(`🛡️ TABAN FİYAT KORUMASI: Pazardaki en ucuz ilan ($${lowest.toLocaleString()}) minimum taban fiyatımızın ($${absoluteFloor.toLocaleString()}) altında. Zarar etmemek ve hedefin altına inmemek için $${absoluteFloor.toLocaleString()} fiyatından listeleniyor.`);
     price = absoluteFloor;
   }
   return Math.round(price);

@@ -15,8 +15,8 @@ const CFG = {
 
   reconnectDelayMs: 15000,
   autoRestartDelayMs: 5 * 60 * 1000,
-  windowTimeoutMs: 8000,
-  signWaitMs: 5000,
+  windowTimeoutMs: 12000,
+  signWaitMs: 7000,
   signTypeDelayMs: 900,
   reopenWaitMs: 12000,
   slotWaitMs: 4000,
@@ -51,7 +51,7 @@ const CFG = {
   ahConfirmDelayMs: 2000,
 
   // Piyasa fiyati arama (otomatik ucuzlatma)
-  marketWindowTimeoutMs: 8000,
+  marketWindowTimeoutMs: 12000,
   marketReadDelayMs: 400,
 
   // Satis bekleme
