@@ -319,9 +319,7 @@ async function collectHelmetMaterials(token) {
       const it = collectWin.slots[cs];
       if (!it || it.name.includes('glass') || it.name === 'barrier' || it.name === 'arrow' || it.name === 'bedrock') continue;
 
-      const isTargetItem = (target.id === 'helmet' && it.name === 'diamond_helmet') ||
-                           (target.id === 'xp' && it.name === 'experience_bottle') ||
-                           (['blast', 'resp', 'mending', 'unb', 'aqua'].includes(target.id) && it.name === 'enchanted_book');
+      const isTargetItem = matchesTargetOrder(target, it);
 
       if (isTargetItem) {
         log(`📦 Teslimat sandığından 1 adet ${target.name} alınıyor (slot ${cs})...`);
@@ -406,11 +404,10 @@ async function ensureAllMaterialsOrOrder(token) {
     toOrder.push({
       item: 'Enchanted Book Blast Protection 4',
       itemId: 'enchanted_book',
-      signText: 'enchanted book',
-      pageClicks: [53, 53],
-      selectSlot: 7,
-      orderSearchQuery: 'enchanted book blast protection 4',
+      signText: 'blast prot',
+      targetEnchant: 'blast_prot_4',
       matchLore: 'blast protection',
+      orderSearchQuery: 'enchanted book blast protection 4',
       orderAmount: batchAmount,
       orderPrice: S.bookBlastOrderPrice || 15000,
       category: 'Kitap',
@@ -422,11 +419,10 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Respiration 3',
         itemId: 'enchanted_book',
-        signText: 'enchanted book',
-        pageClicks: [53, 53],
-        selectSlot: 13,
-        orderSearchQuery: 'enchanted book respiration 3',
+        signText: 'respiration',
+        targetEnchant: 'resp_3',
         matchLore: 'respiration',
+        orderSearchQuery: 'enchanted book respiration 3',
         orderAmount: batchAmount,
         orderPrice: S.bookRespOrderPrice || 15000,
         category: 'Kitap',
@@ -436,11 +432,10 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Mending',
         itemId: 'enchanted_book',
-        signText: 'enchanted book',
-        pageClicks: [53, 53],
-        selectSlot: 8,
-        orderSearchQuery: 'enchanted book mending',
+        signText: 'mending',
+        targetEnchant: 'mending',
         matchLore: 'mending',
+        orderSearchQuery: 'enchanted book mending',
         orderAmount: batchAmount,
         orderPrice: S.bookMendingOrderPrice || 25000,
         category: 'Kitap',
@@ -453,11 +448,10 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Unbreaking 3',
         itemId: 'enchanted_book',
-        signText: 'enchanted book',
-        pageClicks: [53, 53],
-        selectSlot: 37,
-        orderSearchQuery: 'enchanted book unbreaking 3',
+        signText: 'unbreaking',
+        targetEnchant: 'unbreaking_3',
         matchLore: 'unbreaking',
+        orderSearchQuery: 'enchanted book unbreaking 3',
         orderAmount: batchAmount,
         orderPrice: S.bookUnbOrderPrice || 15000,
         category: 'Kitap',
@@ -467,11 +461,10 @@ async function ensureAllMaterialsOrOrder(token) {
       toOrder.push({
         item: 'Enchanted Book Aqua Affinity',
         itemId: 'enchanted_book',
-        signText: 'enchanted book',
-        pageClicks: [53],
-        selectSlot: 16,
-        orderSearchQuery: 'enchanted book aqua affinity',
+        signText: 'aqua affinity',
+        targetEnchant: 'aqua_affinity',
         matchLore: 'aqua affinity',
+        orderSearchQuery: 'enchanted book aqua affinity',
         orderAmount: batchAmount,
         orderPrice: S.bookAquaOrderPrice || 10000,
         category: 'Kitap',

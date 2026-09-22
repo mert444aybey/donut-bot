@@ -5,7 +5,7 @@ const state = require('../state');
 const { log, dlog } = require('../logger');
 const { bumpStats } = require('../stats');
 const { sleep, humanSleep, titleOf } = require('../utils/text');
-const { snapshotWindow, displayOf, loreOf } = require('../utils/inspect');
+const { snapshotWindow, displayOf, loreOf, extractItemEnchantments } = require('../utils/inspect');
 const {
   assertActive,
   waitForWindow,
@@ -20,38 +20,17 @@ const {
 function buildSteps(orderPrice, itemOverride) {
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : state.S);
   const signText = itemCfg.signText || itemCfg.item;
-  const pageClicks = Array.isArray(itemCfg.pageClicks) ? itemCfg.pageClicks : [];
-  const selectSlot = itemCfg.selectSlot !== undefined ? itemCfg.selectSlot : 0;
 
   const steps = [
     { name: 'Siparis menusu',   type: 'CLICK', slot: 51, expectWindow: true },
     { name: 'Alt menu',         type: 'CLICK', slot: 8,  expectWindow: true },
     { name: 'Kategori',         type: 'CLICK', slot: 12, expectWindow: true },
     { name: 'Item arama',       type: 'SIGN',  slot: 50, text: signText },
+    { name: 'Item secimi',      type: 'ITEM_SELECT' },
+    { name: 'Miktar',           type: 'SIGN',  slot: 13, text: String(itemCfg.orderAmount) },
+    { name: 'Fiyat',            type: 'SIGN',  slot: 14, text: String(orderPrice) },
+    { name: 'Siparis onayi',    type: 'CLICK', slot: 16, expectWindow: false }
   ];
-
-  for (let p = 0; p < pageClicks.length; p++) {
-    steps.push({
-      name: `Sayfa degistir (${p + 1}/${pageClicks.length})`,
-      type: 'CLICK',
-      slot: pageClicks[p],
-      expectWindow: true,
-    });
-  }
-
-  steps.push({
-    name: 'Item secimi',
-    type: 'CLICK',
-    slot: selectSlot,
-    expectWindow: true,
-    isItemSelect: true,
-  });
-
-  steps.push(
-    { name: 'Miktar',        type: 'SIGN',  slot: 13, text: String(itemCfg.orderAmount) },
-    { name: 'Fiyat',         type: 'SIGN',  slot: 14, text: String(orderPrice) },
-    { name: 'Siparis onayi', type: 'CLICK', slot: 16, expectWindow: false }
-  );
 
   return steps;
 }
@@ -218,6 +197,160 @@ async function handlePickEnchantments(token, itemCfg) {
   }
 }
 
+// Arama sonuclari penceresindeki bir esyanin siparis hedefiyle eslesip eslesmedigini dogrular
+function matchOrderItem(it, itemCfg) {
+  if (!it || !it.name) return false;
+  if (it.name.includes('glass') || it.name === 'barrier' || it.name === 'arrow' || it.name === 'bedrock') return false;
+
+  const displayName = (it.displayName || '').toLowerCase();
+  const loreText = (loreOf(it) || []).join(' ').toLowerCase();
+  const fullText = `${it.name} ${displayName} ${loreText}`;
+
+  // 1. Enchanted Book ise: Kesin büyü ve seviye dogrulamasi
+  if (it.name === 'enchanted_book') {
+    const rawEnchants = extractItemEnchantments(it);
+    const targetEnchant = itemCfg.targetEnchant;
+    const targetName = (itemCfg.item || '').toLowerCase();
+
+    // Mending: Kesinlikle Mending olmali, Curse veya baska büyü olmamali
+    if (targetEnchant === 'mending' || targetName.includes('mending')) {
+      const hasMending = rawEnchants.some((e) => e.name === 'mending') || fullText.includes('mending');
+      const isCurse = fullText.includes('vanishing') || fullText.includes('binding') || rawEnchants.some((e) => e.name.includes('curse'));
+      return hasMending && !isCurse;
+    }
+
+    // Respiration 3: Respiration III / 3 olmali, Riptide olmamali
+    if (targetEnchant === 'resp_3' || targetName.includes('respiration')) {
+      const hasResp = rawEnchants.some((e) => e.name === 'respiration' && Number(e.lvl) >= 3) ||
+                      (fullText.includes('respiration') && (fullText.includes('iii') || fullText.includes(' 3')));
+      const isRiptide = fullText.includes('riptide') || rawEnchants.some((e) => e.name === 'riptide');
+      return hasResp && !isRiptide;
+    }
+
+    // Unbreaking 3: Unbreaking III / 3 olmali, Multishot olmamali
+    if (targetEnchant === 'unbreaking_3' || targetName.includes('unbreaking')) {
+      const hasUnb = rawEnchants.some((e) => e.name === 'unbreaking' && Number(e.lvl) >= 3) ||
+                     (fullText.includes('unbreaking') && (fullText.includes('iii') || fullText.includes(' 3')));
+      const isMultishot = fullText.includes('multishot') || rawEnchants.some((e) => e.name === 'multishot');
+      return hasUnb && !isMultishot;
+    }
+
+    // Blast Protection 4:
+    if (targetEnchant === 'blast_prot_4' || targetName.includes('blast protection')) {
+      return rawEnchants.some((e) => e.name === 'blast_protection' && Number(e.lvl) >= 4) ||
+             (fullText.includes('blast') && (fullText.includes('iv') || fullText.includes(' 4')));
+    }
+
+    // Aqua Affinity:
+    if (targetEnchant === 'aqua_affinity' || targetName.includes('aqua affinity')) {
+      return rawEnchants.some((e) => e.name === 'aqua_affinity') || fullText.includes('aqua affinity');
+    }
+
+    if (itemCfg.matchLore && fullText.includes(itemCfg.matchLore.toLowerCase())) {
+      return true;
+    }
+    return false;
+  }
+
+  // 2. Normal eşyalar (diamond_helmet, experience_bottle vb.)
+  if (itemCfg.itemId && it.name === itemCfg.itemId) return true;
+  if (itemCfg.item && (displayName.includes(itemCfg.item.toLowerCase()) || it.name.includes(itemCfg.itemId || ''))) return true;
+
+  return false;
+}
+
+// Arama sonuclari penceresinde sayfalari ve slotlari dinamik tarayip dogru esyaya tiklar
+async function selectOrderItem(token, itemCfg) {
+  const bot = state.bot;
+  assertActive(token);
+
+  await humanSleep(500);
+  let win = bot.currentWindow;
+  if (!win) throw new Error('Arama sonuç penceresi açık değil');
+
+  // Slotların yüklenmesi için bekle (en fazla 3.5 sn)
+  const startWait = Date.now();
+  while (Date.now() - startWait < 3500) {
+    win = bot.currentWindow || win;
+    const hasAnyItem = win && win.slots && win.slots.slice(0, win.inventoryStart).some(
+      (it) => it && !it.name.includes('glass') && it.name !== 'barrier'
+    );
+    if (hasAnyItem) break;
+    await sleep(150);
+  }
+  win = bot.currentWindow || win;
+
+  let targetSlot = -1;
+  let targetItem = null;
+
+  // 1. Mevcut sayfayı tara
+  for (let s = 0; s < win.inventoryStart; s++) {
+    const it = win.slots[s];
+    if (matchOrderItem(it, itemCfg)) {
+      targetSlot = s;
+      targetItem = it;
+      break;
+    }
+  }
+
+  // 2. Bulunamadıysa sonraki sayfalara geç (slot 53 arrow ise)
+  if (targetSlot === -1) {
+    for (let page = 2; page <= 5; page++) {
+      const curWin = bot.currentWindow;
+      if (!curWin) break;
+      const nextArrow = curWin.slots[53];
+      if (!nextArrow || (nextArrow.name !== 'arrow' && !(nextArrow.displayName && nextArrow.displayName.toLowerCase().includes('next')))) {
+        break;
+      }
+
+      dlog(`Sayfa 1'de "${itemCfg.item}" bulunamadı, sayfa ${page}'ye geçiliyor (slot 53)...`);
+      const nextWinPromise = waitForWindow(3000).catch(() => null);
+      await safeClick(53);
+      await nextWinPromise;
+      await humanSleep(500);
+
+      const pWin = bot.currentWindow;
+      if (!pWin) break;
+
+      for (let s = 0; s < pWin.inventoryStart; s++) {
+        const it = pWin.slots[s];
+        if (matchOrderItem(it, itemCfg)) {
+          targetSlot = s;
+          targetItem = it;
+          break;
+        }
+      }
+      if (targetSlot !== -1) break;
+    }
+  }
+
+  // 3. Hala bulunamadıysa yedek selectSlot (varsa)
+  if (targetSlot === -1 && itemCfg.selectSlot !== undefined) {
+    targetSlot = itemCfg.selectSlot;
+    log(`⚠️ Dinamik taramada eşya bulunamadı, varsayılan slot ${targetSlot} deneniyor.`);
+  }
+
+  if (targetSlot === -1) {
+    throw new Error(`Arama sonuçlarında hedeflenen eşya ("${itemCfg.item}") bulunamadı!`);
+  }
+
+  const desc = targetItem ? `${targetItem.name} (${targetItem.displayName || ''})` : `Slot ${targetSlot}`;
+  log(`🎯 Sipariş edilecek eşya seçildi: Slot ${targetSlot} ➔ ${desc}`);
+
+  const nextWinPromise = waitForWindow(4000).catch(() => null);
+  await safeClick(targetSlot);
+  await nextWinPromise;
+  await humanSleep(400);
+
+  // Eger eşya seçimi sonrası ara ekran (örn: Pick Enchantments) açıldıysa:
+  if (bot.currentWindow) {
+    const title = (titleOf(bot.currentWindow) || '').toLowerCase();
+    if (title.includes('enchant') || (!title.includes('new order') && !title.includes('your orders'))) {
+      await handlePickEnchantments(token, itemCfg);
+    }
+  }
+}
+
 async function runOrderFlow(token, itemOverride) {
   const S = state.S;
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
@@ -241,6 +374,10 @@ async function runOrderFlow(token, itemOverride) {
     dlog(`Adim ${i + 1}/${steps.length}: ${step.name}`);
 
     try {
+      if (step.type === 'ITEM_SELECT') {
+        await selectOrderItem(token, itemCfg);
+      }
+
       if (step.type === 'CLICK') {
         const nextWin = step.expectWindow ? waitForWindow() : null;
         if (nextWin) nextWin.catch(() => {});
