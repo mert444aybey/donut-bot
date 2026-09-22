@@ -7,10 +7,27 @@ const { bumpStats } = require('../stats');
 const { sleep, humanSleep } = require('../utils/text');
 const { assertActive, closeWindowSafe } = require('../utils/windows');
 const { runOrderFlow, waitForOrderComplete } = require('./order');
-const { collectItems } = require('./collect');
-const { craftGodHelmet, craftGodHelmetOnly, collectHelmetMaterials, sellGodHelmet, sellAllGodHelmets, checkHelmetMaterials } = require('./craft_helmet');
+const {
+  craftGodHelmet,
+  craftGodHelmetOnly,
+  collectHelmetMaterials,
+  sellGodHelmet,
+  sellAllGodHelmets,
+  checkHelmetMaterials,
+  isGodHelmet,
+  isCleanHelmet,
+  isBlastProt4Book,
+  isResp3Book,
+  isMendingBook,
+  isUnbreaking3Book,
+  isAquaAffinityBook,
+  isStep1Helmet,
+  isStep2Book,
+  isStep3Helmet,
+  isStep4Book,
+} = require('./craft_helmet');
 
-const MODES = ['full', 'collect', 'god_helmet', 'god_helmet_craft', 'god_helmet_collect', 'god_helmet_sell'];
+const MODES = ['full', 'collect', 'god_helmet', 'god_helmet_craft', 'god_helmet_collect', 'god_helmet_sell', 'resume'];
 const MODE_LABELS = {
   full: 'tam dongu',
   collect: 'sadece topla',
@@ -18,6 +35,7 @@ const MODE_LABELS = {
   god_helmet_craft: 'sadece ors / buyu yap (test)',
   god_helmet_collect: 'sadece depodan topla (test)',
   god_helmet_sell: 'sadece god helmet sat (test)',
+  resume: 'kaldigin yerden devam et',
 };
 
 // Kullanici DURDUR'a basmadigi surece, hata veya baglanti kesilmesi sonrasi
@@ -50,9 +68,48 @@ async function startAutomation(mode) {
   const token = ++state.cancelToken;
   log(`Basladi: ${MODE_LABELS[mode]}`);
 
+  if (mode !== 'resume' && (mode === 'full' || mode === 'god_helmet')) {
+    state.lastActiveMode = mode;
+  }
+
   let hadError = false;
   try {
     await humanSleep(1500);
+
+    if (mode === 'resume') {
+      const targetMode = state.lastActiveMode || 'god_helmet';
+      log(`⏯️ Kaldığın yerden devam ediliyor (Hedef Mod: ${targetMode})...`);
+
+      if (targetMode === 'god_helmet') {
+        const bot = state.bot;
+        // 1. Envanterde zaten tamamlanmış God Helmet var mı?
+        const existingGodHelmets = bot.inventory.items().filter(isGodHelmet);
+        if (existingGodHelmets.length > 0) {
+          log(`🏷️ Envanterde ${existingGodHelmets.length} adet hazır God Helmet bulundu. Önce bunların satışı yapılıyor...`);
+          await sellAllGodHelmets(token);
+        }
+
+        // 2. Envanterde örste birleştirilmeyi bekleyen kask/kitap veya ara ürünler var mı?
+        const invItems = bot.inventory.items();
+        const hasCraftableComponents =
+          (invItems.some(isCleanHelmet) && invItems.some(isBlastProt4Book)) ||
+          (invItems.some(isResp3Book) && invItems.some(isMendingBook)) ||
+          (invItems.some(isUnbreaking3Book) && invItems.some(isAquaAffinityBook)) ||
+          (invItems.some(isStep1Helmet) && invItems.some(isStep2Book)) ||
+          (invItems.some(isStep3Helmet) && invItems.some(isStep4Book));
+
+        if (hasCraftableComponents) {
+          log('🔨 Envanterde birleştirilmeye hazır ara malzemeler tespit edildi! Doğrudan örs birleştirmesine geçiliyor...');
+          await craftGodHelmetOnly(token);
+          await humanSleep(1000);
+          await sellAllGodHelmets(token);
+        }
+
+        mode = 'god_helmet';
+      } else {
+        mode = 'full';
+      }
+    }
 
     if (mode === 'collect') {
       await collectItems(token);

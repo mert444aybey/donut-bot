@@ -373,8 +373,7 @@ async function ensureMissingOrders(token, specificTargets = null) {
       selectSlot: 0,
       orderSearchQuery: 'diamond helmet',
       orderAmount: batchAmount,
-      orderPrice: S.diamondHelmetOrderPrice || 12000,
-      fixedPrice: true,
+      initialBid: 5000,
       category: 'Kask',
     });
   }
@@ -389,6 +388,8 @@ async function ensureMissingOrders(token, specificTargets = null) {
       orderSearchQuery: 'enchanted book blast protection 4',
       orderAmount: batchAmount,
       orderPrice: S.bookBlastOrderPrice || 15000,
+      isEnchantException: true,
+      fixedPrice: true,
       category: 'Kitap',
     });
   }
@@ -404,6 +405,8 @@ async function ensureMissingOrders(token, specificTargets = null) {
         orderSearchQuery: 'enchanted book respiration 3',
         orderAmount: batchAmount,
         orderPrice: S.bookRespOrderPrice || 15000,
+        isEnchantException: true,
+        fixedPrice: true,
         category: 'Kitap',
       });
     }
@@ -417,6 +420,8 @@ async function ensureMissingOrders(token, specificTargets = null) {
         orderSearchQuery: 'enchanted book mending',
         orderAmount: batchAmount,
         orderPrice: S.bookMendingOrderPrice || 25000,
+        isEnchantException: true,
+        fixedPrice: true,
         category: 'Kitap',
       });
     }
@@ -433,6 +438,8 @@ async function ensureMissingOrders(token, specificTargets = null) {
         orderSearchQuery: 'enchanted book unbreaking 3',
         orderAmount: batchAmount,
         orderPrice: S.bookUnbOrderPrice || 15000,
+        isEnchantException: true,
+        fixedPrice: true,
         category: 'Kitap',
       });
     }
@@ -446,15 +453,16 @@ async function ensureMissingOrders(token, specificTargets = null) {
         orderSearchQuery: 'enchanted book aqua affinity',
         orderAmount: batchAmount,
         orderPrice: S.bookAquaOrderPrice || 10000,
+        isEnchantException: true,
+        fixedPrice: true,
         category: 'Kitap',
       });
     }
   }
 
-  // XP sisesi depoda siparisi yoksa 3200 adetlik toplu siparis ac
+  // XP sisesi depoda siparisi yoksa 3200 adetlik toplu siparis ac (canli /orders panosundan dinamik fiyatla)
   if (!existingOrders.has('xp') && isNeeded('xp')) {
     const bottleQty = S.xpBottleOrderAmount || 3200;
-    const bottlePrice = S.xpBottleOrderPrice || 250;
     toOrder.push({
       item: "Bottle o' Enchanting",
       itemId: 'experience_bottle',
@@ -462,7 +470,7 @@ async function ensureMissingOrders(token, specificTargets = null) {
       selectSlot: 0,
       orderSearchQuery: 'bottle o enchanting',
       orderAmount: bottleQty,
-      orderPrice: bottlePrice,
+      initialBid: 250,
       category: 'XP Şişesi',
     });
   }
@@ -902,6 +910,10 @@ module.exports = {
   isMendingBook,
   isUnbreaking3Book,
   isAquaAffinityBook,
+  isStep1Helmet,
+  isStep2Book,
+  isStep3Helmet,
+  isStep4Book,
   isGodHelmet,
   checkHelmetMaterials,
   collectHelmetMaterials,

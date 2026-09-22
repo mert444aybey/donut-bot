@@ -79,32 +79,36 @@ async function fetchOrderReferencePrice(token, itemOverride) {
   return highest;
 }
 
-// Siparis panosundaki en yuksek fiyatin uzerine cikip siparis fiyatini belirler.
+// Siparis panosundaki en yuksek fiyatin uzerine cikip siparis fiyatini dinamik belirler.
+// Büyü basılabilen eşyalar hariç daima /orders panosundan canlı fiyat çeker.
 async function computeOrderPrice(token, itemOverride) {
   const S = state.S;
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
-  if (!S.autoOrderPriceEnabled || itemCfg.fixedPrice) {
-    if (itemCfg.fixedPrice) {
-      log(`Sabit siparis fiyati devrede: ${itemCfg.item || itemCfg.itemId} icin kullanici fiyati $${Number(itemCfg.orderPrice).toLocaleString()} uygulaniyor.`);
-    }
+  
+  // Büyü basılabilen eşyalar / kitaplar istisnadır ve özel/sabit fiyat kullanabilir
+  const isEnchantException = itemCfg.isEnchantException || itemCfg.targetEnchant || itemCfg.itemId === 'enchanted_book';
+  if (isEnchantException || (itemCfg.fixedPrice && isEnchantException)) {
+    log(`📜 Büyülü eşya istisnası devrede: ${itemCfg.item || itemCfg.itemId} için belirlenen fiyat: $${Number(itemCfg.orderPrice).toLocaleString()}`);
     return itemCfg.orderPrice;
   }
 
+  // Normal eşyalar: Canlı /orders panosundan çekilmek ZORUNDADIR (yedek fiyat yok)
   const highest = await fetchOrderReferencePrice(token, itemOverride);
   let price;
   if (highest === null) {
-    log(`Siparis panosunda ilan bulunamadi, yedek fiyat kullaniliyor: $${itemCfg.orderPrice}`);
-    price = itemCfg.orderPrice;
+    const initialBid = itemCfg.initialBid || itemCfg.minOrderPrice || 100;
+    log(`ℹ️ /orders panosunda ${itemCfg.item || itemCfg.itemId} için aktif alım emri bulunamadı. Başlangıç teklifi ($${initialBid.toLocaleString()}) veriliyor.`);
+    price = initialBid;
   } else {
     const markup = itemCfg.orderMarkup !== undefined ? itemCfg.orderMarkup : (S.orderMarkup || 100);
     price = Math.round(highest + markup);
-    log(`Siparis panosu tarandi: en yuksek $${highest.toLocaleString()} -> siparis fiyati $${price.toLocaleString()} olarak belirlendi.`);
+    log(`🎯 /orders panosu tarandı: En yüksek teklif $${highest.toLocaleString()} ➔ Yeni sipariş fiyatı: $${price.toLocaleString()} (+${markup})`);
   }
 
   if (price < 1) price = 1;
   const maxPrice = itemCfg.maxOrderPrice !== undefined ? itemCfg.maxOrderPrice : (S.maxOrderPrice || 1000000000000);
   if (price > maxPrice) {
-    log(`UYARI: hesaplanan siparis fiyati ($${price.toLocaleString()}) tavani ($${maxPrice.toLocaleString()}) asiyor, tavana cekiliyor.`);
+    log(`UYARI: hesaplanan siparis fiyati ($${price.toLocaleString()}) tavani ($${maxPrice.toLocaleString()}) asiyor, tavana cekildi.`);
     price = maxPrice;
   }
   return price;

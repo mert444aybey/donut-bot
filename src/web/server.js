@@ -79,6 +79,7 @@ io.on('connection', (socket) => {
   if (state.bot) socket.emit('probe:snapshot', snapshotFull());
 
   socket.on('start', (mode) => startAutomation(mode));
+  socket.on('resume', () => startAutomation('resume'));
   socket.on('stop', stopAutomation);
   socket.on('probe', (p) => { probeAction(p); });
 

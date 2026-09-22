@@ -26,6 +26,7 @@ const state = {
   // Otomatik yeniden baslatma
   manualStop: false,
   autoRestartTimer: null,
+  lastActiveMode: 'god_helmet',
 
   reconnecting: false,
 

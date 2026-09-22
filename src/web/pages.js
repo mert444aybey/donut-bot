@@ -128,11 +128,13 @@ ${navHtml('/')}
 <div class="card section">
   <div style="font-size:13px;font-weight:600;margin-bottom:8px">⚡ Ana Otomasyon Modları</div>
   <div class="btn-group">
-    <button class="green" id="start">▶ Tam Dongu</button>
+    <button class="blue" id="resume" style="background:#0284c7;color:#fff">⏯️ Kaldığın Yerden Devam Et</button>
     <button class="amber" id="godHelmet">✨ God Helmet Tam Döngü</button>
+    <button class="green" id="start">▶ Tam Dongu</button>
     <button class="red" id="stop">■ Durdur</button>
   </div>
-  <p class="btn-desc">Tam Dongu: siparis ver → topla. God Helmet: toplu siparis/toplama + 5 adimli örs birleştirme + AH satisi.</p>
+  <p class="btn-desc"><b>Kaldığın Yerden Devam Et:</b> Envanter ve depo durumunu analiz eder; yarım kalan örs birleştirmesini, satışını veya döngüsünü akıllıca kaldığı aşamadan sürdürür.<br>
+  <b>God Helmet:</b> 5'li toplu malzeme siparişi/toplama + 5 adımlı örs birleştirme + AH satışı.</p>
 </div>
 
 <div class="card section">
@@ -189,6 +191,7 @@ s.on('balance', function(b){
 });
 
 document.getElementById('refreshBal').onclick = function(){ s.emit('queryBalance'); };
+document.getElementById('resume').onclick = function(){ s.emit('resume'); };
 document.getElementById('start').onclick = function(){ s.emit('start','full'); };
 document.getElementById('godHelmet').onclick = function(){ s.emit('start','god_helmet'); };
 document.getElementById('stop').onclick = function(){ s.emit('stop'); };
@@ -231,7 +234,7 @@ ${navHtml('/settings')}
       <input type="text" id="p_item" placeholder="Item Gorunen Adi (orn: Block of Gold)" style="flex:2">
       <input type="text" id="p_itemId" placeholder="ID (orn: gold_block)" style="flex:1">
       <input type="number" id="p_orderAmount" placeholder="Adet (10)" style="flex:1">
-      <input type="number" id="p_orderPrice" placeholder="Yedek Alis Fiyati (26000)" style="flex:1">
+      <input type="number" id="p_orderPrice" placeholder="Siparis Fiyati (Büyülü/Sabit) (26000)" style="flex:1">
       <button class="green" id="p_add" type="button">+ Ekle ve Kaydet</button>
     </div>
   </div>
@@ -287,9 +290,9 @@ ${navHtml('/settings')}
       <input type="number" id="orderAmount">
     </div>
     <div style="flex:1">
-      <label>Tekil Mod: Yedek Siparis Fiyati ($)</label>
+      <label>Tekil Mod: Sabit / Büyülü Eşya Sipariş Fiyatı ($)</label>
       <input type="number" id="orderPrice">
-      <span class="hint">Otomatik fiyat kapaliysa veya panoda ilan yoksa bu fiyat verilir</span>
+      <span class="hint">Normal eşyalarda fiyat canlı /orders panosundan çekilir. Büyülü eşyalar veya sabit fiyat modu için bu değer kullanılır.</span>
     </div>
   </div>
 </div>

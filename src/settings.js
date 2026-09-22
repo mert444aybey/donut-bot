@@ -85,7 +85,7 @@ const SCHEMA = {
   item:             { type: 'text',  label: 'Item adi' },
   itemId:           { type: 'id',    label: 'Item ID' },
   orderAmount:      { type: 'int',   label: 'Siparis adedi',               min: 1,    max: 1000000 },
-  orderPrice:       { type: 'int',   label: 'Yedek siparis fiyati',        min: 1,    max: 1e12 },
+  orderPrice:       { type: 'int',   label: 'Siparis fiyati (Büyülü/Sabit)', min: 1,    max: 1e12 },
   sellPrice:        { type: 'int',   label: 'Yedek satis fiyati',          min: 1,    max: 1e12 },
   sellCount:        { type: 'int',   label: 'Turda satilacak toplam adet', min: 1,    max: 100 },
   sellBatch:        { type: 'int',   label: 'Ilan basina adet',            min: 1,    max: 64 },
