@@ -47,42 +47,37 @@ async function ensureExperienceLevel(targetLevel, token) {
 
   let xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
   if (!xpItem) {
-    log('⚠️ Envanterde XP şişesi bitti. Depodan sadece 1 stack (64 adet) alınıyor...');
+    const hasAnvilNow = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
+    const anvilSlotReserve = hasAnvilNow ? 0 : 1;
+    const freeSlots = Math.max(1, bot.inventory.emptySlotCount() - anvilSlotReserve);
+    const takeStacks = Math.min(5, freeSlots);
+    log(`⚠️ Envanterde XP şişesi bitti. Depodan ${takeStacks} stack alınıyor...`);
     const xpOrder = {
       item: "Bottle o' Enchanting",
       itemId: 'experience_bottle',
       signText: "Bottle o' Enchanting",
       selectSlot: 0,
       orderSearchQuery: 'bottle o enchanting',
-      orderAmount: 64,
+      orderAmount: 3200, // Daima 3200 adetlik toplu sipariş
       category: 'XP Şişesi',
     };
 
-    // Önce teslimat sandığından sadece 1 stack çek
-    await collectItems(token, xpOrder, 1);
+    // Önce teslimat sandığından çek (en fazla 5 stack, örs için slot rezerve edilir)
+    await collectItems(token, xpOrder, takeStacks);
     xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
 
     if (!xpItem) {
       const existingXp = await hasActiveOrder(token, xpOrder);
       let placedPrice = null;
       if (existingXp.exists) {
-        log(`ℹ️ Depoda zaten aktif bir XP şişesi siparişi mevcut (Slot ${existingXp.slot}). 1 stack teslimat bekleniyor...`);
+        log(`ℹ️ Depoda zaten aktif bir XP şişesi siparişi mevcut (Slot ${existingXp.slot}). Teslimat bekleniyor...`);
       } else {
-        log("🛒 Döngü ortasında eksik XP için /orders üzerinden 1 stack (64 adet) Bottle o' Enchanting siparişi veriliyor...");
+        log("🛒 Döngü ortasında eksik XP için /orders üzerinden 3,200 adet Bottle o' Enchanting siparişi veriliyor...");
         placedPrice = await runOrderFlow(token, xpOrder);
-        recordTransaction({
-          type: 'EXPENSE',
-          category: 'XP Şişesi',
-          item: "Bottle o' Enchanting",
-          amount: 64,
-          unitPrice: placedPrice,
-          total: 64 * placedPrice,
-          note: 'Döngü esnasında 1 stack acil XP temini',
-        });
       }
 
       await waitForOrderComplete(token, placedPrice, xpOrder);
-      await collectItems(token, xpOrder, 1);
+      await collectItems(token, xpOrder, takeStacks);
 
       xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
       if (!xpItem) {
@@ -111,7 +106,7 @@ async function ensureExperienceLevel(targetLevel, token) {
   const safeBurstCount = Math.floor(xpNeeded / 11);
 
   if (safeBurstCount > 0) {
-    dlog(`XP Güvenli Seri Atış: ${safeBurstCount} adet şişe 45ms hızla fırlatılıyor...`);
+    dlog(`XP Güvenli Seri Atış: ${safeBurstCount} adet şişe 50ms hızla fırlatılıyor...`);
     for (let b = 0; b < safeBurstCount; b++) {
       assertActive(token);
       if (!bot.heldItem || bot.heldItem.name !== 'experience_bottle') {
@@ -121,13 +116,22 @@ async function ensureExperienceLevel(targetLevel, token) {
         await sleep(40);
       }
       bot.activateItem();
-      await sleep(45);
+      await sleep(50);
     }
-    // Sunucudan seviye paketinin güncellenmesi için bekle
-    await sleep(180);
+    // Sunucudan orbların emilmesi ve seviye paketinin güncellenmesi için bekle (erken puan artışında devam et)
+    const waitBurstStart = Date.now();
+    let lastPoints = currentXpPoints(bot);
+    while (Date.now() - waitBurstStart < 1200) {
+      await sleep(100);
+      if (bot.experience.level >= targetLevel) break;
+      const curPts = currentXpPoints(bot);
+      if (curPts > lastPoints) {
+        lastPoints = curPts;
+      }
+    }
   }
 
-  // 4. Hedefe ulaşana kadar paket onaylı tekil atış (Aşımı ve XP israfını %100 önler)
+  // 4. Hedefe ulaşana kadar paket/seviye onaylı tekil atış (Aşımı ve XP israfını %100 önler)
   const startTime = Date.now();
   while (bot.experience.level < targetLevel) {
     assertActive(token);
@@ -139,15 +143,25 @@ async function ensureExperienceLevel(targetLevel, token) {
         break;
       }
       await bot.equip(nextXp, 'hand');
-      await sleep(50);
+      await sleep(60);
     }
 
+    const prevLevel = bot.experience.level;
+    const prevPoints = currentXpPoints(bot);
     bot.activateItem();
-    // Sunucu seviye güncellemesi için 140ms bekle
-    await sleep(140);
 
-    if (Date.now() - startTime > 10000) {
-      log('UYARI: XP yükleme zaman aşımına uğradı (10 sn), mevcut seviye ile devam ediliyor.');
+    // Orbün düşmesi, emilmesi ve sunucunun deneyim paketini yollamasını bekle (maks 450ms veya seviye/puan artışı)
+    const throwTime = Date.now();
+    while (Date.now() - throwTime < 450) {
+      await sleep(50);
+      if (bot.experience.level >= targetLevel) break;
+      if (bot.experience.level > prevLevel || currentXpPoints(bot) > prevPoints) {
+        break;
+      }
+    }
+
+    if (Date.now() - startTime > 15000) {
+      log('UYARI: XP yükleme zaman aşımına uğradı (15 sn), mevcut seviye ile devam ediliyor.');
       break;
     }
   }
@@ -209,15 +223,6 @@ async function orderAndCollect40Anvils(token) {
   } else {
     log('🛒 Etrafta, envanterde veya depoda örs siparişi bulunamadı. /orders üzerinden 40 adet Anvil siparişi veriliyor...');
     placedPrice = await runOrderFlow(token, anvilOrder);
-    recordTransaction({
-      type: 'EXPENSE',
-      category: 'Örs',
-      item: 'Anvil',
-      amount: 40,
-      unitPrice: placedPrice,
-      total: 40 * placedPrice,
-      note: '/orders üzerinden 40 adet toplu örs alımı',
-    });
   }
 
   log('⏳ 40 adet örsün teslimatı bekleniyor...');

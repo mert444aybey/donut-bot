@@ -1,7 +1,7 @@
 {
   "startedAt": 1790124860860,
   "totalSpent": 492800,
-  "totalEarned": 0,
+  "totalEarned": 4500000,
   "activeListingValue": 29700000,
   "activeListingCost": 0,
   "ordersPlaced": 2,
@@ -23,6 +23,12 @@
       "earned": 0,
       "listingValue": 0,
       "count": 128
+    },
+    "Satış Geliri": {
+      "spent": 0,
+      "earned": 4500000,
+      "listingValue": 0,
+      "count": 5
     }
   },
   "activeListings": [
@@ -391,6 +397,71 @@
     }
   ],
   "ledger": [
+    {
+      "id": "1790128683768-houi",
+      "time": 1790128683768,
+      "type": "INCOME",
+      "category": "Satış Geliri",
+      "item": "Diamond Helmet",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 120500,
+      "profit": 779500,
+      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $779,500)"
+    },
+    {
+      "id": "1790128640516-jkk5",
+      "time": 1790128640516,
+      "type": "INCOME",
+      "category": "Satış Geliri",
+      "item": "Diamond Helmet",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 120500,
+      "profit": 779500,
+      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $779,500)"
+    },
+    {
+      "id": "1790128633815-dwg2",
+      "time": 1790128633815,
+      "type": "INCOME",
+      "category": "Satış Geliri",
+      "item": "Diamond Helmet",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 120500,
+      "profit": 779500,
+      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $779,500)"
+    },
+    {
+      "id": "1790128616020-kpcd",
+      "time": 1790128616020,
+      "type": "INCOME",
+      "category": "Satış Geliri",
+      "item": "Diamond Helmet",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 120500,
+      "profit": 779500,
+      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $779,500)"
+    },
+    {
+      "id": "1790128474433-o161",
+      "time": 1790128474433,
+      "type": "INCOME",
+      "category": "Satış Geliri",
+      "item": "Diamond Helmet",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 120500,
+      "profit": 779500,
+      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $779,500)"
+    },
     {
       "id": "1790128043658-ke58",
       "time": 1790128043658,
@@ -779,102 +850,6 @@
   ],
   "history": [
     {
-      "time": 1790125952520,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790125965182,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790125975546,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790125988589,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126118791,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126182264,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126204773,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126218551,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126231010,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126246167,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126261875,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126272237,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126332750,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126368528,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126573758,
-      "balance": 900,
-      "spent": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790126576854,
-      "balance": 12088559,
-      "spent": 0,
-      "orders": 0
-    },
-    {
       "time": 1790126644893,
       "balance": 900,
       "spent": 0,
@@ -1136,6 +1111,134 @@
       "time": 1790128042755,
       "balance": 900,
       "spent": 985600,
+      "orders": 2
+    },
+    {
+      "time": 1790128392128,
+      "balance": 21220759,
+      "spent": 492800,
+      "earned": 0,
+      "netProfit": -492800,
+      "orders": 2
+    },
+    {
+      "time": 1790128474434,
+      "balance": 21220759,
+      "spent": 492800,
+      "earned": 900,
+      "netProfit": -491900,
+      "orders": 2
+    },
+    {
+      "time": 1790128474442,
+      "balance": 900,
+      "spent": 492800,
+      "earned": 900,
+      "netProfit": -491900,
+      "orders": 2
+    },
+    {
+      "time": 1790128476028,
+      "balance": 22120759,
+      "spent": 492800,
+      "earned": 900,
+      "netProfit": -491900,
+      "orders": 2
+    },
+    {
+      "time": 1790128616020,
+      "balance": 22120759,
+      "spent": 492800,
+      "earned": 1800,
+      "netProfit": -491000,
+      "orders": 2
+    },
+    {
+      "time": 1790128616051,
+      "balance": 900,
+      "spent": 492800,
+      "earned": 1800,
+      "netProfit": -491000,
+      "orders": 2
+    },
+    {
+      "time": 1790128617692,
+      "balance": 23020759,
+      "spent": 492800,
+      "earned": 1800,
+      "netProfit": -491000,
+      "orders": 2
+    },
+    {
+      "time": 1790128633816,
+      "balance": 23020759,
+      "spent": 492800,
+      "earned": 2700,
+      "netProfit": -490100,
+      "orders": 2
+    },
+    {
+      "time": 1790128633824,
+      "balance": 900,
+      "spent": 492800,
+      "earned": 2700,
+      "netProfit": -490100,
+      "orders": 2
+    },
+    {
+      "time": 1790128635425,
+      "balance": 23920759,
+      "spent": 492800,
+      "earned": 2700,
+      "netProfit": -490100,
+      "orders": 2
+    },
+    {
+      "time": 1790128640516,
+      "balance": 23920759,
+      "spent": 492800,
+      "earned": 3600,
+      "netProfit": -489200,
+      "orders": 2
+    },
+    {
+      "time": 1790128640519,
+      "balance": 900,
+      "spent": 492800,
+      "earned": 3600,
+      "netProfit": -489200,
+      "orders": 2
+    },
+    {
+      "time": 1790128642365,
+      "balance": 24820759,
+      "spent": 492800,
+      "earned": 3600,
+      "netProfit": -489200,
+      "orders": 2
+    },
+    {
+      "time": 1790128683768,
+      "balance": 24820759,
+      "spent": 492800,
+      "earned": 4500,
+      "netProfit": -488300,
+      "orders": 2
+    },
+    {
+      "time": 1790128683775,
+      "balance": 900,
+      "spent": 492800,
+      "earned": 4500,
+      "netProfit": -488300,
+      "orders": 2
+    },
+    {
+      "time": 1790128685376,
+      "balance": 25720759,
+      "spent": 492800,
+      "earned": 4500,
+      "netProfit": -488300,
       "orders": 2
     }
   ],

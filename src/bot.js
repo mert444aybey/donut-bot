@@ -64,12 +64,23 @@ function parseBalance(rawText) {
 
 // "21,416,612" veya "21.416.612" veya "21416612" -> 21416612
 // "1,234.56" -> 1234.56  (ondalik var)
+// "900K" -> 900000, "1.5M" -> 1500000
 function normalizeNumber(raw) {
-  let s = String(raw || '').trim();
+  let s = String(raw || '').trim().replace(/\s/g, '');
   if (!s) return null;
 
-  // Bosluklari kaldir
-  s = s.replace(/\s/g, '');
+  let multiplier = 1;
+  const lastChar = s.slice(-1).toLowerCase();
+  if (lastChar === 'k') {
+    multiplier = 1000;
+    s = s.slice(0, -1);
+  } else if (lastChar === 'm') {
+    multiplier = 1000000;
+    s = s.slice(0, -1);
+  } else if (lastChar === 'b') {
+    multiplier = 1000000000;
+    s = s.slice(0, -1);
+  }
 
   // Sayinin icinde hem . hem , varsa hangisinin ondalik, hangisinin binlik oldugunu anla
   const hasDot = s.includes('.');
@@ -91,9 +102,11 @@ function normalizeNumber(raw) {
     if (dotCount > 1) {
       s = s.replace(/\./g, '');
     } else {
-      const afterDot = s.split('.')[1];
-      if (afterDot && afterDot.length === 3) {
-        s = s.replace('.', ''); // Binlik ayiraci (21.416)
+      if (multiplier === 1) {
+        const afterDot = s.split('.')[1];
+        if (afterDot && afterDot.length === 3) {
+          s = s.replace('.', ''); // Binlik ayiraci (21.416)
+        }
       }
     }
   } else if (hasComma) {
@@ -102,17 +115,21 @@ function normalizeNumber(raw) {
     if (commaCount > 1) {
       s = s.replace(/,/g, '');
     } else {
-      const afterComma = s.split(',')[1];
-      if (afterComma && afterComma.length === 3) {
-        s = s.replace(',', ''); // Binlik ayiraci
+      if (multiplier === 1) {
+        const afterComma = s.split(',')[1];
+        if (afterComma && afterComma.length === 3) {
+          s = s.replace(',', ''); // Binlik ayiraci
+        } else {
+          s = s.replace(',', '.'); // Ondalik
+        }
       } else {
-        s = s.replace(',', '.'); // Ondalik
+        s = s.replace(',', '.');
       }
     }
   }
 
   const n = parseFloat(s);
-  return Number.isNaN(n) ? null : n;
+  return Number.isNaN(n) ? null : Math.round(n * multiplier);
 }
 
 function queryBalance() {

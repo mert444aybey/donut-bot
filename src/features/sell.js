@@ -17,6 +17,21 @@ const { fetchLowestListingPrice, computeSellPrice } = require('./market');
 function normalizeNum(raw) {
   let s = String(raw || '').trim().replace(/\s/g, '');
   if (!s) return null;
+
+  // Suffix çarpanları (900K -> 900,000, 1.5M -> 1,500,000, 2B -> 2,000,000,000)
+  let multiplier = 1;
+  const lastChar = s.slice(-1).toLowerCase();
+  if (lastChar === 'k') {
+    multiplier = 1000;
+    s = s.slice(0, -1);
+  } else if (lastChar === 'm') {
+    multiplier = 1000000;
+    s = s.slice(0, -1);
+  } else if (lastChar === 'b') {
+    multiplier = 1000000000;
+    s = s.slice(0, -1);
+  }
+
   const hasDot = s.includes('.');
   const hasComma = s.includes(',');
   if (hasDot && hasComma) {
@@ -28,20 +43,26 @@ function normalizeNum(raw) {
     const dotCount = (s.match(/\./g) || []).length;
     if (dotCount > 1) s = s.replace(/\./g, '');
     else {
-      const parts = s.split('.');
-      if (parts[1] && parts[1].length === 3) s = s.replace('.', '');
+      if (multiplier === 1) {
+        const parts = s.split('.');
+        if (parts[1] && parts[1].length === 3) s = s.replace('.', '');
+      }
     }
   } else if (hasComma) {
     const commaCount = (s.match(/,/g) || []).length;
     if (commaCount > 1) s = s.replace(/,/g, '');
     else {
-      const parts = s.split(',');
-      if (parts[1] && parts[1].length === 3) s = s.replace(',', '');
-      else s = s.replace(',', '.');
+      if (multiplier === 1) {
+        const parts = s.split(',');
+        if (parts[1] && parts[1].length === 3) s = s.replace(',', '');
+        else s = s.replace(',', '.');
+      } else {
+        s = s.replace(',', '.');
+      }
     }
   }
   const n = parseFloat(s);
-  return isNaN(n) ? null : Math.round(n);
+  return isNaN(n) ? null : Math.round(n * multiplier);
 }
 
 // Chat veya actionbar mesajından açık artırma satış bildirimini ayrıştırır
@@ -56,10 +77,10 @@ function parseSaleMessage(rawText) {
   if (/order.*(?:complete|fulfilled|finished)/i.test(text)) return null;
 
   const patterns = [
-    /(?:\[auction\]|\[ah\])?\s*(?:someone|\S+)\s+(?:bought|purchased)\s+your\s+(?:(\d+)x?\s+)?(.+?)\s+for\s+\$?\s*([\d,.\s]+)/i,
-    /you\s+sold\s+(?:(\d+)x?\s+)?(.+?)\s+(?:to\s+\S+\s+)?for\s+\$?\s*([\d,.\s]+)/i,
-    /your\s+auction\s+(?:of|for)?\s+(?:(\d+)x?\s+)?(.+?)\s+(?:has\s+been\s+sold|was\s+bought|was\s+purchased)\s+(?:by\s+\S+\s+)?(?:for\s+)?\$?\s*([\d,.\s]+)/i,
-    /(?:bought|sold|purchased)\s+.*?\bfor\s+\$?\s*([\d,.\s]+)/i,
+    /(?:\[auction\]|\[ah\])?\s*(?:someone|\S+)\s+(?:bought|purchased)\s+your\s+(?:(\d+)x?\s+)?(.+?)\s+for\s+\$?\s*([\d,.\sKkMmBb]+)/i,
+    /you\s+sold\s+(?:(\d+)x?\s+)?(.+?)\s+(?:to\s+\S+\s+)?for\s+\$?\s*([\d,.\sKkMmBb]+)/i,
+    /your\s+auction\s+(?:of|for)?\s+(?:(\d+)x?\s+)?(.+?)\s+(?:has\s+been\s+sold|was\s+bought|was\s+purchased)\s+(?:by\s+\S+\s+)?(?:for\s+)?\$?\s*([\d,.\sKkMmBb]+)/i,
+    /(?:bought|sold|purchased)\s+.*?\bfor\s+\$?\s*([\d,.\sKkMmBb]+)/i,
   ];
 
   for (const pat of patterns) {

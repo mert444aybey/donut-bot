@@ -190,12 +190,16 @@ async function collectHelmetMaterials(token) {
   if (needUnbCount > 0) targets.push({ id: 'unb', name: 'Unbreaking 3 Kitabı', predicate: isUnbreaking3Book, neededCount: needUnbCount });
   if (needAquaCount > 0) targets.push({ id: 'aqua', name: 'Aqua Affinity Kitabı', predicate: isAquaAffinityBook, neededCount: needAquaCount });
 
-  // XP Şişesi: En son kaç boşluk varsa hepsini xp bottle doldursun (örs için 1 slot rezerve edilir)
+  // XP Şişesi: En fazla 5 stack xp bottle alınır, örs için 1 slot rezerve edilir
   const hasAnvil = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
   const anvilReserve = hasAnvil ? 0 : 1;
   const freeSlotsForXp = Math.max(0, bot.inventory.emptySlotCount() - anvilReserve);
-  if (freeSlotsForXp > 0 || (xpCount < 64 && bot.experience.level < 8)) {
-    targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: Math.max(64, freeSlotsForXp * 64) });
+  const maxAllowedXpStacks = Math.min(5, freeSlotsForXp);
+  const maxXpNeeded = maxAllowedXpStacks * 64;
+  if (maxXpNeeded > 0 && xpCount < maxXpNeeded) {
+    targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: maxXpNeeded - xpCount });
+  } else if (xpCount < 64 && bot.experience.level < 8) {
+    targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: 64 });
   }
 
   if (targets.length === 0) {
@@ -205,7 +209,8 @@ async function collectHelmetMaterials(token) {
 
   log(`📦 Depodan eksikler çekilecek (Hedef: ${batchTarget} set): ${targets.map((t) => `${t.name} (${t.neededCount}x)`).join(', ')}`);
 
-  if (!state.existingOrderTypes) state.existingOrderTypes = new Set();
+  // Her depo taramasında mevcut sipariş setini sıfırla (panoda olmayan siparişlerin takılmasını önler)
+  state.existingOrderTypes = new Set();
   const missingOrderTargets = [];
 
   for (const target of targets) {
@@ -379,12 +384,27 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
   const items = bot.inventory.items();
 
   const isNeeded = (id) => {
-    if (!specificTargets) return true;
-    return specificTargets.some((t) => t.id === id);
+    if (specificTargets) {
+      return specificTargets.some((t) => t.id === id);
+    }
+    if (forcePreOrder) {
+      return !existingOrders.has(id);
+    }
+    if (existingOrders.has(id)) return false;
+    if (id === 'helmet') return items.filter(isCleanHelmet).length + items.filter(isStep1Helmet).length + items.filter(isStep3Helmet).length < 1;
+    if (id === 'blast') return items.filter(isStep1Helmet).length + items.filter(isStep3Helmet).length + items.filter(isBlastProt4Book).length < 1;
+    if (id === 'resp') return items.filter(isStep3Helmet).length + items.filter(isStep2Book).length + items.filter(isResp3Book).length < 1;
+    if (id === 'mending') return items.filter(isStep3Helmet).length + items.filter(isStep2Book).length + items.filter(isMendingBook).length < 1;
+    if (id === 'unb') return items.filter(isStep4Book).length + items.filter(isUnbreaking3Book).length < 1;
+    if (id === 'aqua') return items.filter(isStep4Book).length + items.filter(isAquaAffinityBook).length < 1;
+    if (id === 'xp') {
+      const xpCount = items.filter((i) => i.name === 'experience_bottle').reduce((s, i) => s + i.count, 0);
+      return xpCount < 64 && bot.experience.level < 8;
+    }
+    return true;
   };
 
-  const hasHelmet = !forcePreOrder && (items.some(isCleanHelmet) || items.some(isStep1Helmet) || items.some(isStep3Helmet));
-  if (!hasHelmet && !existingOrders.has('helmet') && isNeeded('helmet')) {
+  if (isNeeded('helmet')) {
     toOrder.push({
       item: 'Diamond Helmet',
       itemId: 'diamond_helmet',
@@ -396,8 +416,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     });
   }
 
-  const hasBlast = !forcePreOrder && (items.some(isStep1Helmet) || items.some(isStep3Helmet) || items.some(isBlastProt4Book));
-  if (!hasBlast && !existingOrders.has('blast') && isNeeded('blast')) {
+  if (isNeeded('blast')) {
     toOrder.push({
       item: 'Enchanted Book Blast Protection 4',
       itemId: 'enchanted_book',
@@ -413,8 +432,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     });
   }
 
-  const hasResp = !forcePreOrder && (items.some(isStep3Helmet) || items.some(isStep2Book) || items.some(isResp3Book));
-  if (!hasResp && !existingOrders.has('resp') && isNeeded('resp')) {
+  if (isNeeded('resp')) {
     toOrder.push({
       item: 'Enchanted Book Respiration 3',
       itemId: 'enchanted_book',
@@ -430,8 +448,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     });
   }
 
-  const hasMending = !forcePreOrder && (items.some(isStep3Helmet) || items.some(isStep2Book) || items.some(isMendingBook));
-  if (!hasMending && !existingOrders.has('mending') && isNeeded('mending')) {
+  if (isNeeded('mending')) {
     toOrder.push({
       item: 'Enchanted Book Mending',
       itemId: 'enchanted_book',
@@ -447,8 +464,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     });
   }
 
-  const hasUnb = !forcePreOrder && (items.some(isStep4Book) || items.some(isUnbreaking3Book));
-  if (!hasUnb && !existingOrders.has('unb') && isNeeded('unb')) {
+  if (isNeeded('unb')) {
     toOrder.push({
       item: 'Enchanted Book Unbreaking 3',
       itemId: 'enchanted_book',
@@ -464,8 +480,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     });
   }
 
-  const hasAqua = !forcePreOrder && (items.some(isStep4Book) || items.some(isAquaAffinityBook));
-  if (!hasAqua && !existingOrders.has('aqua') && isNeeded('aqua')) {
+  if (isNeeded('aqua')) {
     toOrder.push({
       item: 'Enchanted Book Aqua Affinity',
       itemId: 'enchanted_book',
@@ -482,7 +497,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
   }
 
   // XP sisesi depoda siparisi yoksa SAQDECE 3200 adetlik toplu siparis ac (canli /orders panosundan dinamik fiyatla)
-  if (!existingOrders.has('xp') && isNeeded('xp')) {
+  if (isNeeded('xp')) {
     const bottleQty = 3200;
     toOrder.push({
       item: "Bottle o' Enchanting",
@@ -502,16 +517,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       const priceStr = itemOrder.orderPrice ? `$${Number(itemOrder.orderPrice).toLocaleString()}` : 'Canlı /orders fiyatı';
       log(`Siparis panoya veriliyor: ${itemOrder.orderAmount}x ${itemOrder.item} (${priceStr})...`);
       try {
-        const placedPrice = await runOrderFlow(token, itemOrder);
-        recordTransaction({
-          type: 'EXPENSE',
-          category: itemOrder.category,
-          item: itemOrder.item,
-          amount: itemOrder.orderAmount,
-          unitPrice: placedPrice,
-          total: itemOrder.orderAmount * placedPrice,
-          note: `God Helmet uretimi icin toplu (${itemOrder.orderAmount}x) /orders alimi`,
-        });
+        await runOrderFlow(token, itemOrder);
         existingOrders.add(itemOrder.category === 'XP Şişesi' ? 'xp' : (
           itemOrder.itemId === 'diamond_helmet' ? 'helmet' : itemOrder.targetEnchant.split('_')[0]
         ));
@@ -591,7 +597,9 @@ async function ensureAllMaterialsOrOrder(token) {
   // 1. Botun kendi ustune bak: Zaten en az 1 kasklik malzeme hazir mi?
   let status = checkHelmetMaterials();
   if (status.ready) {
-    dlog('God Helmet icin gereken malzemeler ustunde zaten mevcut.');
+    log('🎉 God Helmet için gereken malzemeler envanterde zaten mevcut. Birleştirmeye geçiliyor!');
+    try { await preOrderNextBatch(token); } catch (_) {}
+    return;
   }
 
   // 2. Eksikleri depodan cek (5 set hedeflenir)
