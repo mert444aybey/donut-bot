@@ -1,7 +1,7 @@
 {
   "startedAt": 1790129711547,
   "totalSpent": 0,
-  "totalEarned": 0,
+  "totalEarned": 900000,
   "activeListingValue": 0,
   "activeListingCost": 0,
   "ordersPlaced": 0,
@@ -9,8 +9,78 @@
   "cyclesCompleted": 0,
   "godHelmetsCrafted": 0,
   "itemsCollected": {},
-  "categories": {},
+  "categories": {
+    "Satış Geliri": {
+      "spent": 0,
+      "earned": 900000,
+      "listingValue": 0,
+      "count": 1
+    }
+  },
   "activeListings": [],
-  "ledger": [],
-  "history": []
+  "ledger": [
+    {
+      "id": "1790130234612-dxdw",
+      "time": 1790130234612,
+      "type": "INCOME",
+      "category": "Satış Geliri",
+      "item": "Diamond Helmet",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 110500,
+      "profit": 789500,
+      "note": "Satış onaylandı (Maliyet: $110,500, Net Kâr: $789,500)"
+    }
+  ],
+  "history": [
+    {
+      "time": 1790130109524,
+      "balance": 20010759,
+      "spent": 0,
+      "earned": 0,
+      "netProfit": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790130140170,
+      "balance": 20010759,
+      "spent": 0,
+      "earned": 0,
+      "netProfit": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790130156878,
+      "balance": 20010759,
+      "spent": 0,
+      "earned": 0,
+      "netProfit": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790130234612,
+      "balance": 20010759,
+      "spent": 0,
+      "earned": 900000,
+      "netProfit": 900000,
+      "orders": 0
+    },
+    {
+      "time": 1790130234614,
+      "balance": 900,
+      "spent": 0,
+      "earned": 900000,
+      "netProfit": 900000,
+      "orders": 0
+    },
+    {
+      "time": 1790130236334,
+      "balance": 20910759,
+      "spent": 0,
+      "earned": 900000,
+      "netProfit": 900000,
+      "orders": 0
+    }
+  ]
 }

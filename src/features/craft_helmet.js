@@ -423,14 +423,11 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       item: 'Enchanted Book Blast Protection 4',
       itemId: 'enchanted_book',
       signText: 'blast prot',
-      selectSlot: 0,
       targetEnchant: 'blast_prot_4',
       matchLore: 'blast protection',
       orderSearchQuery: 'enchanted book blast protection 4',
       orderAmount: batchAmount,
       orderPrice: S.bookBlastOrderPrice || 15000,
-      isEnchantException: true,
-      fixedPrice: true,
       category: 'Kitap',
     });
   }
@@ -440,14 +437,11 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       item: 'Enchanted Book Respiration 3',
       itemId: 'enchanted_book',
       signText: 'respiration',
-      selectSlot: 0,
       targetEnchant: 'resp_3',
       matchLore: 'respiration',
       orderSearchQuery: 'enchanted book respiration 3',
       orderAmount: batchAmount,
       orderPrice: S.bookRespOrderPrice || 15000,
-      isEnchantException: true,
-      fixedPrice: true,
       category: 'Kitap',
     });
   }
@@ -457,14 +451,11 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       item: 'Enchanted Book Mending',
       itemId: 'enchanted_book',
       signText: 'mending',
-      selectSlot: 0,
       targetEnchant: 'mending',
       matchLore: 'mending',
       orderSearchQuery: 'enchanted book mending',
       orderAmount: batchAmount,
       orderPrice: S.bookMendingOrderPrice || 25000,
-      isEnchantException: true,
-      fixedPrice: true,
       category: 'Kitap',
     });
   }
@@ -474,14 +465,11 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       item: 'Enchanted Book Unbreaking 3',
       itemId: 'enchanted_book',
       signText: 'unbreaking',
-      selectSlot: 0,
       targetEnchant: 'unbreaking_3',
       matchLore: 'unbreaking',
       orderSearchQuery: 'enchanted book unbreaking 3',
       orderAmount: batchAmount,
       orderPrice: S.bookUnbOrderPrice || 15000,
-      isEnchantException: true,
-      fixedPrice: true,
       category: 'Kitap',
     });
   }
@@ -491,14 +479,11 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       item: 'Enchanted Book Aqua Affinity',
       itemId: 'enchanted_book',
       signText: 'aqua affinity',
-      selectSlot: 0,
       targetEnchant: 'aqua_affinity',
       matchLore: 'aqua affinity',
       orderSearchQuery: 'enchanted book aqua affinity',
       orderAmount: batchAmount,
       orderPrice: S.bookAquaOrderPrice || 10000,
-      isEnchantException: true,
-      fixedPrice: true,
       category: 'Kitap',
     });
   }

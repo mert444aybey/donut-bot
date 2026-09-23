@@ -29,7 +29,7 @@
   "antiAfk": true,
   "relistEnabled": true,
   "portfolioEnabled": false,
-  "godHelmetSellPrice": 250000,
+  "godHelmetSellPrice": 900000,
   "godHelmetMinSellPrice": 100000,
   "godHelmetUndercut": 1000,
   "godHelmetMinProfit": 25000,

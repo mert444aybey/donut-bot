@@ -80,25 +80,18 @@ async function fetchOrderReferencePrice(token, itemOverride) {
 }
 
 // Siparis panosundaki en yuksek fiyatin uzerine cikip siparis fiyatini dinamik belirler.
-// Büyü basılabilen eşyalar hariç daima /orders panosundan canlı fiyat çeker.
 async function computeOrderPrice(token, itemOverride) {
   const S = state.S;
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   
-  // Büyü basılabilen eşyalar / kitaplar veya kullanıcı tarafından sabit/manuel fiyat belirlenen eşyalar (örn: Elmas Kask)
-  const isEnchantException = itemCfg.isEnchantException || itemCfg.targetEnchant || itemCfg.itemId === 'enchanted_book';
-  if ((itemCfg.fixedPrice && itemCfg.orderPrice) || isEnchantException) {
-    const label = isEnchantException ? '📜 Büyülü eşya istisnası' : '🛡️ Sabit/Manuel fiyat';
-    log(`${label} devrede: ${itemCfg.item || itemCfg.itemId} için belirlenen fiyat: $${Number(itemCfg.orderPrice).toLocaleString()}`);
+  if (itemCfg.fixedPrice || itemCfg.orderPrice) {
     return itemCfg.orderPrice;
   }
 
-  // Normal eşyalar: Canlı /orders panosundan çekilmek ZORUNDADIR (canlı panodan dinamik)
   const highest = await fetchOrderReferencePrice(token, itemOverride);
   let price;
   if (highest === null) {
     const initialBid = itemCfg.initialBid || itemCfg.minOrderPrice || 100;
-    log(`ℹ️ /orders panosunda ${itemCfg.item || itemCfg.itemId} için aktif alım emri bulunamadı. Başlangıç teklifi ($${initialBid.toLocaleString()}) veriliyor.`);
     price = initialBid;
   } else {
     const markup = itemCfg.orderMarkup !== undefined ? itemCfg.orderMarkup : (S.orderMarkup || 100);
@@ -222,10 +215,7 @@ function matchOrderItem(it, itemCfg) {
   const fullText = `${it.name} ${displayName} ${loreText}`;
 
   // 1. Enchanted Book veya Kitap hedefi kontrolü:
-  const isBookTarget = !!(itemCfg.targetEnchant || itemCfg.itemId === 'enchanted_book' || (itemCfg.item && itemCfg.item.toLowerCase().includes('book')));
-  const isBookItem = it.name.includes('book');
-
-  if (isBookTarget || isBookItem) {
+  if (it.name === 'enchanted_book' || it.name === 'book') {
     const rawEnchants = extractItemEnchantments(it);
     const targetEnchant = itemCfg.targetEnchant || '';
     const targetName = (itemCfg.item || '').toLowerCase();
@@ -267,10 +257,6 @@ function matchOrderItem(it, itemCfg) {
     if (itemCfg.matchLore && fullText.includes(itemCfg.matchLore.toLowerCase())) {
       return true;
     }
-    // Kitap hedeflenmiş ve kitap tipi eşleşiyorsa (tabela araması zaten filtrelediği için):
-    if (isBookTarget && isBookItem) {
-      return true;
-    }
     return false;
   }
 
@@ -305,14 +291,20 @@ async function selectOrderItem(token, itemCfg) {
   let targetSlot = -1;
   let targetItem = null;
 
-  // 1. Mevcut sayfayı tara
-  for (let s = 0; s < win.inventoryStart; s++) {
-    const it = win.slots[s];
-    if (matchOrderItem(it, itemCfg)) {
-      targetSlot = s;
-      targetItem = it;
-      break;
+  // 1. Mevcut sayfayı tara (sunucu slot paketlerinin gelmesi için gerekirse 3 sn tekrar dene)
+  const scanDeadline = Date.now() + 3000;
+  while (Date.now() < scanDeadline && targetSlot === -1) {
+    win = bot.currentWindow || win;
+    for (let s = 0; s < win.inventoryStart; s++) {
+      const it = win.slots[s];
+      if (matchOrderItem(it, itemCfg)) {
+        targetSlot = s;
+        targetItem = it;
+        break;
+      }
     }
+    if (targetSlot !== -1) break;
+    await sleep(250);
   }
 
   // 2. Bulunamadıysa sonraki sayfalara geç (slot 53 arrow ise)
@@ -346,23 +338,13 @@ async function selectOrderItem(token, itemCfg) {
     }
   }
 
-  // 3. Hala bulunamadıysa varsayılan selectSlot (varsa)
+  // 3. Hala bulunamadıysa ve eşyada selectSlot tanımlıysa (VE o slot boş değilse!)
   if (targetSlot === -1 && itemCfg.selectSlot !== undefined) {
-    targetSlot = itemCfg.selectSlot;
-    targetItem = win.slots[targetSlot] || null;
-    log(`⚠️ Dinamik taramada eşya bulunamadı, varsayılan slot ${targetSlot} deneniyor.`);
-  }
-
-  // 4. Hala bulunamadıysa ve arama penceresinde geçerli bir eşya varsa (özellikle slot 0'da arama sonucu geldiyse):
-  if (targetSlot === -1) {
-    for (let s = 0; s < win.inventoryStart; s++) {
-      const it = win.slots[s];
-      if (it && !it.name.includes('glass') && it.name !== 'barrier' && it.name !== 'arrow' && it.name !== 'bedrock') {
-        targetSlot = s;
-        targetItem = it;
-        log(`ℹ️ Spesifik filtre tam eşleşmedi, arama panosundaki ilk geçerli eşya seçildi: Slot ${s} (${it.name})`);
-        break;
-      }
+    const fallbackItem = win.slots[itemCfg.selectSlot];
+    if (fallbackItem && !fallbackItem.name.includes('glass') && fallbackItem.name !== 'barrier') {
+      targetSlot = itemCfg.selectSlot;
+      targetItem = fallbackItem;
+      log(`⚠️ Dinamik taramada eşya bulunamadı, varsayılan slot ${targetSlot} deneniyor.`);
     }
   }
 
