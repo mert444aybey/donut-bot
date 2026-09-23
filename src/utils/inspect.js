@@ -321,6 +321,64 @@ function snapshotFull() {
   };
 }
 
+// Bir esyanin hedeflenen siparis ile eslesip eslesmedigini genel ve guvenli kontrol eder
+function matchesItemOrder(target, it) {
+  if (!it || !it.name) return false;
+  if (it.name.includes('glass') || it.name === 'barrier' || it.name === 'arrow' || it.name === 'bedrock') return false;
+  if (!target) return true;
+
+  const targetObj = typeof target === 'string' ? { id: target, item: target, itemId: target } : target;
+  const targetId = String(targetObj.id || targetObj.itemId || '').toLowerCase();
+  const targetName = String(targetObj.name || targetObj.item || targetObj.displayName || '').toLowerCase();
+
+  // 1. Örs kontrolü
+  if (targetId.includes('anvil') || targetName.includes('anvil') || targetName.includes('örs') || targetName.includes('ors')) {
+    return it.name.includes('anvil') || (displayOf(it) || '').toLowerCase().includes('anvil');
+  }
+
+  // 2. XP Şişesi kontrolü
+  if (targetId === 'xp' || targetId.includes('experience') || targetId.includes('bottle') || targetName.includes('bottle') || targetName.includes('enchanting')) {
+    return it.name === 'experience_bottle' || (displayOf(it) || '').toLowerCase().includes('bottle');
+  }
+
+  // 3. Elmas Kask kontrolü
+  if (targetId === 'helmet' || targetId.includes('diamond_helmet') || targetName.includes('helmet') || targetName.includes('kask')) {
+    return it.name === 'diamond_helmet' || (displayOf(it) || '').toLowerCase().includes('diamond helmet');
+  }
+
+  // 4. Büyülü Kitaplar
+  if (it.name === 'enchanted_book') {
+    if (typeof targetObj.predicate === 'function' && targetObj.predicate(it)) return true;
+    const enchants = extractItemEnchantments(it).map((e) => e.name);
+    const text = ((displayOf(it) || '') + ' ' + (loreOf(it) || []).join(' ')).toLowerCase();
+
+    if (targetId === 'blast' || targetName.includes('blast')) {
+      return enchants.includes('blast_protection') || text.includes('blast prot');
+    }
+    if (targetId === 'resp' || targetName.includes('respiration')) {
+      return enchants.includes('respiration') || text.includes('respiration');
+    }
+    if (targetId === 'mending' || targetName.includes('mending')) {
+      return enchants.includes('mending') || text.includes('mending');
+    }
+    if (targetId === 'unb' || targetName.includes('unbreaking')) {
+      return enchants.includes('unbreaking') || text.includes('unbreaking');
+    }
+    if (targetId === 'aqua' || targetName.includes('aqua')) {
+      return enchants.includes('aqua_affinity') || text.includes('aqua affinity');
+    }
+  }
+
+  // 5. Genel Eşya Eşleşmesi (Exact itemId veya isim benzerliği)
+  if (targetObj.itemId && it.name === targetObj.itemId.toLowerCase()) return true;
+  if (targetId && it.name === targetId) return true;
+
+  const itemDisplay = (displayOf(it) || it.name).toLowerCase();
+  if (targetName && (itemDisplay.includes(targetName) || targetName.includes(itemDisplay))) return true;
+
+  return false;
+}
+
 module.exports = {
   loreOf,
   displayOf,
@@ -330,4 +388,5 @@ module.exports = {
   snapshotFull,
   extractItemEnchantments,
   formatEnchantLine,
+  matchesItemOrder,
 };

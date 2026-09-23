@@ -1,22 +1,22 @@
 {
   "startedAt": 1790120048041,
-  "totalSpent": 25027900,
+  "totalSpent": 50075900,
   "totalEarned": 5292000,
-  "ordersPlaced": 6,
-  "itemsOrdered": 2620,
+  "ordersPlaced": 8,
+  "itemsOrdered": 5860,
   "cyclesCompleted": 0,
   "godHelmetsCrafted": 5,
   "itemsCollected": {},
   "categories": {
     "XP Şişesi": {
-      "spent": 12505600,
+      "spent": 24665600,
       "earned": 0,
-      "count": 2620
+      "count": 5820
     },
     "Örs": {
-      "spent": 16700,
+      "spent": 380700,
       "earned": 0,
-      "count": 1
+      "count": 41
     },
     "God Helmet Satışı": {
       "spent": 0,
@@ -25,6 +25,28 @@
     }
   },
   "ledger": [
+    {
+      "id": "1790123557892-uev6",
+      "time": 1790123557892,
+      "type": "EXPENSE",
+      "category": "Örs",
+      "item": "Anvil",
+      "amount": 40,
+      "unitPrice": 9100,
+      "total": 364000,
+      "note": "/orders üzerinden 40 adet toplu örs alımı"
+    },
+    {
+      "id": "1790123535617-pl1h",
+      "time": 1790123535617,
+      "type": "EXPENSE",
+      "category": "XP Şişesi",
+      "item": "Bottle o' Enchanting",
+      "amount": 3200,
+      "unitPrice": 3800,
+      "total": 12160000,
+      "note": "God Helmet uretimi icin toplu (3200x) /orders alimi"
+    },
     {
       "id": "1790121614250-x11p",
       "time": 1790121614250,
@@ -314,6 +336,36 @@
       "balance": 997,
       "spent": 25027900,
       "orders": 6
+    },
+    {
+      "time": 1790123398262,
+      "balance": 15080559,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790123535614,
+      "balance": 15080559,
+      "spent": 37187900,
+      "orders": 7
+    },
+    {
+      "time": 1790123535617,
+      "balance": 15080559,
+      "spent": 49347900,
+      "orders": 7
+    },
+    {
+      "time": 1790123557863,
+      "balance": 15080559,
+      "spent": 49711900,
+      "orders": 8
+    },
+    {
+      "time": 1790123557892,
+      "balance": 15080559,
+      "spent": 50075900,
+      "orders": 8
     }
   ],
   "listingsCreated": 5,

@@ -70,7 +70,7 @@ async function ensureExperienceLevel(targetLevel, token) {
     });
 
     await waitForOrderComplete(token, placedPrice, xpOrder);
-    await collectItems(token);
+    await collectItems(token, xpOrder);
 
     xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
     if (!xpItem) {
@@ -191,7 +191,7 @@ async function orderAndCollect40Anvils(token) {
 
   log('⏳ 40 adet örsün teslimatı bekleniyor...');
   await waitForOrderComplete(token, placedPrice, anvilOrder);
-  await collectItems(token);
+  await collectItems(token, anvilOrder);
 
   const anvilCount = bot.inventory.items().filter((i) => i && i.name && i.name.includes('anvil')).reduce((s, i) => s + i.count, 0);
   log(`✅ Toplam ${anvilCount} adet örs teslimat sandığından envantere alındı.`);

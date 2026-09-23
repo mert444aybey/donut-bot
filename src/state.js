@@ -14,6 +14,7 @@ const state = {
   cancelToken: 0,
 
   orderComplete: false,
+  completedOrders: {},
   spamSeen: false,
   listedSeen: false,
   lastSignPacket: null,
@@ -91,6 +92,54 @@ const state = {
       minSellPrice: S.minSellPrice,
       undercutAmount: S.undercutAmount,
     };
+  },
+
+  markOrderCompleted(itemName) {
+    state.orderComplete = true;
+    if (!itemName) return;
+    const norm = String(itemName).toLowerCase().replace(/['"`_]/g, ' ').replace(/\s+s\b/g, '').replace(/s\b/g, '').trim();
+    state.completedOrders[norm] = Date.now();
+  },
+
+  isOrderCompletedFor(itemCfg, sinceTime = 0) {
+    if (!itemCfg) return state.orderComplete;
+    const tokens = [];
+    if (itemCfg.item) tokens.push(String(itemCfg.item).toLowerCase().replace(/['"`_]/g, ' ').replace(/\s+s\b/g, '').replace(/s\b/g, '').trim());
+    if (itemCfg.itemId) tokens.push(String(itemCfg.itemId).toLowerCase().replace(/['"`_]/g, ' ').trim());
+    if (itemCfg.name) tokens.push(String(itemCfg.name).toLowerCase().replace(/['"`_]/g, ' ').trim());
+
+    if (tokens.some((t) => t.includes('anvil') || t.includes('ors') || t.includes('örs'))) tokens.push('anvil');
+    if (tokens.some((t) => t.includes('bottle') || t.includes('xp') || t.includes('enchanting'))) tokens.push('bottle o enchanting', 'experience bottle');
+    if (tokens.some((t) => t.includes('helmet') || t.includes('kask'))) tokens.push('diamond helmet', 'helmet');
+
+    for (const [key, timestamp] of Object.entries(state.completedOrders)) {
+      if (timestamp >= sinceTime) {
+        if (tokens.some((t) => key.includes(t) || t.includes(key))) {
+          return true;
+        }
+      }
+    }
+    return false;
+  },
+
+  resetOrderCompletion(itemCfg) {
+    if (!itemCfg) {
+      state.orderComplete = false;
+      state.completedOrders = {};
+      return;
+    }
+    const tokens = [];
+    if (itemCfg.item) tokens.push(String(itemCfg.item).toLowerCase().replace(/['"`_]/g, ' ').trim());
+    if (itemCfg.itemId) tokens.push(String(itemCfg.itemId).toLowerCase().replace(/['"`_]/g, ' ').trim());
+    if (tokens.some((t) => t.includes('anvil'))) tokens.push('anvil');
+    if (tokens.some((t) => t.includes('bottle') || t.includes('xp'))) tokens.push('bottle o enchanting', 'experience bottle');
+
+    for (const key of Object.keys(state.completedOrders)) {
+      if (tokens.some((t) => key.includes(t) || t.includes(key))) {
+        delete state.completedOrders[key];
+      }
+    }
+    state.orderComplete = false;
   },
 };
 

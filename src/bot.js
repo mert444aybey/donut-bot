@@ -253,7 +253,19 @@ function createBot() {
   bot.on('messagestr', (m) => {
     if (!m.trim()) return;
     state.io.emit('probe:chat', m);
-    if (CFG.orderCompleteRegex.test(m)) state.orderComplete = true;
+
+    // Sipariş tamamlama mesajını yakala ve eşya bazında kaydet
+    const compMatch = m.match(/your\s+(?:order\s+for\s+|order\s+of\s+)?(.+?)\s+order\s+(?:is\s+complete|has\s+been\s+fulfilled)/i)
+      || m.match(/your\s+(.+?)\s+order\s+is\s+complete/i)
+      || m.match(/order\s+(?:for\s+)?(.+?)\s+is\s+complete/i);
+    if (compMatch && compMatch[1]) {
+      const itName = compMatch[1].trim();
+      state.markOrderCompleted(itName);
+      dlog(`📦 Sipariş tamamlandı (Chat): ${itName}`);
+    } else if (CFG.orderCompleteRegex.test(m)) {
+      state.markOrderCompleted(null);
+    }
+
     if (/do not repeat|similar\) message|too fast|slow down/i.test(m)) state.spamSeen = true;
 
     // Bakiye mesaji yakalama (/bal sonucu)
@@ -272,7 +284,14 @@ function createBot() {
     try {
       const t = jsonMsg.toString();
       state.io.emit('probe:chat', 'actionbar: ' + t);
-      if (CFG.orderCompleteRegex.test(t)) state.orderComplete = true;
+      const compMatch = t.match(/your\s+(?:order\s+for\s+|order\s+of\s+)?(.+?)\s+order\s+(?:is\s+complete|has\s+been\s+fulfilled)/i)
+        || t.match(/your\s+(.+?)\s+order\s+is\s+complete/i)
+        || t.match(/order\s+(?:for\s+)?(.+?)\s+is\s+complete/i);
+      if (compMatch && compMatch[1]) {
+        state.markOrderCompleted(compMatch[1].trim());
+      } else if (CFG.orderCompleteRegex.test(t)) {
+        state.markOrderCompleted(null);
+      }
       if (state.S && state.S.verbose) log(`actionbar: ${t}`);
     } catch (_) {}
   });

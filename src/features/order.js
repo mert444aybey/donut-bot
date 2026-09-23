@@ -359,7 +359,11 @@ async function runOrderFlow(token, itemOverride) {
   const S = state.S;
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   const bot = state.bot;
-  state.orderComplete = false;
+  if (state.resetOrderCompletion) {
+    state.resetOrderCompletion(itemCfg);
+  } else {
+    state.orderComplete = false;
+  }
 
   closeWindowSafe();
   await humanSleep(400);
@@ -434,23 +438,31 @@ async function waitForOrderComplete(token, placedPrice, itemOverride) {
   const timeoutMs = Math.max(1, S.orderTimeoutMin || 10) * 60 * 1000;
   const checkIntervalMs = Math.max(10, S.outbidCheckIntervalSec || 60) * 1000;
 
-  log(`Siparisin tamamlanmasi bekleniyor: ${itemCfg.orderAmount}x ${itemCfg.item} (maks ${S.orderTimeoutMin || 10} dk, outbid kontrolu: ${S.outbidCheckIntervalSec || 60} sn)...`);
+  const itemName = itemCfg.item || itemCfg.itemId || 'Item';
+  log(`Siparisin tamamlanmasi bekleniyor: ${itemCfg.orderAmount}x ${itemName} (maks ${S.orderTimeoutMin || 10} dk, outbid kontrolu: ${S.outbidCheckIntervalSec || 60} sn)...`);
 
   const start = Date.now();
   let lastOutbidCheck = Date.now();
 
-  while (!state.orderComplete) {
+  while (true) {
     assertActive(token);
+
+    // 1. Eşyaya özel tamamlanma kontrolü
+    if (state.isOrderCompletedFor ? state.isOrderCompletedFor(itemCfg, start) : state.orderComplete) {
+      log(`✅ Siparis tamamlandi: ${itemName}`);
+      return { completed: true };
+    }
+
     const elapsed = Date.now() - start;
 
-    // 1. Zaman asimi kontrolu
+    // 2. Zaman asimi kontrolu
     if (elapsed > timeoutMs) {
       log(`⏱️ SURE DOLDU: Siparis ${S.orderTimeoutMin || 10} dakika icinde tamamlanmadi. Siparis iptal ediliyor...`);
       await cancelActiveOrder(token, itemOverride);
       return { completed: false, reason: 'timeout' };
     }
 
-    // 2. Outbid (onumuze gecilme) kontrolu
+    // 3. Outbid (onumuze gecilme) kontrolu
     if (S.autoOutbidRelist && placedPrice && !itemCfg.fixedPrice && (Date.now() - lastOutbidCheck >= checkIntervalMs)) {
       lastOutbidCheck = Date.now();
       try {
@@ -469,9 +481,6 @@ async function waitForOrderComplete(token, placedPrice, itemOverride) {
 
     await sleep(500);
   }
-
-  log(`Siparis tamamlandi: ${itemCfg.item}`);
-  return { completed: true };
 }
 
 // Eski veya ozel cagrilari runOrderFlow'a yonlendir
