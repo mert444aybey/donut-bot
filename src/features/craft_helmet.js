@@ -103,8 +103,8 @@ function checkHelmetMaterials() {
   }
 
   const xpCount = items.filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
-  if (xpCount < 320 && bot.experience.level < 10) {
-    missing.push(`Yeterli Bottle o' Enchanting (Hedef: 5 stack / 320 adet, sende: ${xpCount})`);
+  if (xpCount < 30 && bot.experience.level < 8) {
+    missing.push(`Yeterli Bottle o' Enchanting (En az 30-60 adet, sende: ${xpCount})`);
   }
 
   return {
@@ -182,9 +182,6 @@ async function collectHelmetMaterials(token) {
   const needMendingCount = Math.max(0, batchTarget - (mendingBooks + s2Books + s3Helmets + godHelmets));
   const needUnbCount = Math.max(0, batchTarget - (unbBooks + s4Books + godHelmets));
   const needAquaCount = Math.max(0, batchTarget - (aquaBooks + s4Books + godHelmets));
-  // 5 kask icin tam 5 stack (320 adet) XP sisesi hedefle (5 kask + 25 kitap + 5 xp = 35 slot, 1 slot örs icin bos kalir)
-  const needXpCount = Math.max(0, 320 - xpCount);
-
   const targets = [];
   if (needHelmetCount > 0) targets.push({ id: 'helmet', name: 'Diamond Helmet', predicate: isCleanHelmet, neededCount: needHelmetCount });
   if (needBlastCount > 0) targets.push({ id: 'blast', name: 'Blast Protection 4 Kitabı', predicate: isBlastProt4Book, neededCount: needBlastCount });
@@ -192,7 +189,14 @@ async function collectHelmetMaterials(token) {
   if (needMendingCount > 0) targets.push({ id: 'mending', name: 'Mending Kitabı', predicate: isMendingBook, neededCount: needMendingCount });
   if (needUnbCount > 0) targets.push({ id: 'unb', name: 'Unbreaking 3 Kitabı', predicate: isUnbreaking3Book, neededCount: needUnbCount });
   if (needAquaCount > 0) targets.push({ id: 'aqua', name: 'Aqua Affinity Kitabı', predicate: isAquaAffinityBook, neededCount: needAquaCount });
-  if (needXpCount > 0) targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: needXpCount });
+
+  // XP Şişesi: En son kaç boşluk varsa hepsini xp bottle doldursun (örs için 1 slot rezerve edilir)
+  const hasAnvil = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
+  const anvilReserve = hasAnvil ? 0 : 1;
+  const freeSlotsForXp = Math.max(0, bot.inventory.emptySlotCount() - anvilReserve);
+  if (freeSlotsForXp > 0 || (xpCount < 64 && bot.experience.level < 8)) {
+    targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: Math.max(64, freeSlotsForXp * 64) });
+  }
 
   if (targets.length === 0) {
     log(`✅ God Helmet için hedeflenen ${batchTarget} kasklık tüm malzemeler zaten üstünde/envanterde mevcut.`);
@@ -304,15 +308,19 @@ async function collectHelmetMaterials(token) {
     await humanSleep(300);
     assertActive(token);
 
-    // 6. Teslimat sandigi icinde esyalari bul ve hedef miktar dolana kadar shift-click yap
+    // 6. Teslimat sandigi icinde esyalari bul ve hedef miktar dolana kadar hizli shift-click yap
     let takenCount = 0;
-    const maxToTake = target.neededCount || 1;
+    let stacksTaken = 0;
+    const hasAnvilNow = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
+    const anvilSlotReserve = hasAnvilNow ? 0 : 1;
+    const emptySlotsLeft = Math.max(0, bot.inventory.emptySlotCount() - anvilSlotReserve);
+    const maxXpStacks = target.id === 'xp' ? emptySlotsLeft : 999;
+    const maxToTake = target.id === 'xp' ? (maxXpStacks * 64) : (target.neededCount || 1);
 
     for (let cs = 0; cs < collectWin.inventoryStart; cs++) {
       if (target.id === 'xp') {
-        const curXp = bot.inventory.items().filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
-        if (curXp >= 320) break;
-        if (bot.inventory.emptySlotCount() === 0 && !bot.inventory.items().some((i) => i.name === 'experience_bottle' && i.count < 64)) {
+        if (stacksTaken >= maxXpStacks || maxXpStacks <= 0) break;
+        if (bot.inventory.emptySlotCount() <= anvilSlotReserve && !bot.inventory.items().some((i) => i.name === 'experience_bottle' && i.count < 64)) {
           break;
         }
       } else {
@@ -325,11 +333,14 @@ async function collectHelmetMaterials(token) {
 
       if (matchesTargetOrder(target, it)) {
         const qty = it.count || 1;
-        log(`📦 Teslimat sandığından ${qty} adet ${target.name} alınıyor (slot ${cs})...`);
-        await humanSleep(state.S.clickDelayMs || 400);
-        await bot.clickWindow(cs, 0, 1); // shift-click
-        await humanSleep(CFG.shiftWaitMs || 800);
-        takenCount += (target.id === 'xp' ? qty : 1);
+        await bot.clickWindow(cs, 0, 1); // hizli shift-click
+        if (target.id === 'xp') {
+          stacksTaken++;
+          takenCount += qty;
+        } else {
+          takenCount += 1;
+        }
+        await sleep(150); // seri akici gecikme
       }
     }
 

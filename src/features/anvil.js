@@ -47,41 +47,42 @@ async function ensureExperienceLevel(targetLevel, token) {
 
   let xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
   if (!xpItem) {
+    log('⚠️ Envanterde XP şişesi bitti. Depodan sadece 1 stack (64 adet) alınıyor...');
     const xpOrder = {
       item: "Bottle o' Enchanting",
       itemId: 'experience_bottle',
       signText: "Bottle o' Enchanting",
       selectSlot: 0,
       orderSearchQuery: 'bottle o enchanting',
-      orderAmount: 3200,
+      orderAmount: 64,
       category: 'XP Şişesi',
     };
 
-    log('🔍 Envanterde XP şişesi yok, önce teslimat sandığı taranıyor...');
-    await collectItems(token, xpOrder);
+    // Önce teslimat sandığından sadece 1 stack çek
+    await collectItems(token, xpOrder, 1);
     xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
 
     if (!xpItem) {
       const existingXp = await hasActiveOrder(token, xpOrder);
       let placedPrice = null;
       if (existingXp.exists) {
-        log(`ℹ️ Depoda zaten aktif bir XP şişesi siparişi mevcut (Slot ${existingXp.slot}). Mükerrer sipariş açılmıyor, teslimat bekleniyor...`);
+        log(`ℹ️ Depoda zaten aktif bir XP şişesi siparişi mevcut (Slot ${existingXp.slot}). 1 stack teslimat bekleniyor...`);
       } else {
-        log("🛒 /orders uzerinden 3200 adet Bottle o' Enchanting siparişi veriliyor...");
+        log("🛒 Döngü ortasında eksik XP için /orders üzerinden 1 stack (64 adet) Bottle o' Enchanting siparişi veriliyor...");
         placedPrice = await runOrderFlow(token, xpOrder);
         recordTransaction({
           type: 'EXPENSE',
           category: 'XP Şişesi',
           item: "Bottle o' Enchanting",
-          amount: xpOrder.orderAmount,
+          amount: 64,
           unitPrice: placedPrice,
-          total: xpOrder.orderAmount * placedPrice,
-          note: 'Eksik XP için otomatik /orders alımı',
+          total: 64 * placedPrice,
+          note: 'Döngü esnasında 1 stack acil XP temini',
         });
       }
 
       await waitForOrderComplete(token, placedPrice, xpOrder);
-      await collectItems(token, xpOrder);
+      await collectItems(token, xpOrder, 1);
 
       xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
       if (!xpItem) {

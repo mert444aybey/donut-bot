@@ -48,18 +48,17 @@ function findItemSlots(win, itemCfg) {
   return exactSlots.length > 0 ? exactSlots : otherSlots;
 }
 
-// /orders -> 51 (Your Orders) -> hedef esyanin siparis slotu -> 13 (Collect Items)
-async function collectItems(token, itemOverride) {
+async function collectItems(token, itemOverride, maxStacks = null) {
   const S = state.S || {};
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   const bot = state.bot;
   const itemName = itemCfg.item || itemCfg.itemId || 'Item';
 
   log(`📦 Depodan teslimat toplama basliyor: ${itemName}...`);
-  await humanSleep(600);
+  await humanSleep(300);
   assertActive(token);
   closeWindowSafe();
-  await humanSleep(300);
+  await humanSleep(200);
 
   const countTarget = () =>
     bot.inventory.items().filter((i) => matchesItemOrder(itemCfg, i)).reduce((s, i) => s + i.count, 0);
@@ -79,7 +78,7 @@ async function collectItems(token, itemOverride) {
     closeWindowSafe();
     return;
   }
-  await humanSleep(400);
+  await humanSleep(300);
   assertActive(token);
 
   // 2. "Your Orders" menusu icinde hedeflenen esyanin siparis slotunu dinamik bul
@@ -127,7 +126,7 @@ async function collectItems(token, itemOverride) {
     closeWindowSafe();
     return;
   }
-  await humanSleep(400);
+  await humanSleep(300);
   assertActive(token);
 
   // 4. Slot 13'e tikla ("Collect Items" sandigi acilir)
@@ -142,7 +141,7 @@ async function collectItems(token, itemOverride) {
     closeWindowSafe();
     return;
   }
-  await humanSleep(400);
+  await humanSleep(300);
   assertActive(token);
 
   dlog(`Toplama penceresi: "${titleOf(collectWin)}" | ${filledSlots(collectWin)}`);
@@ -151,10 +150,11 @@ async function collectItems(token, itemOverride) {
   if (initialSlots.length === 0) {
     log(`Toplama penceresinde hazir ${itemName} bulunamadi.`);
     closeWindowSafe();
-    await humanSleep(400);
+    await humanSleep(300);
     return;
   }
 
+  let takenStacks = 0;
   for (let round = 1; round <= CFG.collectMaxRounds; round++) {
     assertActive(token);
     const win = bot.currentWindow;
@@ -162,20 +162,21 @@ async function collectItems(token, itemOverride) {
 
     const slots = findItemSlots(win, itemCfg);
     if (slots.length === 0) break;
-    dlog(`Toplama turu ${round}: slotlar ${slots.join(', ')}`);
 
     for (const slot of slots) {
       assertActive(token);
       if (!bot.currentWindow || !bot.currentWindow.slots[slot]) continue;
+      if (maxStacks !== null && takenStacks >= maxStacks) break;
       if (bot.inventory.emptySlotCount() === 0) {
         log('⚠️ Envanter tamamen dolu, toplama durduruldu.');
         break;
       }
 
-      await humanSleep(S.clickDelayMs || 400);
       await bot.clickWindow(slot, 0, 1); // shift-click
-      await humanSleep(CFG.shiftWaitMs || 600);
+      takenStacks++;
+      await sleep(150); // hizli seri tiklama
     }
+    if (maxStacks !== null && takenStacks >= maxStacks) break;
   }
 
   const leftover = bot.currentWindow ? findItemSlots(bot.currentWindow, itemCfg) : [];
