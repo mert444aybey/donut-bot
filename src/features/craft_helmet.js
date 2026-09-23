@@ -104,7 +104,7 @@ function checkHelmetMaterials() {
 
   const xpCount = items.filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
   if (xpCount < 320 && bot.experience.level < 10) {
-    missing.push(`Yeterli Bottle o' Enchanting (Hedef: 6 stack / 384 adet, sende: ${xpCount})`);
+    missing.push(`Yeterli Bottle o' Enchanting (Hedef: 5 stack / 320 adet, sende: ${xpCount})`);
   }
 
   return {
@@ -182,8 +182,8 @@ async function collectHelmetMaterials(token) {
   const needMendingCount = Math.max(0, batchTarget - (mendingBooks + s2Books + s3Helmets + godHelmets));
   const needUnbCount = Math.max(0, batchTarget - (unbBooks + s4Books + godHelmets));
   const needAquaCount = Math.max(0, batchTarget - (aquaBooks + s4Books + godHelmets));
-  // 5 kask icin tam 6 stack (384 adet) XP sisesi hedefle
-  const needXpCount = Math.max(0, 384 - xpCount);
+  // 5 kask icin tam 5 stack (320 adet) XP sisesi hedefle (5 kask + 25 kitap + 5 xp = 35 slot, 1 slot örs icin bos kalir)
+  const needXpCount = Math.max(0, 320 - xpCount);
 
   const targets = [];
   if (needHelmetCount > 0) targets.push({ id: 'helmet', name: 'Diamond Helmet', predicate: isCleanHelmet, neededCount: needHelmetCount });
@@ -311,7 +311,7 @@ async function collectHelmetMaterials(token) {
     for (let cs = 0; cs < collectWin.inventoryStart; cs++) {
       if (target.id === 'xp') {
         const curXp = bot.inventory.items().filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
-        if (curXp >= 384) break;
+        if (curXp >= 320) break;
         if (bot.inventory.emptySlotCount() === 0 && !bot.inventory.items().some((i) => i.name === 'experience_bottle' && i.count < 64)) {
           break;
         }
