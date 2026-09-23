@@ -61,6 +61,20 @@ app.get('/api/casino/games', (_req, res) => {
   }
 });
 
+app.post('/api/casino/faucet', (req, res) => {
+  try {
+    const { username, amount } = req.body || {};
+    const addAmt = Number(amount) || 500000;
+    if (!username) return res.status(400).json({ ok: false, error: 'Kullanıcı adı gerekli' });
+    const casinoEngine = require('../features/casino/engine');
+    casinoEngine.handleDeposit(username, addAmt);
+    const profile = casinoEngine.getUserProfile(username);
+    res.json({ ok: true, amount: addAmt, newBalance: profile.balance });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message });
+  }
+});
+
 // ---------------- API: ISTATISTIK & MUHASEBE ----------------
 app.get('/api/stats', (_req, res) => res.json(state.STATS));
 app.get('/api/ledger', (_req, res) => res.json(state.STATS.ledger || []));

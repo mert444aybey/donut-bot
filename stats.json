@@ -18,17 +18,17 @@
       "listingValue": 0,
       "count": 400
     },
-    "Satış Geliri": {
-      "spent": 0,
-      "earned": 900000,
-      "listingValue": 0,
-      "count": 1
-    },
     "XP Şişesi": {
       "spent": 12800000,
       "earned": 0,
       "listingValue": 0,
       "count": 3200
+    },
+    "Satış Geliri": {
+      "spent": 0,
+      "earned": 900000,
+      "listingValue": 0,
+      "count": 1
     }
   },
   "activeListings": [],
@@ -422,6 +422,14 @@
     },
     {
       "time": 1790157280288,
+      "balance": 13134969,
+      "spent": 24000000,
+      "earned": 900000,
+      "netProfit": -23100000,
+      "orders": 9
+    },
+    {
+      "time": 1790159177031,
       "balance": 13134969,
       "spent": 24000000,
       "earned": 900000,

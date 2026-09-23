@@ -1909,6 +1909,7 @@ function casinoPage() {
         <div id="userBalanceDisp" class="cas-balance-val">$0</div>
       </div>
       <button class="cas-btn cas-btn-deposit" onclick="openDepositModal()">📥 Yatır</button>
+      <button class="cas-btn" style="background:#7c3aed;color:#fff" onclick="claimFaucet()">🎁 Demo Para (+$500K)</button>
       <button class="cas-btn cas-btn-withdraw" onclick="openWithdrawModal()">📤 Çek</button>
       <button onclick="logout()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:16px" title="Çıkış Yap">🚪</button>
     </div>
@@ -2055,8 +2056,14 @@ ${navHtml('/casino')}
       <span style="font-size:11px;background:#4c1d95;padding:4px 8px;border-radius:4px;color:#fff">KOPYALA</span>
     </div>
 
-    <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);padding:12px;border-radius:8px;font-size:12px;color:#6ee7b7">
+    <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);padding:12px;border-radius:8px;font-size:12px;color:#6ee7b7;margin-bottom:14px">
       ⚡ Paranız gönderildiği an (2-3 saniye içinde) web sayfasındaki bakiyenize otomatik olarak yüklenecektir!
+    </div>
+
+    <div style="background:rgba(139,92,246,0.15);border:1px dashed #8b5cf6;padding:14px;border-radius:10px;text-align:center">
+      <div style="font-weight:700;color:#c4b5fd;font-size:13px;margin-bottom:4px">🧪 Demo / Test Modu</div>
+      <div style="font-size:11px;color:#94a3b8;margin-bottom:10px">Oyun içinde para yatırmadan sistemi test etmek için tek tıkla hesabına demo bakiye yükle:</div>
+      <button class="cas-btn" style="background:#8b5cf6;color:#fff;width:100%;justify-content:center" onclick="claimFaucet()">🎁 +$500,000 Demo Bakiye Yükle</button>
     </div>
   </div>
 </div>
@@ -2183,6 +2190,24 @@ function updateBalance(b) {
 function openDepositModal() {
   document.getElementById('depositCmdText').textContent = '/pay ' + botServerName + ' 500000';
   document.getElementById('depositModal').classList.add('open');
+}
+function claimFaucet() {
+  if (!currentUsername) return alert('Lütfen önce Minecraft adınızla giriş yapın.');
+  fetch('/api/casino/faucet', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: currentUsername, amount: 500000 })
+  }).then(function(r){ return r.json(); }).then(function(res){
+    if (res.ok) {
+      playSound('win');
+      updateBalance(res.newBalance);
+      alert('🎉 +' + fmt(res.amount) + ' Demo bakiye hesabınıza başarıyla yüklendi!');
+    } else {
+      alert('Hata: ' + res.error);
+    }
+  }).catch(function(err){
+    alert('Sunucu hatası: ' + err.message);
+  });
 }
 function openWithdrawModal() {
   if (!currentUsername) return alert('Önce giriş yapmalısınız.');
