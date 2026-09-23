@@ -42,6 +42,7 @@
   "bookMendingOrderPrice": 25000,
   "bookUnbOrderPrice": 15000,
   "bookAquaOrderPrice": 10000,
+  "diamondHelmetOrderPrice": 25000,
   "godHelmetBatchOrderAmount": 50,
   "portfolio": [
     {

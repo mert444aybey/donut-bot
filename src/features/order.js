@@ -85,10 +85,11 @@ async function computeOrderPrice(token, itemOverride) {
   const S = state.S;
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   
-  // Büyü basılabilen eşyalar / kitaplar istisnadır ve özel/sabit fiyat kullanabilir
+  // Büyü basılabilen eşyalar / kitaplar veya kullanıcı tarafından sabit/manuel fiyat belirlenen eşyalar (örn: Elmas Kask)
   const isEnchantException = itemCfg.isEnchantException || itemCfg.targetEnchant || itemCfg.itemId === 'enchanted_book';
-  if (isEnchantException || (itemCfg.fixedPrice && isEnchantException)) {
-    log(`📜 Büyülü eşya istisnası devrede: ${itemCfg.item || itemCfg.itemId} için belirlenen fiyat: $${Number(itemCfg.orderPrice).toLocaleString()}`);
+  if ((itemCfg.fixedPrice && itemCfg.orderPrice) || isEnchantException) {
+    const label = isEnchantException ? '📜 Büyülü eşya istisnası' : '🛡️ Sabit/Manuel fiyat';
+    log(`${label} devrede: ${itemCfg.item || itemCfg.itemId} için belirlenen fiyat: $${Number(itemCfg.orderPrice).toLocaleString()}`);
     return itemCfg.orderPrice;
   }
 

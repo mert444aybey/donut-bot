@@ -418,50 +418,40 @@ ${navHtml('/settings')}
   </div>
   <div class="row" style="margin-top:8px">
     <div style="flex:1">
-      <label>XP Şişesi Sipariş Fiyatı ($)</label>
-      <input type="number" id="xpBottleOrderPrice">
-      <span class="hint">Envanterde bitince /orders'tan alınacak birim fiyat</span>
-    </div>
-    <div style="flex:1">
       <label>XP Şişesi Sipariş Miktarı</label>
       <input type="number" id="xpBottleOrderAmount">
-      <span class="hint">Tek seferde sipariş edilecek şişe adedi (Örn: 64)</span>
+      <span class="hint">Tek seferde sipariş edilecek şişe adedi (Daima 3200)</span>
     </div>
-  </div>
-  <div class="row" style="margin-top:8px">
     <div style="flex:1">
       <label>🛡️ Elmas Kask Sipariş Fiyatı ($ - Manuel / Sabit)</label>
       <input type="number" id="diamondHelmetOrderPrice">
-      <span class="hint">Kask için otomatik fiyat çekilmez; doğrudan bu belirlediğiniz sabit fiyat verilir</span>
+      <span class="hint">Kask için belirlenen sabit sipariş birim fiyatı</span>
     </div>
+  </div>
+  <div class="row" style="margin-top:8px">
     <div style="flex:1">
       <label>Blast Protection 4 Kitap ($)</label>
       <input type="number" id="bookBlastOrderPrice">
-      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
     </div>
-  </div>
-  <div class="row" style="margin-top:8px">
     <div style="flex:1">
       <label>Respiration 3 Kitap ($)</label>
       <input type="number" id="bookRespOrderPrice">
-      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
-    </div>
-    <div style="flex:1">
-      <label>Mending Kitap ($)</label>
-      <input type="number" id="bookMendingOrderPrice">
-      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
     </div>
   </div>
   <div class="row" style="margin-top:8px">
     <div style="flex:1">
+      <label>Mending Kitap ($)</label>
+      <input type="number" id="bookMendingOrderPrice">
+    </div>
+    <div style="flex:1">
       <label>Unbreaking 3 Kitap ($)</label>
       <input type="number" id="bookUnbOrderPrice">
-      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
     </div>
+  </div>
+  <div class="row" style="margin-top:8px">
     <div style="flex:1">
       <label>Aqua Affinity Kitap ($)</label>
       <input type="number" id="bookAquaOrderPrice">
-      <span class="hint">Eksik olunca /orders'tan alınacak fiyat</span>
     </div>
   </div>
   <div class="row" style="margin-top:8px">
@@ -560,7 +550,6 @@ var FIELDS = [
   ['godHelmetAutoBuyAnvil', 'checkbox'],
   ['godHelmetMaxAnvilPrice', 'number'],
   ['godHelmetMinProfit', 'number'],
-  ['xpBottleOrderPrice', 'number'],
   ['xpBottleOrderAmount', 'number'],
   ['diamondHelmetOrderPrice', 'number'],
   ['bookBlastOrderPrice', 'number'],

@@ -77,6 +77,7 @@ const DEFAULT_SETTINGS = {
   bookMendingOrderPrice: 25000,
   bookUnbOrderPrice: 15000,
   bookAquaOrderPrice: 10000,
+  diamondHelmetOrderPrice: 25000,
   godHelmetBatchOrderAmount: 50,
 };
 
@@ -131,6 +132,7 @@ const SCHEMA = {
   godHelmetMaxAnvilPrice: { type: 'int',  label: 'AH\'den Ors Alirken Tavan Fiyat', min: 1, max: 1e12 },
   anvilOrderAmount:       { type: 'int',  label: 'Örs Siparis Miktari',             min: 1, max: 1000 },
   xpBottleOrderAmount:    { type: 'int',  label: 'XP Sisesi Siparis Miktari',       min: 1, max: 100000 },
+  diamondHelmetOrderPrice:{ type: 'int',  label: 'Elmas Kask Siparis Fiyati ($)',   min: 1, max: 1e8 },
   bookBlastOrderPrice:     { type: 'int',  label: 'Blast Prot 4 Kitap Siparis ($)',  min: 1, max: 1e8 },
   bookRespOrderPrice:      { type: 'int',  label: 'Respiration 3 Kitap Siparis ($)', min: 1, max: 1e8 },
   bookMendingOrderPrice:   { type: 'int',  label: 'Mending Kitap Siparis ($)',       min: 1, max: 1e8 },

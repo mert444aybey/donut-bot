@@ -412,6 +412,8 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       selectSlot: 0,
       orderSearchQuery: 'diamond helmet',
       orderAmount: batchAmount,
+      orderPrice: S.diamondHelmetOrderPrice || 25000,
+      fixedPrice: true,
       category: 'Kask',
     });
   }
