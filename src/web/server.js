@@ -22,10 +22,44 @@ app.use(express.json());
 
 // ---------------- SAYFALAR ----------------
 app.get('/', (_req, res) => res.send(pages.homePage()));
+app.get('/casino', (_req, res) => res.send(pages.casinoPage()));
 app.get('/ledger', (_req, res) => res.send(pages.ledgerPage()));
 app.get('/settings', (_req, res) => res.send(pages.settingsPage()));
 app.get('/probe', (_req, res) => res.send(pages.probePage()));
 app.get('/stats', (_req, res) => res.send(pages.statsPage()));
+
+// ---------------- API: CASINO ----------------
+app.get('/api/casino/info', (_req, res) => {
+  const botName = state.bot?.username || CFG.username || 'Bot';
+  res.json({
+    botName,
+    minBet: 1000,
+    coinflipMultiplier: 1.95,
+  });
+});
+
+app.get('/api/casino/user/:username', (req, res) => {
+  try {
+    const casinoEngine = require('../features/casino/engine');
+    const profile = casinoEngine.getUserProfile(req.params.username);
+    res.json({ ok: true, profile });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message });
+  }
+});
+
+app.get('/api/casino/games', (_req, res) => {
+  try {
+    const casinoEngine = require('../features/casino/engine');
+    res.json({
+      ok: true,
+      recent: casinoEngine.getRecentGames(),
+      house: casinoEngine.getHouseStats(),
+    });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message });
+  }
+});
 
 // ---------------- API: ISTATISTIK & MUHASEBE ----------------
 app.get('/api/stats', (_req, res) => res.json(state.STATS));
@@ -110,6 +144,67 @@ io.on('connection', (socket) => {
       const { joinBot } = require('../bot');
       joinBot();
     } catch (_) {}
+  });
+
+  // ---------------- CASINO SOCKET HANDLERS ----------------
+  socket.on('casino:getUser', (username, cb) => {
+    try {
+      const casinoEngine = require('../features/casino/engine');
+      const profile = casinoEngine.getUserProfile(username);
+      if (typeof cb === 'function') cb({ ok: true, profile });
+    } catch (e) {
+      if (typeof cb === 'function') cb({ ok: false, error: e.message });
+    }
+  });
+
+  socket.on('casino:coinflip', ({ username, bet, choice }, cb) => {
+    try {
+      const casinoEngine = require('../features/casino/engine');
+      const res = casinoEngine.playCoinflipGame(username, bet, choice);
+      if (typeof cb === 'function') cb({ ok: true, result: res });
+    } catch (e) {
+      if (typeof cb === 'function') cb({ ok: false, error: e.message });
+    }
+  });
+
+  socket.on('casino:minesStart', ({ username, bet, mines }, cb) => {
+    try {
+      const casinoEngine = require('../features/casino/engine');
+      const res = casinoEngine.startMinesGame(username, bet, mines);
+      if (typeof cb === 'function') cb({ ok: true, result: res });
+    } catch (e) {
+      if (typeof cb === 'function') cb({ ok: false, error: e.message });
+    }
+  });
+
+  socket.on('casino:minesReveal', ({ username, gameId, tileIndex }, cb) => {
+    try {
+      const casinoEngine = require('../features/casino/engine');
+      const res = casinoEngine.revealMinesTile(username, gameId, tileIndex);
+      if (typeof cb === 'function') cb({ ok: true, result: res });
+    } catch (e) {
+      if (typeof cb === 'function') cb({ ok: false, error: e.message });
+    }
+  });
+
+  socket.on('casino:minesCashout', ({ username, gameId }, cb) => {
+    try {
+      const casinoEngine = require('../features/casino/engine');
+      const res = casinoEngine.cashoutMinesGame(username, gameId);
+      if (typeof cb === 'function') cb({ ok: true, result: res });
+    } catch (e) {
+      if (typeof cb === 'function') cb({ ok: false, error: e.message });
+    }
+  });
+
+  socket.on('casino:withdraw', async ({ username, amount }, cb) => {
+    try {
+      const casinoEngine = require('../features/casino/engine');
+      const res = await casinoEngine.requestWithdraw(username, amount);
+      if (typeof cb === 'function') cb({ ok: true, result: res });
+    } catch (e) {
+      if (typeof cb === 'function') cb({ ok: false, error: e.message });
+    }
   });
 });
 

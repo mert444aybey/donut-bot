@@ -104,6 +104,7 @@ function shell(title, body) {
 
 const NAV_ITEMS = [
   ['/', 'Panel', '🛒'],
+  ['/casino', 'Casino', '🎰'],
   ['/ledger', 'Muhasebe', '💰'],
   ['/settings', 'Ayarlar', '⚙️'],
   ['/probe', 'Kesif', '🔍'],
@@ -1428,4 +1429,1091 @@ updateEconomics();
 </script>`);
 }
 
-module.exports = { homePage, ledgerPage, settingsPage, probePage, statsPage };
+// ---------------- CASINO SAYFASI ----------------
+function casinoPage() {
+  return shell('🎰 Donut Casino', `
+<style>
+/* Casino Özel Tema */
+:root {
+  --cas-gold: #fbbf24;
+  --cas-gold-glow: rgba(251, 191, 36, 0.35);
+  --cas-purple: #8b5cf6;
+  --cas-purple-dark: #1e1b4b;
+  --cas-emerald: #10b981;
+  --cas-rose: #f43f5e;
+  --cas-card: #13141f;
+  --cas-card-border: #26283b;
+}
+
+.casino-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: radial-gradient(circle at top left, #2e1065, #0f1016);
+  border: 1px solid #4c1d95;
+  border-radius: 16px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.casino-title h1 {
+  font-size: 26px;
+  margin: 0;
+  color: #fff;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+}
+.casino-title p {
+  color: #a78bfa;
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+/* Kullanıcı & Bakiye Barı */
+.cas-user-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 16, 26, 0.85);
+  border: 1px solid var(--cas-card-border);
+  padding: 8px 14px;
+  border-radius: 12px;
+}
+.cas-balance-val {
+  font-size: 19px;
+  font-weight: 800;
+  color: #34d399;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
+}
+.cas-btn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cas-btn-deposit {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.cas-btn-deposit:hover { transform: translateY(-1px); filter: brightness(1.1); }
+.cas-btn-withdraw {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.cas-btn-withdraw:hover { transform: translateY(-1px); filter: brightness(1.1); }
+
+/* Oyun Sekmeleri */
+.game-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.g-tab-btn {
+  flex: 1;
+  padding: 14px;
+  background: var(--cas-card);
+  border: 1px solid var(--cas-card-border);
+  border-radius: 12px;
+  color: #94a3b8;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.g-tab-btn.active {
+  background: linear-gradient(135deg, #2e1065, #1e1b4b);
+  border-color: #8b5cf6;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+/* Oyun Sahnesi Düzeni */
+.game-arena {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+@media (max-width: 900px) {
+  .game-arena { grid-template-columns: 1fr; }
+}
+
+.bet-panel {
+  background: var(--cas-card);
+  border: 1px solid var(--cas-card-border);
+  border-radius: 16px;
+  padding: 20px;
+}
+.bet-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+.bet-input-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+.bet-input-wrap input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #090a10;
+  border: 1px solid #33364f;
+  color: #fff;
+  padding: 12px 14px 12px 28px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.bet-input-wrap input:focus { outline: none; border-color: #8b5cf6; }
+.bet-input-wrap span {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-weight: bold;
+}
+.chip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.chip-btn {
+  background: #181926;
+  border: 1px solid #2e3047;
+  color: #cbd5e1;
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip-btn:hover { background: #2e1065; border-color: #8b5cf6; color: #fff; }
+
+.play-action-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  box-shadow: 0 6px 20px rgba(109, 40, 217, 0.4);
+  transition: all 0.2s;
+}
+.play-action-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
+.play-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Coinflip Ekranı */
+.cf-screen {
+  background: radial-gradient(circle at center, #1b1c2b, #0c0d14);
+  border: 1px solid var(--cas-card-border);
+  border-radius: 16px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 380px;
+  position: relative;
+  overflow: hidden;
+}
+.coin-container {
+  width: 140px;
+  height: 140px;
+  position: relative;
+  perspective: 1000px;
+  margin-bottom: 24px;
+}
+.coin {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: transform 1s ease-out;
+  border-radius: 50%;
+}
+.coin-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  box-shadow: 0 0 25px rgba(251, 191, 36, 0.4), inset 0 0 15px rgba(0,0,0,0.4);
+  border: 4px solid #f59e0b;
+}
+.coin-heads {
+  background: radial-gradient(circle, #fde047, #d97706);
+  color: #78350f;
+}
+.coin-tails {
+  background: radial-gradient(circle, #fcd34d, #b45309);
+  color: #78350f;
+  transform: rotateY(180deg);
+}
+
+.coin.flipping-heads {
+  animation: flipToHeads 1.6s cubic-bezier(0.15, 0.85, 0.35, 1.2) forwards;
+}
+.coin.flipping-tails {
+  animation: flipToTails 1.6s cubic-bezier(0.15, 0.85, 0.35, 1.2) forwards;
+}
+
+@keyframes flipToHeads {
+  0% { transform: rotateY(0deg) scale(1); }
+  50% { transform: rotateY(1080deg) scale(1.35); }
+  100% { transform: rotateY(2160deg) scale(1); }
+}
+@keyframes flipToTails {
+  0% { transform: rotateY(0deg) scale(1); }
+  50% { transform: rotateY(1080deg) scale(1.35); }
+  100% { transform: rotateY(2340deg) scale(1); }
+}
+
+.choice-selector {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 18px;
+}
+.choice-btn {
+  flex: 1;
+  padding: 12px;
+  background: #181926;
+  border: 2px solid #2e3047;
+  border-radius: 10px;
+  color: #cbd5e1;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.choice-btn.selected {
+  border-color: var(--cas-gold);
+  background: rgba(251, 191, 36, 0.1);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.25);
+}
+
+/* Mines (Mayın Tarlası) Ekranı */
+.mines-screen {
+  background: radial-gradient(circle at center, #1b1c2b, #0c0d14);
+  border: 1px solid var(--cas-card-border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 380px;
+}
+.mines-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 62px);
+  grid-template-rows: repeat(5, 62px);
+  gap: 8px;
+}
+.m-tile {
+  background: #25283d;
+  border: 2px solid #363952;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3);
+}
+.m-tile:hover:not(.revealed):not(:disabled) {
+  background: #343854;
+  border-color: #8b5cf6;
+  transform: translateY(-2px);
+}
+.m-tile.revealed-diamond {
+  background: radial-gradient(circle, #065f46, #064e3b);
+  border-color: #10b981;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  animation: tilePop 0.25s ease;
+}
+.m-tile.revealed-bomb {
+  background: radial-gradient(circle, #881337, #4c0519);
+  border-color: #f43f5e;
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+  animation: tilePop 0.25s ease;
+}
+.m-tile:disabled { cursor: default; }
+
+@keyframes tilePop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.mines-info-bar {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 340px;
+  margin-bottom: 16px;
+  background: #12131e;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #23253a;
+}
+.mines-stat-val {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--cas-gold);
+}
+
+/* Canlı Kazançlar & Akış Ticker */
+.recent-bets-card {
+  background: var(--cas-card);
+  border: 1px solid var(--cas-card-border);
+  border-radius: 16px;
+  padding: 18px 22px;
+}
+.recent-bets-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  color: #fff;
+  margin-bottom: 14px;
+}
+.bets-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.bet-stream-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #090a12;
+  border: 1px solid #1f2133;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  animation: fadeIn 0.3s ease;
+}
+.bet-stream-item.win { border-left: 4px solid var(--cas-emerald); }
+.bet-stream-item.loss { border-left: 4px solid #475569; }
+
+/* Modal Pencereleri */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #141522;
+  border: 1px solid #363955;
+  border-radius: 18px;
+  width: 90%;
+  max-width: 440px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 20px;
+  cursor: pointer;
+}
+.code-copy-box {
+  background: #090a10;
+  border: 1px dashed #4c1d95;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #a78bfa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0 18px;
+  cursor: pointer;
+}
+.code-copy-box:hover { border-color: #8b5cf6; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="casino-header">
+  <div class="casino-title">
+    <h1>🎰 DonutSMP Casino</h1>
+    <p>Oyun içinde bota /pay at, bakiyen anında yüklensin, Coinflip & Mayın Tarlasında katla!</p>
+  </div>
+
+  <div id="authSection" class="cas-user-box">
+    <div id="loggedOutView" style="display:flex;gap:8px">
+      <input type="text" id="loginUsername" placeholder="Minecraft Nickin" style="background:#090a10;border:1px solid #33364f;color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;width:140px">
+      <button class="cas-btn cas-btn-deposit" onclick="login()">Giriş Yap</button>
+    </div>
+    <div id="loggedInView" style="display:none;align-items:center;gap:12px">
+      <img id="userAvatar" src="" style="width:32px;height:32px;border-radius:6px;border:1px solid #4c1d95" alt="Avatar">
+      <div>
+        <div id="userNameDisp" style="font-weight:700;font-size:13px;color:#cbd5e1">Player</div>
+        <div id="userBalanceDisp" class="cas-balance-val">$0</div>
+      </div>
+      <button class="cas-btn cas-btn-deposit" onclick="openDepositModal()">📥 Yatır</button>
+      <button class="cas-btn cas-btn-withdraw" onclick="openWithdrawModal()">📤 Çek</button>
+      <button onclick="logout()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:16px" title="Çıkış Yap">🚪</button>
+    </div>
+  </div>
+</div>
+
+${navHtml('/casino')}
+
+<!-- Oyun Sekmeleri -->
+<div class="game-tabs">
+  <div class="g-tab-btn active" id="tabBtnCf" onclick="switchGame('coinflip')">🪙 Coinflip (Yazı-Tura)</div>
+  <div class="g-tab-btn" id="tabBtnMines" onclick="switchGame('mines')">💣 Mayın Tarlası (Mines)</div>
+</div>
+
+<!-- ================= 1. COINFLIP OYUN ALANI ================= -->
+<div id="gameArenaCf" class="game-arena">
+  <!-- Bahis Paneli -->
+  <div class="bet-panel">
+    <div class="bet-label">
+      <span>Bahis Miktarı</span>
+      <span style="color:#a78bfa">Oran: 1.95x</span>
+    </div>
+    <div class="bet-input-wrap">
+      <span>$</span>
+      <input type="number" id="cfBetInput" value="10000" min="1000" step="1000">
+    </div>
+    <div class="chip-grid">
+      <button class="chip-btn" onclick="setCfBet(10000)">10K</button>
+      <button class="chip-btn" onclick="setCfBet(50000)">50K</button>
+      <button class="chip-btn" onclick="setCfBet(250000)">250K</button>
+      <button class="chip-btn" onclick="setCfBet(1000000)">1M</button>
+      <button class="chip-btn" onclick="multCfBet(0.5)">1/2</button>
+      <button class="chip-btn" onclick="multCfBet(2)">2X</button>
+      <button class="chip-btn" onclick="setCfMax()">MAX</button>
+      <button class="chip-btn" onclick="setCfBet(1000)">MIN</button>
+    </div>
+
+    <div class="bet-label">Tarafını Seç</div>
+    <div class="choice-selector">
+      <div class="choice-btn selected" id="choiceHeads" onclick="selectCfChoice('heads')">
+        <span style="font-size:24px">👑</span>
+        <span>YAZI (Heads)</span>
+      </div>
+      <div class="choice-btn" id="choiceTails" onclick="selectCfChoice('tails')">
+        <span style="font-size:24px">🦅</span>
+        <span>TURA (Tails)</span>
+      </div>
+    </div>
+
+    <button id="cfPlayBtn" class="play-action-btn" onclick="playCoinflip()">🪙 ÇEVİR ($1.95x)</button>
+  </div>
+
+  <!-- Sahne / Animasyon -->
+  <div class="cf-screen">
+    <div class="coin-container">
+      <div id="coinObj" class="coin">
+        <div class="coin-face coin-heads">👑</div>
+        <div class="coin-face coin-tails">🦅</div>
+      </div>
+    </div>
+    <div id="cfResultText" style="font-size:18px;font-weight:800;color:#94a3b8;min-height:28px">Bahsini yap ve parayı fırlat!</div>
+  </div>
+</div>
+
+<!-- ================= 2. MINES (MAYIN TARLASI) OYUN ALANI ================= -->
+<div id="gameArenaMines" class="game-arena" style="display:none">
+  <!-- Bahis Paneli -->
+  <div class="bet-panel">
+    <div class="bet-label">
+      <span>Bahis Miktarı</span>
+      <span id="minesMultiplierLabel" style="color:#fbbf24">Çarpan: 1.00x</span>
+    </div>
+    <div class="bet-input-wrap">
+      <span>$</span>
+      <input type="number" id="minesBetInput" value="10000" min="1000" step="1000">
+    </div>
+    <div class="chip-grid">
+      <button class="chip-btn" onclick="setMinesBet(10000)">10K</button>
+      <button class="chip-btn" onclick="setMinesBet(50000)">50K</button>
+      <button class="chip-btn" onclick="setMinesBet(250000)">250K</button>
+      <button class="chip-btn" onclick="setMinesBet(1000000)">1M</button>
+      <button class="chip-btn" onclick="multMinesBet(0.5)">1/2</button>
+      <button class="chip-btn" onclick="multMinesBet(2)">2X</button>
+      <button class="chip-btn" onclick="setMinesMax()">MAX</button>
+      <button class="chip-btn" onclick="setMinesBet(1000)">MIN</button>
+    </div>
+
+    <div class="bet-label">Mayın Sayısı (1 - 24)</div>
+    <div style="display:flex;gap:8px;margin-bottom:18px">
+      <select id="minesCountSelect" style="width:100%;background:#090a10;border:1px solid #33364f;color:#fff;padding:12px;border-radius:8px;font-size:15px;font-weight:700">
+        <option value="1">1 Mayın (Güvenli - Düşük Risk)</option>
+        <option value="3" selected>3 Mayın (Dengeli)</option>
+        <option value="5">5 Mayın (Yüksek Çarpan)</option>
+        <option value="10">10 Mayın (Çılgın Risk)</option>
+        <option value="24">24 Mayın (1 Elmas - 23.75x)</option>
+      </select>
+    </div>
+
+    <button id="minesActionBtn" class="play-action-btn" onclick="handleMinesAction()">💣 OYUNU BAŞLAT</button>
+  </div>
+
+  <!-- 5x5 Izgara Sahnesi -->
+  <div class="mines-screen">
+    <div class="mines-info-bar">
+      <div>
+        <span style="font-size:11px;color:#94a3b8">ŞU ANKİ KAZANÇ:</span><br>
+        <span id="minesCurrentCashout" class="mines-stat-val">$0</span>
+      </div>
+      <div style="text-align:right">
+        <span style="font-size:11px;color:#94a3b8">SONRAKİ ELMAS:</span><br>
+        <span id="minesNextMult" class="mines-stat-val" style="color:#34d399">--</span>
+      </div>
+    </div>
+
+    <div id="minesGrid" class="mines-grid">
+      <!-- 25 karo dinamik JS ile render edilecek -->
+    </div>
+  </div>
+</div>
+
+<!-- ================= CANLI AKIŞ & SON OYUNLAR ================= -->
+<div class="recent-bets-card">
+  <div class="recent-bets-head">
+    <span>🔥 Canlı Bahisler & Kazananlar</span>
+    <span style="font-size:11px;color:#64748b;font-weight:normal">(Anlık güncellenir)</span>
+  </div>
+  <div id="betsStreamList" class="bets-stream">
+    <div style="color:#64748b;font-size:13px;text-align:center;padding:20px">Henüz oynanan oyun bulunmuyor...</div>
+  </div>
+</div>
+
+<!-- ================= DEPOSIT MODAL ================= -->
+<div id="depositModal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('depositModal')">✕</button>
+    <h3 style="margin-top:0;color:#34d399;display:flex;align-items:center;gap:8px">📥 Para Yatır (Deposit)</h3>
+    <p style="font-size:13px;color:#94a3b8;line-height:1.5">
+      1. Donut SMP sunucusuna bağlanın.<br>
+      2. Oyun içinde aşağıdaki komutu yazarak botumuza dilediğiniz miktarı gönderin:
+    </p>
+
+    <div class="code-copy-box" onclick="copyDepositCmd()">
+      <span id="depositCmdText">/pay BotIsmi 500000</span>
+      <span style="font-size:11px;background:#4c1d95;padding:4px 8px;border-radius:4px;color:#fff">KOPYALA</span>
+    </div>
+
+    <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);padding:12px;border-radius:8px;font-size:12px;color:#6ee7b7">
+      ⚡ Paranız gönderildiği an (2-3 saniye içinde) web sayfasındaki bakiyenize otomatik olarak yüklenecektir!
+    </div>
+  </div>
+</div>
+
+<!-- ================= WITHDRAW MODAL ================= -->
+<div id="withdrawModal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('withdrawModal')">✕</button>
+    <h3 style="margin-top:0;color:#fbbf24;display:flex;align-items:center;gap:8px">📤 Para Çek (Withdraw)</h3>
+    <p style="font-size:13px;color:#94a3b8">
+      Çekmek istediğiniz miktarı girin. Botumuz oyunda <strong id="withdrawNickDisp">oyuncunuza</strong> anında <code style="color:#a78bfa">/pay</code> gönderecektir.
+    </p>
+
+    <div class="bet-input-wrap">
+      <span>$</span>
+      <input type="number" id="withdrawAmountInput" value="50000" min="1000" step="1000">
+    </div>
+
+    <div style="display:flex;gap:6px;margin-bottom:16px">
+      <button class="chip-btn" onclick="setWithdrawAmount(50000)">50K</button>
+      <button class="chip-btn" onclick="setWithdrawAmount(250000)">250K</button>
+      <button class="chip-btn" onclick="setWithdrawAmount(1000000)">1M</button>
+      <button class="chip-btn" onclick="setWithdrawMax()">MAX</button>
+    </div>
+
+    <button id="withdrawConfirmBtn" class="play-action-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="submitWithdraw()">ONAYLA & OYUNDA AL</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = io();
+var currentUsername = localStorage.getItem('donut_casino_user') || '';
+var currentBalance = 0;
+var selectedCfChoice = 'heads';
+var activeMinesGame = null;
+var botServerName = 'Bot';
+
+// Basit Ses Efektleri (Web Audio API)
+var audioCtx = null;
+function playSound(type) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    var now = audioCtx.currentTime;
+
+    if (type === 'win') {
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } else if (type === 'lose') {
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(110, now + 0.35);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    } else if (type === 'click') {
+      osc.frequency.setValueAtTime(600, now);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    }
+  } catch (_) {}
+}
+
+function fmt(n) {
+  return (Math.round(n || 0)).toLocaleString('tr-TR');
+}
+
+// ---------------- GİRİŞ / PROFİL ----------------
+function login() {
+  var u = document.getElementById('loginUsername').value.trim();
+  if (!u) return alert('Lütfen geçerli bir Minecraft kullanıcı adı girin.');
+  currentUsername = u;
+  localStorage.setItem('donut_casino_user', u);
+  refreshUserProfile();
+}
+
+function logout() {
+  currentUsername = '';
+  localStorage.removeItem('donut_casino_user');
+  document.getElementById('loggedOutView').style.display = 'flex';
+  document.getElementById('loggedInView').style.display = 'none';
+}
+
+function refreshUserProfile() {
+  if (!currentUsername) {
+    document.getElementById('loggedOutView').style.display = 'flex';
+    document.getElementById('loggedInView').style.display = 'none';
+    return;
+  }
+
+  fetch('/api/casino/user/' + encodeURIComponent(currentUsername))
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (data.ok && data.profile) {
+        document.getElementById('loggedOutView').style.display = 'none';
+        document.getElementById('loggedInView').style.display = 'flex';
+        document.getElementById('userNameDisp').textContent = data.profile.username;
+        document.getElementById('userAvatar').src = 'https://mc-heads.net/avatar/' + encodeURIComponent(data.profile.username) + '/32';
+        updateBalance(data.profile.balance);
+
+        if (data.profile.activeMines) {
+          restoreMinesGame(data.profile.activeMines);
+        }
+      }
+    });
+}
+
+function updateBalance(b) {
+  currentBalance = b || 0;
+  document.getElementById('userBalanceDisp').textContent = '$' + fmt(currentBalance);
+}
+
+// ---------------- MODALLAR ----------------
+function openDepositModal() {
+  document.getElementById('depositCmdText').textContent = '/pay ' + botServerName + ' 500000';
+  document.getElementById('depositModal').classList.add('open');
+}
+function openWithdrawModal() {
+  if (!currentUsername) return alert('Önce giriş yapmalısınız.');
+  document.getElementById('withdrawNickDisp').textContent = currentUsername;
+  document.getElementById('withdrawAmountInput').max = currentBalance;
+  document.getElementById('withdrawModal').classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+function copyDepositCmd() {
+  var txt = document.getElementById('depositCmdText').textContent;
+  navigator.clipboard.writeText(txt).then(function(){
+    alert('Kopyalandı! Oyunda chat açıp yapıştırın (CTRL+V): ' + txt);
+  });
+}
+function submitWithdraw() {
+  var amt = Number(document.getElementById('withdrawAmountInput').value);
+  if (!amt || amt < 1000) return alert('Minimum çekim $1,000 olmalıdır.');
+  if (amt > currentBalance) return alert('Bakiyeniz yetersiz.');
+
+  var btn = document.getElementById('withdrawConfirmBtn');
+  btn.disabled = true;
+  btn.textContent = 'İşleniyor...';
+
+  socket.emit('casino:withdraw', { username: currentUsername, amount: amt }, function(res){
+    btn.disabled = false;
+    btn.textContent = 'ONAYLA & OYUNDA AL';
+    if (res.ok) {
+      alert('Talebiniz alındı! Bot oyunda $' + fmt(amt) + ' gönderiyor.');
+      closeModal('withdrawModal');
+      updateBalance(res.result.newBalance);
+    } else {
+      alert('Hata: ' + res.error);
+    }
+  });
+}
+
+// ---------------- SEKME GEÇİŞİ ----------------
+function switchGame(g) {
+  playSound('click');
+  document.getElementById('tabBtnCf').classList.toggle('active', g === 'coinflip');
+  document.getElementById('tabBtnMines').classList.toggle('active', g === 'mines');
+  document.getElementById('gameArenaCf').style.display = g === 'coinflip' ? 'grid' : 'none';
+  document.getElementById('gameArenaMines').style.display = g === 'mines' ? 'grid' : 'none';
+}
+
+// ---------------- COINFLIP MANTIĞI ----------------
+function selectCfChoice(c) {
+  playSound('click');
+  selectedCfChoice = c;
+  document.getElementById('choiceHeads').classList.toggle('selected', c === 'heads');
+  document.getElementById('choiceTails').classList.toggle('selected', c === 'tails');
+}
+function setCfBet(v) { document.getElementById('cfBetInput').value = v; playSound('click'); }
+function multCfBet(f) {
+  var cur = Number(document.getElementById('cfBetInput').value) || 10000;
+  document.getElementById('cfBetInput').value = Math.max(1000, Math.round(cur * f));
+  playSound('click');
+}
+function setCfMax() { document.getElementById('cfBetInput').value = Math.max(1000, currentBalance); playSound('click'); }
+
+function playCoinflip() {
+  if (!currentUsername) return alert('Lütfen önce Minecraft adınızla giriş yapın.');
+  var bet = Number(document.getElementById('cfBetInput').value);
+  if (!bet || bet < 1000) return alert('Minimum bahis $1,000.');
+  if (bet > currentBalance) return alert('Yetersiz bakiye! Lütfen para yatırın.');
+
+  var btn = document.getElementById('cfPlayBtn');
+  btn.disabled = true;
+  document.getElementById('cfResultText').textContent = 'Para dönüyor... 🪙';
+  document.getElementById('cfResultText').style.color = '#fbbf24';
+
+  var coin = document.getElementById('coinObj');
+  coin.className = 'coin';
+
+  socket.emit('casino:coinflip', { username: currentUsername, bet: bet, choice: selectedCfChoice }, function(res){
+    if (!res.ok) {
+      btn.disabled = false;
+      document.getElementById('cfResultText').textContent = res.error;
+      document.getElementById('cfResultText').style.color = '#f43f5e';
+      return;
+    }
+
+    var r = res.result;
+    var animClass = r.resultSide === 'heads' ? 'flipping-heads' : 'flipping-tails';
+    void coin.offsetWidth; // re-flow
+    coin.classList.add(animClass);
+
+    setTimeout(function(){
+      btn.disabled = false;
+      updateBalance(r.newBalance);
+
+      if (r.won) {
+        playSound('win');
+        document.getElementById('cfResultText').innerHTML = '🎉 TEBRİKLER! +' + fmt(r.profit) + ' KAZANDIN! (1.95x)';
+        document.getElementById('cfResultText').style.color = '#34d399';
+      } else {
+        playSound('lose');
+        document.getElementById('cfResultText').innerHTML = '❌ Kaybettin (-$' + fmt(r.bet) + '). Şansını tekrar dene!';
+        document.getElementById('cfResultText').style.color = '#f43f5e';
+      }
+    }, 1650);
+  });
+}
+
+// ---------------- MINES (MAYIN TARLASI) MANTIĞI ----------------
+function initMinesGrid() {
+  var grid = document.getElementById('minesGrid');
+  grid.innerHTML = '';
+  for (var i = 0; i < 25; i++) {
+    var btn = document.createElement('button');
+    btn.className = 'm-tile';
+    btn.id = 'mTile_' + i;
+    btn.setAttribute('data-idx', i);
+    btn.onclick = function(){ clickMinesTile(this.getAttribute('data-idx')); };
+    grid.appendChild(btn);
+  }
+}
+initMinesGrid();
+
+function setMinesBet(v) { document.getElementById('minesBetInput').value = v; playSound('click'); }
+function multMinesBet(f) {
+  var cur = Number(document.getElementById('minesBetInput').value) || 10000;
+  document.getElementById('minesBetInput').value = Math.max(1000, Math.round(cur * f));
+  playSound('click');
+}
+function setMinesMax() { document.getElementById('minesBetInput').value = Math.max(1000, currentBalance); playSound('click'); }
+
+function handleMinesAction() {
+  if (activeMinesGame && activeMinesGame.status === 'in_progress') {
+    // Bozdur (Cashout)
+    cashoutMines();
+  } else {
+    // Yeni Oyun Başlat
+    startMines();
+  }
+}
+
+function startMines() {
+  if (!currentUsername) return alert('Lütfen önce Minecraft adınızla giriş yapın.');
+  var bet = Number(document.getElementById('minesBetInput').value);
+  var minesCount = Number(document.getElementById('minesCountSelect').value);
+  if (!bet || bet < 1000) return alert('Minimum bahis $1,000.');
+  if (bet > currentBalance) return alert('Yetersiz bakiye.');
+
+  var actionBtn = document.getElementById('minesActionBtn');
+  actionBtn.disabled = true;
+
+  socket.emit('casino:minesStart', { username: currentUsername, bet: bet, mines: minesCount }, function(res){
+    actionBtn.disabled = false;
+    if (!res.ok) return alert('Hata: ' + res.error);
+
+    playSound('click');
+    activeMinesGame = res.result;
+    initMinesGrid();
+    updateBalance(res.result.newBalance);
+    renderMinesActiveState();
+  });
+}
+
+function renderMinesActiveState() {
+  var g = activeMinesGame;
+  if (!g) return;
+
+  var actionBtn = document.getElementById('minesActionBtn');
+  document.getElementById('minesCountSelect').disabled = (g.status === 'in_progress');
+  document.getElementById('minesBetInput').disabled = (g.status === 'in_progress');
+
+  if (g.status === 'in_progress') {
+    actionBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    actionBtn.textContent = '💰 BOZDUR ($' + fmt(g.currentPayout || g.bet) + ')';
+    document.getElementById('minesMultiplierLabel').textContent = 'Çarpan: ' + (g.multiplier || 1).toFixed(2) + 'x';
+    document.getElementById('minesCurrentCashout').textContent = '$' + fmt(g.currentPayout || g.bet);
+    document.getElementById('minesNextMult').textContent = (g.nextMultiplier ? g.nextMultiplier.toFixed(2) + 'x' : '--');
+  } else {
+    actionBtn.style.background = 'linear-gradient(135deg, #8b5cf6, #6d28d9)';
+    actionBtn.textContent = '💣 OYUNU BAŞLAT';
+    document.getElementById('minesMultiplierLabel').textContent = 'Çarpan: 1.00x';
+    document.getElementById('minesCurrentCashout').textContent = '$0';
+    document.getElementById('minesNextMult').textContent = '--';
+  }
+}
+
+function clickMinesTile(idx) {
+  if (!activeMinesGame || activeMinesGame.status !== 'in_progress') return;
+  var tile = document.getElementById('mTile_' + idx);
+  if (tile.classList.contains('revealed-diamond') || tile.classList.contains('revealed-bomb')) return;
+
+  playSound('click');
+  socket.emit('casino:minesReveal', { username: currentUsername, gameId: activeMinesGame.gameId, tileIndex: Number(idx) }, function(res){
+    if (!res.ok) return alert(res.error);
+
+    var r = res.result;
+    if (r.status === 'busted') {
+      playSound('lose');
+      tile.classList.add('revealed-bomb');
+      tile.textContent = '💣';
+
+      // Kalan tüm mayınları aç
+      if (Array.isArray(r.mineLocations)) {
+        r.mineLocations.forEach(function(mIdx){
+          var t = document.getElementById('mTile_' + mIdx);
+          if (t) { t.classList.add('revealed-bomb'); t.textContent = '💣'; }
+        });
+      }
+      activeMinesGame = null;
+      renderMinesActiveState();
+      alert('💥 BOMBA! Mayına bastınız ve bahsi kaybettiniz.');
+    } else if (r.status === 'cashed_out' && r.autoWin) {
+      playSound('win');
+      tile.classList.add('revealed-diamond');
+      tile.textContent = '💎';
+      updateBalance(r.newBalance);
+      activeMinesGame = null;
+      renderMinesActiveState();
+      alert('🎉 EFSANE! Tüm elmasları buldunuz ve $' + fmt(r.payout) + ' kazandınız!');
+    } else {
+      // Elmas bulundu
+      playSound('click');
+      tile.classList.add('revealed-diamond');
+      tile.textContent = '💎';
+      activeMinesGame.multiplier = r.multiplier;
+      activeMinesGame.nextMultiplier = r.nextMultiplier;
+      activeMinesGame.currentPayout = r.currentPayout;
+      renderMinesActiveState();
+    }
+  });
+}
+
+function cashoutMines() {
+  if (!activeMinesGame || activeMinesGame.status !== 'in_progress') return;
+  socket.emit('casino:minesCashout', { username: currentUsername, gameId: activeMinesGame.gameId }, function(res){
+    if (!res.ok) return alert('Bozdurma hatası: ' + res.error);
+
+    var r = res.result;
+    playSound('win');
+    updateBalance(r.newBalance);
+
+    // Kalan mayınları soluk renkle göster
+    if (Array.isArray(r.mineLocations)) {
+      r.mineLocations.forEach(function(mIdx){
+        var t = document.getElementById('mTile_' + mIdx);
+        if (t && !t.classList.contains('revealed-diamond')) {
+          t.textContent = '💣';
+          t.style.opacity = '0.4';
+        }
+      });
+    }
+
+    activeMinesGame = null;
+    renderMinesActiveState();
+    alert('💰 BOZDURULDU! $' + fmt(r.payout) + ' kazancınız hesabınıza yüklendi! (' + r.multiplier.toFixed(2) + 'x)');
+  });
+}
+
+function restoreMinesGame(g) {
+  activeMinesGame = g;
+  initMinesGrid();
+  if (Array.isArray(g.revealedTiles)) {
+    g.revealedTiles.forEach(function(idx){
+      var t = document.getElementById('mTile_' + idx);
+      if (t) { t.classList.add('revealed-diamond'); t.textContent = '💎'; }
+    });
+  }
+  renderMinesActiveState();
+}
+
+// ---------------- CANLI AKIŞ & SOCKET DİNLEYİCİLERİ ----------------
+function appendStreamItem(html, type) {
+  var list = document.getElementById('betsStreamList');
+  if (list.children.length === 1 && list.children[0].textContent.includes('Henüz oynanan')) {
+    list.innerHTML = '';
+  }
+  var el = document.createElement('div');
+  el.className = 'bet-stream-item ' + (type || '');
+  el.innerHTML = html;
+  list.insertBefore(el, list.firstChild);
+  if (list.children.length > 30) list.removeChild(list.lastChild);
+}
+
+socket.on('casino:newGame', function(g){
+  var icon = g.game === 'coinflip' ? '🪙 Coinflip' : '💣 Mines';
+  var statusBadge = g.won
+    ? '<span style="color:#34d399;font-weight:bold">+$' + fmt(g.profit) + ' (' + (g.multiplier ? g.multiplier.toFixed(2) : '1.95') + 'x)</span>'
+    : '<span style="color:#64748b">-$' + fmt(g.bet) + '</span>';
+
+  var html = '<div><strong>' + g.username + '</strong> <span style="color:#64748b;font-size:11px">· ' + icon + '</span></div>' +
+             '<div>' + statusBadge + '</div>';
+  appendStreamItem(html, g.won ? 'win' : 'loss');
+});
+
+socket.on('casino:activity', function(a){
+  if (a.type === 'deposit') {
+    appendStreamItem('<div>📥 <strong style="color:#34d399">' + a.username + '</strong> para yatırdı</div><div style="color:#34d399;font-weight:bold">+$' + fmt(a.amount) + '</div>', 'win');
+  } else if (a.type === 'withdraw') {
+    appendStreamItem('<div>📤 <strong style="color:#fbbf24">' + a.username + '</strong> para çekti</div><div style="color:#fbbf24;font-weight:bold">-$' + fmt(a.amount) + '</div>', 'loss');
+  }
+});
+
+// Kişisel Bakiye Güncellemeleri
+socket.on('connect', function(){
+  if (currentUsername) {
+    socket.on('casino:user:' + currentUsername.toLowerCase(), function(u){
+      updateBalance(u.balance);
+    });
+  }
+});
+
+// Başlangıç Yüklemesi
+fetch('/api/casino/info').then(function(r){ return r.json(); }).then(function(inf){
+  if (inf.botName) botServerName = inf.botName;
+});
+fetch('/api/casino/games').then(function(r){ return r.json(); }).then(function(data){
+  if (data.ok && Array.isArray(data.recent)) {
+    data.recent.reverse().forEach(function(g){
+      var icon = g.game === 'coinflip' ? '🪙 Coinflip' : '💣 Mines';
+      var statusBadge = g.won
+        ? '<span style="color:#34d399;font-weight:bold">+$' + fmt(g.profit) + ' (' + (g.multiplier ? g.multiplier.toFixed(2) : '1.95') + 'x)</span>'
+        : '<span style="color:#64748b">-$' + fmt(g.bet) + '</span>';
+      var html = '<div><strong>' + g.username + '</strong> <span style="color:#64748b;font-size:11px">· ' + icon + '</span></div><div>' + statusBadge + '</div>';
+      appendStreamItem(html, g.won ? 'win' : 'loss');
+    });
+  }
+});
+
+if (currentUsername) {
+  refreshUserProfile();
+}
+</script>
+`);
+}
+
+module.exports = { homePage, casinoPage, ledgerPage, settingsPage, probePage, statsPage };

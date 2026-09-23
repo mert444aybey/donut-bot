@@ -18,9 +18,10 @@ Claude'a bir degisiklik yaptirirken **sadece ilgili dosyayi** gonder. Ne kadar a
 | Kesif sayfasinin calismasi (tiklama, chat, tabela) | `src/features/probe.js` |
 | Örs yerlestirme, XP sisesi atma, orsle birlestirme | `src/features/anvil.js` |
 | God Helmet kask & buyu birlestirme, oto-siparis ve satis | `src/features/craft_helmet.js` |
-| Chat mesajlarini yakalama, kick/yeniden baglanma | `src/bot.js` |
+| Web Casino motoru, bakiye, oyunlar (Coinflip & Mines) | `src/features/casino/` |
+| Chat mesajlarini yakalama, /pay deposit, kick/yeniden baglanma | `src/bot.js` |
 | Kar/zarar istatistikleri | `src/stats.js` (+ `src/web/pages.js` statsPage) |
-| Panelin gorunumu (renk, yerlesim, yeni sayfa) | `src/web/pages.js` |
+| Panelin gorunumu (renk, yerlesim, yeni sayfa, casino) | `src/web/pages.js` |
 | Yeni API/rota eklemek | `src/web/server.js` |
 
 ## Dosya listesi
@@ -43,13 +44,18 @@ src/
     probe.js               kesif sayfasi komutlari
     anvil.js               ors & XP sisesi yonetimi
     craft_helmet.js        god helmet uretimi ve satisi
+    casino/                web casino motoru
+      db.js                casino_data.json veritabani
+      engine.js            bakiye, deposit & payout kuyrugu
+      coinflip.js          coinflip (yazi-tura) mekanigi
+      mines.js             mayin tarlasi (5x5) mekanigi
   utils/
     text.js                NBT/metin cevirme, sleep, baslik
     inspect.js             lore/fiyat okuma, pencere snapshot
     windows.js             pencere bekleme, tiklama, tabela
   web/
     server.js              express + socket.io rotalari
-    pages.js               tum HTML/CSS sayfalari
+    pages.js               tum HTML/CSS sayfalari (panel + casino)
 ```
 
 ## Kural: paylasilan durum
@@ -59,5 +65,5 @@ Degisken degerler (bot, ayarlar, calisiyor mu vb.) `state.js` uzerinden okunur: 
 
 ## Veri dosyalari
 
-`settings.json` ve `stats.json` proje kokune yazilir (`index.js` ile ayni klasor).
-Eski sürümden geciyorsan bu iki dosyayi oldugu gibi birak, yeni kod ayni dosyalari okur.
+`settings.json`, `stats.json` ve `casino_data.json` proje kokune yazilir (`index.js` ile ayni klasor).
+Eski sürümden geciyorsan bu dosyalari oldugu gibi birak, yeni kod ayni dosyalari okur.
