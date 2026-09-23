@@ -190,16 +190,15 @@ async function collectHelmetMaterials(token) {
   if (needUnbCount > 0) targets.push({ id: 'unb', name: 'Unbreaking 3 Kitabı', predicate: isUnbreaking3Book, neededCount: needUnbCount });
   if (needAquaCount > 0) targets.push({ id: 'aqua', name: 'Aqua Affinity Kitabı', predicate: isAquaAffinityBook, neededCount: needAquaCount });
 
-  // XP Şişesi: En fazla 5 stack xp bottle alınır, örs için 1 slot rezerve edilir
+  // XP Şişesi: En fazla 5 stack (320 adet) xp bottle alınır, örs için 1 slot rezerve edilir
   const hasAnvil = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
   const anvilReserve = hasAnvil ? 0 : 1;
   const freeSlotsForXp = Math.max(0, bot.inventory.emptySlotCount() - anvilReserve);
   const maxAllowedXpStacks = Math.min(5, freeSlotsForXp);
-  const maxXpNeeded = maxAllowedXpStacks * 64;
-  if (maxXpNeeded > 0 && xpCount < maxXpNeeded) {
-    targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: maxXpNeeded - xpCount });
-  } else if (xpCount < 64 && bot.experience.level < 8) {
-    targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: 64 });
+  const targetXpTotal = 5 * 64; // Daima envanterde toplam 5 stack (320 adet) hedeflenir
+  if (xpCount < targetXpTotal && freeSlotsForXp > 0) {
+    const needXp = Math.min(targetXpTotal - xpCount, maxAllowedXpStacks * 64);
+    targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: needXp });
   }
 
   if (targets.length === 0) {
@@ -338,12 +337,13 @@ async function collectHelmetMaterials(token) {
     const hasAnvilNow = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
     const anvilSlotReserve = hasAnvilNow ? 0 : 1;
     const emptySlotsLeft = Math.max(0, bot.inventory.emptySlotCount() - anvilSlotReserve);
-    const maxXpStacks = target.id === 'xp' ? emptySlotsLeft : 999;
-    const maxToTake = target.id === 'xp' ? (maxXpStacks * 64) : (target.neededCount || 1);
+    // XP için: Hedef en fazla 5 stack'tir (320 adet), asla 5 stack'ten fazla çekilemez
+    const maxXpStacks = target.id === 'xp' ? Math.min(5, Math.ceil((target.neededCount || 320) / 64), emptySlotsLeft) : 999;
+    const maxToTake = target.id === 'xp' ? Math.min(target.neededCount || 320, maxXpStacks * 64) : (target.neededCount || 1);
 
     for (let cs = 0; cs < collectWin.inventoryStart; cs++) {
       if (target.id === 'xp') {
-        if (stacksTaken >= maxXpStacks || maxXpStacks <= 0) break;
+        if (stacksTaken >= maxXpStacks || takenCount >= maxToTake || maxXpStacks <= 0) break;
         if (bot.inventory.emptySlotCount() <= anvilSlotReserve && !bot.inventory.items().some((i) => i.name === 'experience_bottle' && i.count < 64)) {
           break;
         }
@@ -417,8 +417,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     if (id === 'unb') return items.filter(isStep4Book).length + items.filter(isUnbreaking3Book).length < 1;
     if (id === 'aqua') return items.filter(isStep4Book).length + items.filter(isAquaAffinityBook).length < 1;
     if (id === 'xp') {
-      const xpCount = items.filter((i) => i.name === 'experience_bottle').reduce((s, i) => s + i.count, 0);
-      return xpCount < 64 && bot.experience.level < 8;
+      return !existingOrders.has('xp');
     }
     return true;
   };
