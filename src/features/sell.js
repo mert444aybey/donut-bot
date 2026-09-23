@@ -3,7 +3,7 @@
 const CFG = require('../config');
 const state = require('../state');
 const { log, dlog } = require('../logger');
-const { bumpStats } = require('../stats');
+const { bumpStats, recordListing, recordSale } = require('../stats');
 const { sleep, humanSleep, titleOf, filledSlots } = require('../utils/text');
 const {
   assertActive,
@@ -14,26 +14,82 @@ const {
 } = require('../utils/windows');
 const { fetchLowestListingPrice, computeSellPrice } = require('./market');
 
-// Chat mesaji bir ilan satisi mi? (soldRegex + item adi, "You listed" haric)
-function isSaleMessage(m) {
-  try {
-    const S = state.S;
-    const activeItem = state.getActiveItem ? state.getActiveItem() : S;
-    if (CFG.listedRegex.test(m)) return false;
-
-    const itemName = (activeItem.item || '').toLowerCase();
-    let matchesItem = m.toLowerCase().includes(itemName);
-
-    // Eger portfoy aktifse, listedeki diger item adlarini da kontrol et
-    if (!matchesItem && S.portfolioEnabled && Array.isArray(S.portfolio)) {
-      matchesItem = S.portfolio.some((p) => p.item && m.toLowerCase().includes(p.item.toLowerCase()));
+function normalizeNum(raw) {
+  let s = String(raw || '').trim().replace(/\s/g, '');
+  if (!s) return null;
+  const hasDot = s.includes('.');
+  const hasComma = s.includes(',');
+  if (hasDot && hasComma) {
+    const lastDot = s.lastIndexOf('.');
+    const lastComma = s.lastIndexOf(',');
+    if (lastDot > lastComma) s = s.replace(/,/g, '');
+    else s = s.replace(/\./g, '').replace(',', '.');
+  } else if (hasDot) {
+    const dotCount = (s.match(/\./g) || []).length;
+    if (dotCount > 1) s = s.replace(/\./g, '');
+    else {
+      const parts = s.split('.');
+      if (parts[1] && parts[1].length === 3) s = s.replace('.', '');
     }
-
-    if (!matchesItem) return false;
-    return new RegExp(S.soldRegex, 'i').test(m);
-  } catch (_) {
-    return false;
+  } else if (hasComma) {
+    const commaCount = (s.match(/,/g) || []).length;
+    if (commaCount > 1) s = s.replace(/,/g, '');
+    else {
+      const parts = s.split(',');
+      if (parts[1] && parts[1].length === 3) s = s.replace(',', '');
+      else s = s.replace(',', '.');
+    }
   }
+  const n = parseFloat(s);
+  return isNaN(n) ? null : Math.round(n);
+}
+
+// Chat veya actionbar mesajından açık artırma satış bildirimini ayrıştırır
+function parseSaleMessage(rawText) {
+  if (!rawText || typeof rawText !== 'string') return null;
+  const text = rawText
+    .replace(/§[0-9a-fk-or]/gi, '')
+    .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
+    .trim();
+
+  if (CFG.listedRegex.test(text) || /you listed/i.test(text)) return null;
+  if (/order.*(?:complete|fulfilled|finished)/i.test(text)) return null;
+
+  const patterns = [
+    /(?:\[auction\]|\[ah\])?\s*(?:someone|\S+)\s+(?:bought|purchased)\s+your\s+(?:(\d+)x?\s+)?(.+?)\s+for\s+\$?\s*([\d,.\s]+)/i,
+    /you\s+sold\s+(?:(\d+)x?\s+)?(.+?)\s+(?:to\s+\S+\s+)?for\s+\$?\s*([\d,.\s]+)/i,
+    /your\s+auction\s+(?:of|for)?\s+(?:(\d+)x?\s+)?(.+?)\s+(?:has\s+been\s+sold|was\s+bought|was\s+purchased)\s+(?:by\s+\S+\s+)?(?:for\s+)?\$?\s*([\d,.\s]+)/i,
+    /(?:bought|sold|purchased)\s+.*?\bfor\s+\$?\s*([\d,.\s]+)/i,
+  ];
+
+  for (const pat of patterns) {
+    const m = pat.exec(text);
+    if (m) {
+      if (m.length >= 4) {
+        const qty = m[1] ? parseInt(m[1], 10) : 1;
+        let item = m[2] ? m[2].trim() : 'Eşya';
+        item = item.replace(/^(?:auction\s+of|auction\s+for)\s+/i, '').trim();
+        const price = normalizeNum(m[3]);
+        return { item, amount: qty, price };
+      } else if (m.length >= 2) {
+        const price = normalizeNum(m[1]);
+        return { item: 'Eşya', amount: 1, price };
+      }
+    }
+  }
+
+  const S = state.S || {};
+  const soldRegex = S.soldRegex ? new RegExp(S.soldRegex, 'i') : /\b(sold|purchased|bought)\b/i;
+  if (soldRegex.test(text)) {
+    return { item: 'Eşya', amount: 1, price: null };
+  }
+
+  return null;
+}
+
+// Chat mesaji bir ilan satisi mi?
+function isSaleMessage(m) {
+  return parseSaleMessage(m) !== null;
 }
 
 // Ele, en fazla maxBatch adetlik bir stack alir. Ele alinan adedi dondurur (0 = item yok).
@@ -212,6 +268,16 @@ async function sellAll(token) {
     listings++;
     log(`Ilan: ${n}x ${itemCfg.item} @ ${sellPrice}  (${items}/${itemCfg.sellCount}, kalan ${itemCount(itemCfg.itemId)})`);
     bumpStats({ listingsCreated: 1, itemsListed: n });
+    recordListing({
+      category: itemCfg.category || 'Genel Satış',
+      item: itemCfg.item,
+      amount: n,
+      sellPrice: sellPrice,
+      total: n * sellPrice,
+      unitCost: itemCfg.orderPrice || 0,
+      totalCost: (itemCfg.orderPrice || 0) * n,
+      note: `/ah üzerinden ${n}x ${itemCfg.item} satışa sunuldu`,
+    });
     if (items < itemCfg.sellCount) await humanSleep(S.sellDelayMs);
   }
   log(`Ilan koyma bitti: ${items} adet, ${listings} ilan.`);
@@ -263,4 +329,4 @@ async function waitForSales(token, listings) {
   log(`Yeterli satis oldu (${state.soldCount}/${listings}). Yeni siparise geciliyor.`);
 }
 
-module.exports = { isSaleMessage, prepareStackAndHold, sellOne, sellAll, waitForSales };
+module.exports = { isSaleMessage, parseSaleMessage, prepareStackAndHold, sellOne, sellAll, waitForSales };

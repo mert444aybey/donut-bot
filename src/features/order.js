@@ -3,7 +3,7 @@
 const CFG = require('../config');
 const state = require('../state');
 const { log, dlog } = require('../logger');
-const { bumpStats } = require('../stats');
+const { bumpStats, recordTransaction, recordRefund } = require('../stats');
 const { sleep, humanSleep, titleOf } = require('../utils/text');
 const { snapshotWindow, displayOf, loreOf, extractItemEnchantments, matchesItemOrder } = require('../utils/inspect');
 const {
@@ -163,6 +163,16 @@ async function cancelActiveOrder(token, itemOverride) {
       }
     }
     log(`Aktif siparis iptal edildi, para iade alindi.`);
+    if (itemCfg.orderPrice && itemCfg.orderAmount) {
+      recordRefund({
+        category: itemCfg.category || 'Malzeme Alımı',
+        item: itemCfg.item || itemCfg.itemId,
+        amount: itemCfg.orderAmount,
+        unitPrice: itemCfg.orderPrice,
+        total: itemCfg.orderAmount * itemCfg.orderPrice,
+        note: `İptal edilen sipariş iadesi: ${itemCfg.item || itemCfg.itemId}`,
+      });
+    }
   } else {
     log(`Iptal edilecek aktif siparis bulunamadi (onceden tamamlanmis olabilir).`);
   }
@@ -427,7 +437,16 @@ async function runOrderFlow(token, itemOverride) {
   }
 
   log(`Siparis verildi: ${itemCfg.orderAmount}x ${itemCfg.item} @ $${orderPrice}`);
-  bumpStats({ ordersPlaced: 1, itemsOrdered: itemCfg.orderAmount, totalSpent: itemCfg.orderAmount * orderPrice });
+  bumpStats({ ordersPlaced: 1, itemsOrdered: itemCfg.orderAmount });
+  recordTransaction({
+    type: 'EXPENSE',
+    category: itemCfg.category || 'Malzeme Alımı',
+    item: itemCfg.item || itemCfg.itemId,
+    amount: itemCfg.orderAmount,
+    unitPrice: orderPrice,
+    total: itemCfg.orderAmount * orderPrice,
+    note: `/orders üzerinden ${itemCfg.orderAmount}x ${itemCfg.item || itemCfg.itemId} alımı`,
+  });
   return orderPrice;
 }
 

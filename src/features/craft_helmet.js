@@ -3,7 +3,7 @@
 const CFG = require('../config');
 const state = require('../state');
 const { log, dlog } = require('../logger');
-const { bumpStats, recordTransaction } = require('../stats');
+const { bumpStats, recordTransaction, recordListing } = require('../stats');
 const { sleep, humanSleep, titleOf } = require('../utils/text');
 const { loreOf, displayOf, snapshotWindow, extractItemEnchantments } = require('../utils/inspect');
 const { assertActive, waitForWindow, closeWindowSafe, executeCommandWindow, safeClick, waitForSlot } = require('../utils/windows');
@@ -942,14 +942,15 @@ async function sellGodHelmet(token) {
   bumpStats({ listingsCreated: 1, itemsListed: 1 });
 
   const totalCost = calculateGodHelmetCost();
-  recordTransaction({
-    type: 'INCOME',
+  recordListing({
     category: 'God Helmet Satışı',
     item: 'God Helmet (5 Büyülü)',
     amount: 1,
-    unitPrice: sellPrice,
+    sellPrice: sellPrice,
     total: sellPrice,
-    note: `/ah üzerinde satışa konuldu (Tahmini kâr: $${(sellPrice - totalCost).toLocaleString()})`,
+    unitCost: totalCost,
+    totalCost: totalCost,
+    note: `/ah üzerinde satışa sunuldu (Maliyet: $${totalCost.toLocaleString()}, Beklenen Kâr: $${(sellPrice - totalCost).toLocaleString()})`,
   });
 }
 

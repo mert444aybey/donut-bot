@@ -6,6 +6,8 @@ const state = require('./state');
 const { log, dlog } = require('./logger');
 const { sleep, titleOf } = require('./utils/text');
 const { pushSnapshot } = require('./features/probe');
+const { recordSale } = require('./stats');
+const { parseSaleMessage } = require('./features/sell');
 
 const CHAT_INTERESTING = /order|listed|listing|sold|auction|limit|cooldown|not enough|cannot|can't|invalid|error|do not repeat|full|too fast|purchased|bought|balance|bakiye|unknown|disabled|slow down|wait|limbo|lobby|hub|realm/i;
 
@@ -268,6 +270,23 @@ function createBot() {
 
     if (/do not repeat|similar\) message|too fast|slow down/i.test(m)) state.spamSeen = true;
 
+    // Satış gerçekleşme mesajını yakala ve muhasebeye gerçek gelir/net kâr olarak işle
+    const saleInfo = parseSaleMessage(m);
+    if (saleInfo) {
+      state.soldCount = (state.soldCount || 0) + 1;
+      const sItem = saleInfo.item || 'God Helmet';
+      const sPrice = saleInfo.price || (state.lastSellPrice || 900000);
+      const sQty = saleInfo.amount || 1;
+      const tx = recordSale({
+        item: sItem,
+        amount: sQty,
+        sellPrice: sPrice,
+        total: sQty * sPrice,
+      });
+      log(`💰 SATIŞ ONAYLANDI: ${sQty}x ${sItem} @ $${sPrice.toLocaleString()} satıldı! (Net Kâr: $${(tx && tx.profit !== undefined ? tx.profit : 0).toLocaleString()})`);
+      setTimeout(() => queryBalance(), 1500);
+    }
+
     // Bakiye mesaji yakalama (/bal sonucu)
     const parsedBal = parseBalance(m);
     if (parsedBal !== null) {
@@ -292,6 +311,23 @@ function createBot() {
       } else if (CFG.orderCompleteRegex.test(t)) {
         state.markOrderCompleted(null);
       }
+
+      const saleInfo = parseSaleMessage(t);
+      if (saleInfo) {
+        state.soldCount = (state.soldCount || 0) + 1;
+        const sItem = saleInfo.item || 'God Helmet';
+        const sPrice = saleInfo.price || (state.lastSellPrice || 900000);
+        const sQty = saleInfo.amount || 1;
+        const tx = recordSale({
+          item: sItem,
+          amount: sQty,
+          sellPrice: sPrice,
+          total: sQty * sPrice,
+        });
+        log(`💰 SATIŞ ONAYLANDI (ActionBar): ${sQty}x ${sItem} @ $${sPrice.toLocaleString()} satıldı! (Net Kâr: $${(tx && tx.profit !== undefined ? tx.profit : 0).toLocaleString()})`);
+        setTimeout(() => queryBalance(), 1500);
+      }
+
       if (state.S && state.S.verbose) log(`actionbar: ${t}`);
     } catch (_) {}
   });

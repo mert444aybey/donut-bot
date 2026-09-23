@@ -8,7 +8,7 @@ const CFG = require('../config');
 const state = require('../state');
 const { log, logBuffer } = require('../logger');
 const { DEFAULT_SETTINGS, sanitize, saveSettings } = require('../settings');
-const { resetStats } = require('../stats');
+const { resetStats, calculateUnitEconomics } = require('../stats');
 const { snapshotFull } = require('../utils/inspect');
 const { startAutomation, stopAutomation } = require('../features/automation');
 const { probeAction } = require('../features/probe');
@@ -30,6 +30,7 @@ app.get('/stats', (_req, res) => res.send(pages.statsPage()));
 // ---------------- API: ISTATISTIK & MUHASEBE ----------------
 app.get('/api/stats', (_req, res) => res.json(state.STATS));
 app.get('/api/ledger', (_req, res) => res.json(state.STATS.ledger || []));
+app.get('/api/economics', (_req, res) => res.json(calculateUnitEconomics()));
 
 app.post('/api/stats/reset', (_req, res) => {
   const stats = resetStats();

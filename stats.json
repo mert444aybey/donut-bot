@@ -1,20 +1,1144 @@
 {
   "startedAt": 1790124860860,
-  "totalSpent": 0,
+  "totalSpent": 492800,
   "totalEarned": 0,
-  "ordersPlaced": 0,
-  "itemsOrdered": 0,
-  "cyclesCompleted": 0,
-  "godHelmetsCrafted": 0,
-  "itemsCollected": {},
-  "categories": {},
-  "ledger": [],
+  "activeListingValue": 29700000,
+  "activeListingCost": 0,
+  "ordersPlaced": 2,
+  "itemsOrdered": 128,
+  "cyclesCompleted": 5,
+  "godHelmetsCrafted": 43,
+  "itemsCollected": {
+    "experience_bottle": 1024
+  },
+  "categories": {
+    "God Helmet Satışı": {
+      "spent": 0,
+      "earned": 0,
+      "listingValue": 29700000,
+      "count": 33
+    },
+    "XP Şişesi": {
+      "spent": 492800,
+      "earned": 0,
+      "listingValue": 0,
+      "count": 128
+    }
+  },
+  "activeListings": [
+    {
+      "id": "1790128043658-ke58",
+      "time": 1790128043658,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790128036219-9xb5",
+      "time": 1790128036219,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790128028205-zpsh",
+      "time": 1790128028205,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790128020658-0qg9",
+      "time": 1790128020658,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127670294-u7xz",
+      "time": 1790127670294,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127662605-vs8c",
+      "time": 1790127662605,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127655154-yw9k",
+      "time": 1790127655154,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127647254-own3",
+      "time": 1790127647254,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127639710-qul6",
+      "time": 1790127639710,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127371754-e4lc",
+      "time": 1790127371754,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127364275-g9wm",
+      "time": 1790127364275,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127356204-j6pg",
+      "time": 1790127356204,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127348331-0l5e",
+      "time": 1790127348331,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127340231-0ap8",
+      "time": 1790127340231,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127041114-2x81",
+      "time": 1790127041114,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127033509-brat",
+      "time": 1790127033509,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127025859-3ba6",
+      "time": 1790127025859,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127018655-zbvf",
+      "time": 1790127018655,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127011009-xec0",
+      "time": 1790127011009,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126740052-kohf",
+      "time": 1790126740052,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126732308-a3fe",
+      "time": 1790126732308,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126724756-yxt9",
+      "time": 1790126724756,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126716711-z62s",
+      "time": 1790126716711,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126709363-0z06",
+      "time": 1790126709363,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126271016-3ski",
+      "time": 1790126271016,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126262777-a5w8",
+      "time": 1790126262777,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126254954-bfm9",
+      "time": 1790126254955,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126247049-ytd9",
+      "time": 1790126247049,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125983045-xjge",
+      "time": 1790125983045,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125975574-8z08",
+      "time": 1790125975574,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125967996-1gtc",
+      "time": 1790125967996,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125960145-e1tp",
+      "time": 1790125960145,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125952523-ar5h",
+      "time": 1790125952523,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    }
+  ],
+  "ledger": [
+    {
+      "id": "1790128043658-ke58",
+      "time": 1790128043658,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790128036219-9xb5",
+      "time": 1790128036219,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790128028205-zpsh",
+      "time": 1790128028205,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790128020658-0qg9",
+      "time": 1790128020658,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127993508-ay7h",
+      "time": 1790127993508,
+      "type": "EXPENSE",
+      "category": "XP Şişesi",
+      "item": "Bottle o' Enchanting",
+      "amount": 64,
+      "unitPrice": 3800,
+      "total": 243200,
+      "note": "Döngü esnasında 1 stack acil XP temini"
+    },
+    {
+      "id": "1790127936421-cjft",
+      "time": 1790127936421,
+      "type": "EXPENSE",
+      "category": "XP Şişesi",
+      "item": "Bottle o' Enchanting",
+      "amount": 64,
+      "unitPrice": 3900,
+      "total": 249600,
+      "note": "Döngü esnasında 1 stack acil XP temini"
+    },
+    {
+      "id": "1790127670294-u7xz",
+      "time": 1790127670294,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127662605-vs8c",
+      "time": 1790127662605,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127655154-yw9k",
+      "time": 1790127655154,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127647254-own3",
+      "time": 1790127647254,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127639710-qul6",
+      "time": 1790127639710,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127371754-e4lc",
+      "time": 1790127371754,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127364275-g9wm",
+      "time": 1790127364275,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127356204-j6pg",
+      "time": 1790127356204,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127348331-0l5e",
+      "time": 1790127348331,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127340231-0ap8",
+      "time": 1790127340231,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127041114-2x81",
+      "time": 1790127041114,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127033509-brat",
+      "time": 1790127033509,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127025859-3ba6",
+      "time": 1790127025859,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127018655-zbvf",
+      "time": 1790127018655,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790127011009-xec0",
+      "time": 1790127011009,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126740052-kohf",
+      "time": 1790126740052,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126732308-a3fe",
+      "time": 1790126732308,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126724756-yxt9",
+      "time": 1790126724756,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126716711-z62s",
+      "time": 1790126716711,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126709363-0z06",
+      "time": 1790126709363,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126271016-3ski",
+      "time": 1790126271016,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126262777-a5w8",
+      "time": 1790126262777,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126254954-bfm9",
+      "time": 1790126254955,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790126247049-ytd9",
+      "time": 1790126247049,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125983045-xjge",
+      "time": 1790125983045,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125975574-8z08",
+      "time": 1790125975574,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125967996-1gtc",
+      "time": 1790125967996,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125960145-e1tp",
+      "time": 1790125960145,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    },
+    {
+      "id": "1790125952523-ar5h",
+      "time": 1790125952523,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $775,000)"
+    }
+  ],
   "history": [
     {
-      "time": 1790125066394,
-      "balance": 2188559,
+      "time": 1790125952520,
+      "balance": 900,
       "spent": 0,
       "orders": 0
+    },
+    {
+      "time": 1790125965182,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790125975546,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790125988589,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126118791,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126182264,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126204773,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126218551,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126231010,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126246167,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126261875,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126272237,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126332750,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126368528,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126573758,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126576854,
+      "balance": 12088559,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126644893,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126665445,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126680578,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126701996,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126715808,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126731652,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126916359,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126950644,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126962795,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126978292,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790126990329,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127003743,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127017784,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127032634,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127275064,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127286170,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127307456,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127321502,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127333123,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127343937,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127355328,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127370850,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127387700,
+      "balance": 15688559,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127471895,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127494487,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127581987,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127595325,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127609496,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127625236,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127639000,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127654261,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127669696,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127915082,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127929193,
+      "balance": 900,
+      "spent": 0,
+      "orders": 0
+    },
+    {
+      "time": 1790127936416,
+      "balance": 900,
+      "spent": 249600,
+      "orders": 1
+    },
+    {
+      "time": 1790127936421,
+      "balance": 900,
+      "spent": 499200,
+      "orders": 1
+    },
+    {
+      "time": 1790127958243,
+      "balance": 900,
+      "spent": 499200,
+      "orders": 1
+    },
+    {
+      "time": 1790127971763,
+      "balance": 900,
+      "spent": 499200,
+      "orders": 1
+    },
+    {
+      "time": 1790127985005,
+      "balance": 900,
+      "spent": 499200,
+      "orders": 1
+    },
+    {
+      "time": 1790127993502,
+      "balance": 900,
+      "spent": 742400,
+      "orders": 2
+    },
+    {
+      "time": 1790127993508,
+      "balance": 900,
+      "spent": 985600,
+      "orders": 2
+    },
+    {
+      "time": 1790128013435,
+      "balance": 900,
+      "spent": 985600,
+      "orders": 2
+    },
+    {
+      "time": 1790128027308,
+      "balance": 900,
+      "spent": 985600,
+      "orders": 2
+    },
+    {
+      "time": 1790128042755,
+      "balance": 900,
+      "spent": 985600,
+      "orders": 2
     }
-  ]
+  ],
+  "listingsCreated": 33,
+  "itemsListed": 33
 }

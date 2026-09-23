@@ -81,6 +81,18 @@ input[type=checkbox],input[type=radio]{transform:scale(1.2);margin-right:7px;acc
 .balance-banner .amount{font-size:22px;font-weight:800;color:var(--green)}
 .balance-banner .label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em}
 .cursor-banner{display:none;background:rgba(79,140,255,.12);border:1px solid rgba(79,140,255,.3);border-radius:8px;padding:8px 14px;font-size:13px;margin:8px 0;font-weight:600;color:var(--accent)}
+.badge.listing{background:rgba(224,165,48,.15);color:var(--amber);border-color:rgba(224,165,48,.35)}
+.badge.refund{background:rgba(168,85,247,.15);color:#c084fc;border-color:rgba(168,85,247,.35)}
+.tab-btn{background:var(--panel-2);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;transition:all .15s}
+.tab-btn:hover{color:var(--text);border-color:var(--accent)}
+.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.unit-box{background:var(--panel-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:16px 0}
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}
+.unit-item{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.unit-item .u-label{font-size:11px;color:var(--muted);font-weight:600}
+.unit-item .u-val{font-size:15px;font-weight:800;color:var(--text);margin-top:4px}
+.search-box{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;width:100%;max-width:320px}
+.search-box:focus{outline:none;border-color:var(--accent)}
 @media(max-width:640px){.wrap{padding:18px 14px 40px}.cell{font-size:9px;min-height:46px}}
 `;
 
@@ -123,6 +135,29 @@ ${navHtml('/')}
     <div class="amount" id="balAmount">Yukleniyor...</div>
   </div>
   <button class="gray" id="refreshBal" style="padding:6px 12px;font-size:12px;margin:0;margin-left:auto">🔄 Yenile (/bal)</button>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px">
+  <div class="stat-card" style="padding:12px 14px">
+    <div class="stat-label">💎 GERÇEKLEŞEN NET KÂR</div>
+    <div class="stat-value" id="miniNetProfit" style="font-size:18px">$0</div>
+    <div class="stat-sub">Satış Geliri - Gider</div>
+  </div>
+  <div class="stat-card" style="padding:12px 14px">
+    <div class="stat-label">🟢 GERÇEKLEŞEN GELİR</div>
+    <div class="stat-value pos" id="miniEarned" style="font-size:18px">$0</div>
+    <div class="stat-sub">Onaylı satışlar</div>
+  </div>
+  <div class="stat-card" style="padding:12px 14px">
+    <div class="stat-label">🔴 TOPLAM GİDER</div>
+    <div class="stat-value neg" id="miniSpent" style="font-size:18px">$0</div>
+    <div class="stat-sub">Sipariş & alımlar</div>
+  </div>
+  <div class="stat-card" style="padding:12px 14px">
+    <div class="stat-label">⏳ İLANDAKİ DEĞER</div>
+    <div class="stat-value" id="miniListing" style="font-size:18px;color:var(--amber)">$0</div>
+    <div class="stat-sub">AH'de alıcı bekleyen</div>
+  </div>
 </div>
 
 <div class="card section">
@@ -187,6 +222,46 @@ s.on('balance', function(b){
     balAmount.textContent = '$ ' + Number(b).toLocaleString('tr-TR');
   } else {
     balAmount.textContent = 'Bilinmiyor (/bal bekleniyor)';
+  }
+});
+
+s.on('stats', function(st){
+  if (!st) return;
+  var earned = st.totalEarned || 0;
+  var spent = st.totalSpent || 0;
+  var net = earned - spent;
+  var listing = st.activeListingValue || 0;
+
+  var netEl = document.getElementById('miniNetProfit');
+  if (netEl) {
+    netEl.textContent = (net >= 0 ? '+' : '') + '$' + Math.round(net).toLocaleString('tr-TR');
+    netEl.className = 'stat-value ' + (net >= 0 ? 'pos' : 'neg');
+  }
+  var earnEl = document.getElementById('miniEarned');
+  if (earnEl) earnEl.textContent = '$' + Math.round(earned).toLocaleString('tr-TR');
+  var spentEl = document.getElementById('miniSpent');
+  if (spentEl) spentEl.textContent = '$' + Math.round(spent).toLocaleString('tr-TR');
+  var listEl = document.getElementById('miniListing');
+  if (listEl) listEl.textContent = '$' + Math.round(listing).toLocaleString('tr-TR');
+});
+
+fetch('/api/stats').then(function(r){ return r.json(); }).then(function(st){
+  if (st && s) s.emit('getStats', st);
+  if (st) {
+    var earned = st.totalEarned || 0;
+    var spent = st.totalSpent || 0;
+    var net = earned - spent;
+    var netEl = document.getElementById('miniNetProfit');
+    if (netEl) {
+      netEl.textContent = (net >= 0 ? '+' : '') + '$' + Math.round(net).toLocaleString('tr-TR');
+      netEl.className = 'stat-value ' + (net >= 0 ? 'pos' : 'neg');
+    }
+    var earnEl = document.getElementById('miniEarned');
+    if (earnEl) earnEl.textContent = '$' + Math.round(earned).toLocaleString('tr-TR');
+    var spentEl = document.getElementById('miniSpent');
+    if (spentEl) spentEl.textContent = '$' + Math.round(spent).toLocaleString('tr-TR');
+    var listEl = document.getElementById('miniListing');
+    if (listEl) listEl.textContent = '$' + Math.round(st.activeListingValue || 0).toLocaleString('tr-TR');
   }
 });
 
@@ -1002,68 +1077,301 @@ document.getElementById('reset').onclick = function(){
 // ---------------- MUHASEBE / FINANS ----------------
 function ledgerPage() {
   return shell('Muhasebe', `
-<div class="header"><h1>💰 Finans & Muhasebe Raporu</h1>
-<p class="subtitle">Aldığı ve harcadığı miktarlar, kalem bazlı giderler ve net kâr/zarar dökümü.</p></div>
+<div class="header">
+  <h1>💰 Finans & Muhasebe Raporu</h1>
+  <p class="subtitle">Gerçekleşen satış gelirleri, kalem bazlı malzeme maliyetleri (COGS) ve net nakit kâr dökümü.</p>
+</div>
 ${navHtml('/ledger')}
 
-<div class="stat-grid">
-  <div class="stat-card">
-    <div class="stat-label">Toplam Gelir (Satışlar)</div>
-    <div class="stat-value pos" id="totalEarned">$0</div>
-    <div class="stat-sub" id="salesSub">Tüm satış gelirleri</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Toplam Gider (Alımlar)</div>
-    <div class="stat-value neg" id="totalSpent">$0</div>
-    <div class="stat-sub" id="spentSub">Siparişler, XP şişeleri ve örs</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Net Kâr / Durum</div>
+<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
+  <div class="stat-card" style="border-left:4px solid var(--accent)">
+    <div class="stat-label">💎 GERÇEKLEŞEN NET KÂR</div>
     <div class="stat-value" id="netProfit">$0</div>
-    <div class="stat-sub" id="profitSub">Gelir - Gider</div>
+    <div class="stat-sub" id="profitSub">Kasa Kazancı (Gelir - Gider)</div>
+  </div>
+  <div class="stat-card" style="border-left:4px solid var(--green)">
+    <div class="stat-label">🟢 GERÇEKLEŞEN SATIŞ GELİRİ</div>
+    <div class="stat-value pos" id="totalEarned">$0</div>
+    <div class="stat-sub" id="salesSub">Onaylanan satış cirosu</div>
+  </div>
+  <div class="stat-card" style="border-left:4px solid var(--red)">
+    <div class="stat-label">🔴 TOPLAM MALZEME GİDERİ</div>
+    <div class="stat-value neg" id="totalSpent">$0</div>
+    <div class="stat-sub" id="spentSub">Kask, Kitap, XP, Örs alımları</div>
+  </div>
+  <div class="stat-card" style="border-left:4px solid var(--amber)">
+    <div class="stat-label">⏳ İLANDAKİ BEKLEYEN DEĞER</div>
+    <div class="stat-value" id="activeListingValue" style="color:var(--amber)">$0</div>
+    <div class="stat-sub" id="listingSub">AH'de alıcı bekleyen ilanlar</div>
+  </div>
+</div>
+
+<!-- GOD HELMET BİRİM MALİYET & EKONOMİ KUTUSU (COGS) -->
+<div class="unit-box">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div>
+      <h3 style="margin:0;color:var(--text);font-size:15px;display:flex;align-items:center;gap:8px">
+        🪖 God Helmet Birim Maliyet & Kârlılık Analizi (COGS)
+      </h3>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">
+        1 adet 5 büyülü God Helmet üretip satarken kalem bazında ne kadar harcanıyor?
+      </div>
+    </div>
+    <span class="badge on" id="marginBadge" style="font-size:12.5px;padding:6px 14px">%86+ Kâr Marjı</span>
+  </div>
+
+  <div class="unit-grid">
+    <div class="unit-item">
+      <div class="u-label">🪖 Elmas Kask</div>
+      <div class="u-val" id="ecoHelmet">$25.000</div>
+    </div>
+    <div class="unit-item">
+      <div class="u-label">📚 5x Büyülü Kitap</div>
+      <div class="u-val" id="ecoBooks">$80.000</div>
+    </div>
+    <div class="unit-item">
+      <div class="u-label">🧪 ~50x XP Şişesi</div>
+      <div class="u-val" id="ecoXp">$12.500</div>
+    </div>
+    <div class="unit-item">
+      <div class="u-label">🔨 Örs Aşınma Payı</div>
+      <div class="u-val" id="ecoAnvil">$3.000</div>
+    </div>
+    <div class="unit-item" style="border-color:rgba(229,85,90,.4);background:rgba(229,85,90,.06)">
+      <div class="u-label" style="color:var(--red)">🏷️ BİRİM MALİYET</div>
+      <div class="u-val" id="ecoTotalCost" style="color:var(--red)">~$120.500</div>
+    </div>
+    <div class="unit-item" style="border-color:rgba(51,193,122,.4);background:rgba(51,193,122,.06)">
+      <div class="u-label" style="color:var(--green)">📈 AH SATIŞ FİYATI</div>
+      <div class="u-val" id="ecoSellPrice" style="color:var(--green)">~$900.000</div>
+    </div>
+    <div class="unit-item" style="border-color:rgba(79,140,255,.4);background:rgba(79,140,255,.06)">
+      <div class="u-label" style="color:var(--accent)">💎 KASK BAŞI NET KÂR</div>
+      <div class="u-val" id="ecoProfit" style="color:var(--accent)">+$779.500</div>
+    </div>
   </div>
 </div>
 
 <h3 style="margin-top:24px">📊 Kalem Bazlı Harcama & Gelir Dağılımı</h3>
-<div id="categoryGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:6px"></div>
+<div id="categoryGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:6px"></div>
 
-<h3 style="margin-top:28px">📋 Canlı İşlem Geçmişi (Ledger Defteri)</h3>
-<div class="card" style="padding:0;overflow:hidden;margin-top:6px">
+<!-- AKTİF İLANLAR BÖLÜMÜ -->
+<div id="activeListingsSection" style="margin-top:26px;display:none">
+  <h3 style="display:flex;align-items:center;gap:8px">
+    ⏳ AH Üzerindeki Aktif İlanlar (Satış Bekleyenler)
+    <span class="badge listing" id="activeListingsCount">0 İlan</span>
+  </h3>
+  <div class="card" style="padding:0;overflow:hidden;margin-top:6px">
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;text-align:left">
+        <thead>
+          <tr style="background:var(--panel-2);color:var(--muted);border-bottom:1px solid var(--border)">
+            <th style="padding:10px 14px">İlan Zamanı</th>
+            <th style="padding:10px 14px">Eşya</th>
+            <th style="padding:10px 14px">Miktar</th>
+            <th style="padding:10px 14px">Liste Satış Fiyatı</th>
+            <th style="padding:10px 14px">Birim Maliyet</th>
+            <th style="padding:10px 14px">Beklenen Net Kâr</th>
+            <th style="padding:10px 14px">Durum</th>
+          </tr>
+        </thead>
+        <tbody id="activeListingsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CANLI İŞLEM GEÇMİŞİ (LEDGER DEFTERİ) -->
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:30px">
+  <h3 style="margin:0">📋 Canlı İşlem Geçmişi (Muhasebe Defteri)</h3>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <input type="text" id="ledgerSearch" class="search-box" placeholder="🔍 Eşya, kategori veya not ara...">
+  </div>
+</div>
+
+<!-- Filtre Sekmeleri -->
+<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+  <button type="button" class="tab-btn active" data-filter="ALL">Tümü (<span id="countAll">0</span>)</button>
+  <button type="button" class="tab-btn" data-filter="INCOME">🟢 Satış Gelirleri (<span id="countIncome">0</span>)</button>
+  <button type="button" class="tab-btn" data-filter="EXPENSE">🔴 Malzeme Giderleri (<span id="countExpense">0</span>)</button>
+  <button type="button" class="tab-btn" data-filter="LISTING">🟡 Aktif İlanlar (<span id="countListing">0</span>)</button>
+  <button type="button" class="tab-btn" data-filter="REFUND">🔄 İadeler (<span id="countRefund">0</span>)</button>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;margin-top:8px">
   <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left">
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;text-align:left">
       <thead>
         <tr style="background:var(--panel-2);color:var(--muted);border-bottom:1px solid var(--border)">
           <th style="padding:10px 14px">Zaman</th>
-          <th style="padding:10px 14px">İşlem Türü</th>
+          <th style="padding:10px 14px">Tür</th>
           <th style="padding:10px 14px">Kategori</th>
-          <th style="padding:10px 14px">Eşya / Kalem</th>
+          <th style="padding:10px 14px">Eşya</th>
           <th style="padding:10px 14px">Miktar</th>
           <th style="padding:10px 14px">Birim Fiyat</th>
           <th style="padding:10px 14px">Toplam Tutar</th>
+          <th style="padding:10px 14px">Net Kâr / Durum</th>
           <th style="padding:10px 14px">Açıklama</th>
         </tr>
       </thead>
       <tbody id="ledgerBody">
-        <tr><td colspan="8" style="padding:20px;text-align:center;color:var(--muted-2)">Henüz kayıtlı işlem yok.</td></tr>
+        <tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted-2)">Henüz kayıtlı işlem yok.</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
+<div style="margin-top:20px;display:flex;justify-content:flex-end">
+  <button class="red" id="resetLedgerBtn" style="padding:8px 16px;font-size:13px">🗑️ Muhasebe & İstatistikleri Sıfırla</button>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
 var s = io();
+var currentStats = null;
+var activeFilter = 'ALL';
+var searchQuery = '';
 
 function fmt(n){ n = Math.round(n || 0); return '$' + n.toLocaleString('tr-TR'); }
 
+// Birim ekonomi verilerini guncelle
+function updateEconomics(){
+  fetch('/api/economics').then(function(r){ return r.json(); }).then(function(eco){
+    if (!eco) return;
+    document.getElementById('ecoHelmet').textContent = fmt(eco.helmetCost);
+    document.getElementById('ecoBooks').textContent = fmt(eco.booksCost);
+    document.getElementById('ecoXp').textContent = fmt(eco.xpCost);
+    document.getElementById('ecoAnvil').textContent = fmt(eco.anvilDepreciation);
+    document.getElementById('ecoTotalCost').textContent = fmt(eco.totalUnitCost);
+    document.getElementById('ecoSellPrice').textContent = fmt(eco.avgSellPrice);
+    document.getElementById('ecoProfit').textContent = '+' + fmt(eco.expectedProfit);
+    document.getElementById('marginBadge').textContent = '%' + eco.marginPct + ' Kâr Marjı';
+  }).catch(function(){});
+}
+
+function renderActiveListings(listings){
+  var sec = document.getElementById('activeListingsSection');
+  var tb = document.getElementById('activeListingsBody');
+  var badge = document.getElementById('activeListingsCount');
+
+  if (!listings || !listings.length) {
+    sec.style.display = 'none';
+    return;
+  }
+
+  sec.style.display = 'block';
+  badge.textContent = listings.length + ' İlan';
+  tb.innerHTML = '';
+
+  listings.forEach(function(l){
+    var tr = document.createElement('tr');
+    tr.style = 'border-bottom:1px solid var(--border)';
+    var profit = (l.total || 0) - (l.cost || 0);
+    tr.innerHTML = '<td style="padding:10px 14px;color:var(--muted);white-space:nowrap">' + new Date(l.time).toLocaleTimeString('tr-TR') + '</td>' +
+                   '<td style="padding:10px 14px;color:var(--amber);font-weight:700">' + (l.item || 'Eşya') + '</td>' +
+                   '<td style="padding:10px 14px">' + (l.amount || 1) + '</td>' +
+                   '<td style="padding:10px 14px;font-weight:700;color:var(--green)">' + fmt(l.unitPrice || l.total) + '</td>' +
+                   '<td style="padding:10px 14px;color:var(--red)">' + fmt(l.cost || 0) + '</td>' +
+                   '<td style="padding:10px 14px;font-weight:700;color:var(--accent)">+' + fmt(profit) + '</td>' +
+                   '<td style="padding:10px 14px"><span class="badge listing">⏳ Satışta</span></td>';
+    tb.appendChild(tr);
+  });
+}
+
+function renderLedgerTable(ledger){
+  var tb = document.getElementById('ledgerBody');
+  if (!ledger) ledger = [];
+
+  // Sayaçları güncelle
+  var cAll = ledger.length;
+  var cInc = ledger.filter(function(r){ return r.type === 'INCOME'; }).length;
+  var cExp = ledger.filter(function(r){ return r.type === 'EXPENSE'; }).length;
+  var cList = ledger.filter(function(r){ return r.type === 'LISTING'; }).length;
+  var cRef = ledger.filter(function(r){ return r.type === 'REFUND'; }).length;
+
+  document.getElementById('countAll').textContent = cAll;
+  document.getElementById('countIncome').textContent = cInc;
+  document.getElementById('countExpense').textContent = cExp;
+  document.getElementById('countListing').textContent = cList;
+  document.getElementById('countRefund').textContent = cRef;
+
+  // Filtreleme
+  var filtered = ledger.filter(function(row){
+    if (activeFilter !== 'ALL' && row.type !== activeFilter) return false;
+    if (searchQuery) {
+      var q = searchQuery.toLowerCase();
+      var itemStr = (row.item || '').toLowerCase();
+      var catStr = (row.category || '').toLowerCase();
+      var noteStr = (row.note || '').toLowerCase();
+      if (!itemStr.includes(q) && !catStr.includes(q) && !noteStr.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    tb.innerHTML = '<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted-2)">Filtreye uygun işlem bulunamadı.</td></tr>';
+    return;
+  }
+
+  tb.innerHTML = '';
+  filtered.forEach(function(row){
+    var tr = document.createElement('tr');
+    tr.style = 'border-bottom:1px solid var(--border)';
+    var timeStr = new Date(row.time).toLocaleTimeString('tr-TR');
+
+    var badgeClass = 'badge';
+    var typeLabel = row.type;
+    var totalColor = 'var(--text)';
+    var profitText = '-';
+
+    if (row.type === 'INCOME') {
+      badgeClass = 'badge on';
+      typeLabel = '🟢 GELİR';
+      totalColor = 'var(--green)';
+      profitText = '<span style="color:var(--green);font-weight:700">+' + fmt(row.profit !== undefined ? row.profit : row.total) + '</span>';
+    } else if (row.type === 'EXPENSE') {
+      badgeClass = 'badge off';
+      typeLabel = '🔴 GİDER';
+      totalColor = 'var(--red)';
+      profitText = '<span style="color:var(--red)">-' + fmt(row.total) + '</span>';
+    } else if (row.type === 'LISTING') {
+      badgeClass = 'badge listing';
+      typeLabel = '🟡 İLAN';
+      totalColor = 'var(--amber)';
+      profitText = '<span style="color:var(--amber)">~' + fmt(row.profit !== undefined ? row.profit : row.total) + ' (Bekleyen)</span>';
+    } else if (row.type === 'REFUND') {
+      badgeClass = 'badge refund';
+      typeLabel = '🔄 İADE';
+      totalColor = '#c084fc';
+      profitText = '<span style="color:#c084fc">+' + fmt(row.total) + ' (Geri Alındı)</span>';
+    }
+
+    tr.innerHTML = '<td style="padding:10px 14px;color:var(--muted);white-space:nowrap">' + timeStr + '</td>' +
+                   '<td style="padding:10px 14px"><span class="' + badgeClass + '">' + typeLabel + '</span></td>' +
+                   '<td style="padding:10px 14px;font-weight:600">' + (row.category || '-') + '</td>' +
+                   '<td style="padding:10px 14px;color:var(--amber);font-weight:600">' + (row.item || 'Eşya') + '</td>' +
+                   '<td style="padding:10px 14px">' + (row.amount || 1) + '</td>' +
+                   '<td style="padding:10px 14px">' + fmt(row.unitPrice) + '</td>' +
+                   '<td style="padding:10px 14px;font-weight:700;color:' + totalColor + '">' + fmt(row.total) + '</td>' +
+                   '<td style="padding:10px 14px">' + profitText + '</td>' +
+                   '<td style="padding:10px 14px;color:var(--muted);font-size:11.5px">' + (row.note || '-') + '</td>';
+    tb.appendChild(tr);
+  });
+}
+
 function updateView(st){
   if (!st) return;
+  currentStats = st;
+
   var earned = st.totalEarned || 0;
   var spent = st.totalSpent || 0;
   var net = earned - spent;
+  var listing = st.activeListingValue || 0;
 
   document.getElementById('totalEarned').textContent = fmt(earned);
   document.getElementById('totalSpent').textContent = fmt(spent);
+  document.getElementById('activeListingValue').textContent = fmt(listing);
+
   var netEl = document.getElementById('netProfit');
   netEl.textContent = (net >= 0 ? '+' : '') + fmt(net);
   netEl.className = 'stat-value ' + (net >= 0 ? 'pos' : 'neg');
@@ -1080,43 +1388,54 @@ function updateView(st){
       var c = cats[k];
       var card = document.createElement('div');
       card.className = 'card';
-      card.style = 'background:var(--panel-2);padding:14px';
-      var isIncome = (c.earned || 0) > 0;
-      var val = isIncome ? c.earned : c.spent;
+      card.style = 'background:var(--panel-2);padding:14px;border:1px solid var(--border)';
+      
+      var lines = '';
+      if (c.earned) lines += '<div style="font-size:13px;color:var(--green);font-weight:700">Gelir: +' + fmt(c.earned) + '</div>';
+      if (c.spent) lines += '<div style="font-size:13px;color:var(--red);font-weight:700">Gider: -' + fmt(c.spent) + '</div>';
+      if (c.listingValue) lines += '<div style="font-size:13px;color:var(--amber);font-weight:700">İlanda: ' + fmt(c.listingValue) + '</div>';
+
       card.innerHTML = '<div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase">' + k + '</div>' +
-                       '<div style="font-size:18px;font-weight:800;margin:6px 0;color:' + (isIncome ? 'var(--green)' : '#e5555a') + '">' + (isIncome ? '+' : '-') + fmt(val) + '</div>' +
+                       '<div style="margin:6px 0">' + lines + '</div>' +
                        '<div style="font-size:11px;color:var(--muted-2)">' + (c.count || 0) + ' adet işlem</div>';
       catGrid.appendChild(card);
     });
   }
 
+  // Aktif ilanlar tablosu
+  renderActiveListings(st.activeListings || []);
+
   // Defter tablosu
-  var tb = document.getElementById('ledgerBody');
-  var ledger = Array.isArray(st.ledger) ? st.ledger : [];
-  if (!ledger.length) {
-    tb.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--muted-2)">Henüz işlem kaydı yok.</td></tr>';
-  } else {
-    tb.innerHTML = '';
-    ledger.forEach(function(row){
-      var tr = document.createElement('tr');
-      tr.style = 'border-bottom:1px solid var(--border)';
-      var isIncome = row.type === 'INCOME';
-      var timeStr = new Date(row.time).toLocaleTimeString('tr-TR');
-      tr.innerHTML = '<td style="padding:10px 14px;color:var(--muted);white-space:nowrap">' + timeStr + '</td>' +
-                     '<td style="padding:10px 14px"><span class="badge ' + (isIncome ? 'on' : 'off') + '">' + (isIncome ? '🟢 GELİR' : '🔴 GİDER') + '</span></td>' +
-                     '<td style="padding:10px 14px;font-weight:600">' + row.category + '</td>' +
-                     '<td style="padding:10px 14px;color:var(--amber);font-weight:600">' + row.item + '</td>' +
-                     '<td style="padding:10px 14px">' + row.amount + '</td>' +
-                     '<td style="padding:10px 14px">' + fmt(row.unitPrice) + '</td>' +
-                     '<td style="padding:10px 14px;font-weight:700;color:' + (isIncome ? 'var(--green)' : '#e5555a') + '">' + (isIncome ? '+' : '-') + fmt(row.total) + '</td>' +
-                     '<td style="padding:10px 14px;color:var(--muted-2);font-size:11.5px">' + (row.note || '-') + '</td>';
-      tb.appendChild(tr);
-    });
-  }
+  renderLedgerTable(st.ledger || []);
 }
+
+// Filtre sekmeleri tıklama dinleyicileri
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.onclick = function(){
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeFilter = btn.getAttribute('data-filter') || 'ALL';
+    if (currentStats) renderLedgerTable(currentStats.ledger || []);
+  };
+});
+
+// Arama kutusu dinleyicisi
+document.getElementById('ledgerSearch').oninput = function(e){
+  searchQuery = e.target.value || '';
+  if (currentStats) renderLedgerTable(currentStats.ledger || []);
+};
+
+// Sıfırlama butonu
+document.getElementById('resetLedgerBtn').onclick = function(){
+  if (!confirm('Tüm finans geçmişi, defter kayıtları ve istatistikler sıfırlanacak. Emin misin?')) return;
+  fetch('/api/stats/reset', { method:'POST' }).then(function(r){ return r.json(); }).then(function(j){
+    if (j.ok) updateView(j.stats);
+  });
+};
 
 s.on('stats', updateView);
 fetch('/api/stats').then(function(r){ return r.json(); }).then(updateView);
+updateEconomics();
 </script>`);
 }
 
