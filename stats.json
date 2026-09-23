@@ -1,9 +1,9 @@
 {
   "startedAt": 1790120048041,
-  "totalSpent": 50075900,
+  "totalSpent": 50811900,
   "totalEarned": 5292000,
-  "ordersPlaced": 8,
-  "itemsOrdered": 5860,
+  "ordersPlaced": 9,
+  "itemsOrdered": 5900,
   "cyclesCompleted": 0,
   "godHelmetsCrafted": 5,
   "itemsCollected": {},
@@ -14,9 +14,9 @@
       "count": 5820
     },
     "Örs": {
-      "spent": 380700,
+      "spent": 748700,
       "earned": 0,
-      "count": 41
+      "count": 81
     },
     "God Helmet Satışı": {
       "spent": 0,
@@ -25,6 +25,17 @@
     }
   },
   "ledger": [
+    {
+      "id": "1790124128265-fs25",
+      "time": 1790124128265,
+      "type": "EXPENSE",
+      "category": "Örs",
+      "item": "Anvil",
+      "amount": 40,
+      "unitPrice": 9200,
+      "total": 368000,
+      "note": "/orders üzerinden 40 adet toplu örs alımı"
+    },
     {
       "id": "1790123557892-uev6",
       "time": 1790123557892,
@@ -366,6 +377,30 @@
       "balance": 15080559,
       "spent": 50075900,
       "orders": 8
+    },
+    {
+      "time": 1790123995456,
+      "balance": 2556559,
+      "spent": 50075900,
+      "orders": 8
+    },
+    {
+      "time": 1790124111803,
+      "balance": 2556559,
+      "spent": 50075900,
+      "orders": 8
+    },
+    {
+      "time": 1790124128261,
+      "balance": 2556559,
+      "spent": 50443900,
+      "orders": 9
+    },
+    {
+      "time": 1790124128265,
+      "balance": 2556559,
+      "spent": 50811900,
+      "orders": 9
     }
   ],
   "listingsCreated": 5,

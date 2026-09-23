@@ -7,7 +7,7 @@ const { log, dlog } = require('../logger');
 const { sleep, humanSleep, titleOf, filledSlots } = require('../utils/text');
 const { loreOf, snapshotWindow } = require('../utils/inspect');
 const { recordTransaction } = require('../stats');
-const { runOrderFlow, waitForOrderComplete } = require('./order');
+const { runOrderFlow, waitForOrderComplete, hasActiveOrder } = require('./order');
 const { collectItems } = require('./collect');
 const {
   assertActive,
@@ -47,7 +47,6 @@ async function ensureExperienceLevel(targetLevel, token) {
 
   let xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
   if (!xpItem) {
-    log('Envanterde XP sisesi bulunamadi. /orders uzerinden 3200 adet Bottle o\' Enchanting temin ediliyor...');
     const xpOrder = {
       item: "Bottle o' Enchanting",
       itemId: 'experience_bottle',
@@ -58,23 +57,36 @@ async function ensureExperienceLevel(targetLevel, token) {
       category: 'XP Şişesi',
     };
 
-    const placedPrice = await runOrderFlow(token, xpOrder);
-    recordTransaction({
-      type: 'EXPENSE',
-      category: 'XP Şişesi',
-      item: "Bottle o' Enchanting",
-      amount: xpOrder.orderAmount,
-      unitPrice: placedPrice,
-      total: xpOrder.orderAmount * placedPrice,
-      note: 'Eksik XP için otomatik /orders alımı',
-    });
-
-    await waitForOrderComplete(token, placedPrice, xpOrder);
+    log('🔍 Envanterde XP şişesi yok, önce teslimat sandığı taranıyor...');
     await collectItems(token, xpOrder);
-
     xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
+
     if (!xpItem) {
-      throw new Error('XP sisesi siparis edildi ve toplandi ancak envanterde experience_bottle bulunamadi!');
+      const existingXp = await hasActiveOrder(token, xpOrder);
+      let placedPrice = null;
+      if (existingXp.exists) {
+        log(`ℹ️ Depoda zaten aktif bir XP şişesi siparişi mevcut (Slot ${existingXp.slot}). Mükerrer sipariş açılmıyor, teslimat bekleniyor...`);
+      } else {
+        log("🛒 /orders uzerinden 3200 adet Bottle o' Enchanting siparişi veriliyor...");
+        placedPrice = await runOrderFlow(token, xpOrder);
+        recordTransaction({
+          type: 'EXPENSE',
+          category: 'XP Şişesi',
+          item: "Bottle o' Enchanting",
+          amount: xpOrder.orderAmount,
+          unitPrice: placedPrice,
+          total: xpOrder.orderAmount * placedPrice,
+          note: 'Eksik XP için otomatik /orders alımı',
+        });
+      }
+
+      await waitForOrderComplete(token, placedPrice, xpOrder);
+      await collectItems(token, xpOrder);
+
+      xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
+      if (!xpItem) {
+        throw new Error('XP sisesi siparis edildi ve toplandi ancak envanterde experience_bottle bulunamadi!');
+      }
     }
   }
 
@@ -166,7 +178,6 @@ async function equipAnvil(bot) {
 async function orderAndCollect40Anvils(token) {
   const bot = state.bot;
   assertActive(token);
-  log('🛒 Etrafta veya envanterde örs kalmadı. /orders üzerinden 40 adet Anvil siparişi veriliyor...');
 
   const anvilOrder = {
     item: 'Anvil',
@@ -178,22 +189,41 @@ async function orderAndCollect40Anvils(token) {
     category: 'Örs',
   };
 
-  const placedPrice = await runOrderFlow(token, anvilOrder);
-  recordTransaction({
-    type: 'EXPENSE',
-    category: 'Örs',
-    item: 'Anvil',
-    amount: 40,
-    unitPrice: placedPrice,
-    total: 40 * placedPrice,
-    note: '/orders üzerinden 40 adet toplu örs alımı',
-  });
+  log('🔍 Örs siparişi vermeden önce mevcut siparişler ve teslimat sandığı taranıyor...');
+  // 1. Önce teslimat sandığına bak (önceden sipariş edilmiş ve hazır örs var mı?)
+  await collectItems(token, anvilOrder);
+
+  let anvilCount = bot.inventory.items().filter((i) => i && i.name && i.name.includes('anvil')).reduce((s, i) => s + i.count, 0);
+  if (anvilCount > 0) {
+    log(`✅ Mevcut teslimat sandığından ${anvilCount} adet örs envantere alındı. Yeni sipariş açılmasına gerek yok.`);
+    return;
+  }
+
+  // 2. Depoda /orders -> "Your Orders" menüsünde zaten açılmış aktif bir Anvil siparişi var mı?
+  const existing = await hasActiveOrder(token, anvilOrder);
+  let placedPrice = null;
+
+  if (existing.exists) {
+    log(`ℹ️ Depoda zaten aktif bir Anvil siparişi mevcut (Slot ${existing.slot}). Mükerrer sipariş açılmıyor, teslimat bekleniyor...`);
+  } else {
+    log('🛒 Etrafta, envanterde veya depoda örs siparişi bulunamadı. /orders üzerinden 40 adet Anvil siparişi veriliyor...');
+    placedPrice = await runOrderFlow(token, anvilOrder);
+    recordTransaction({
+      type: 'EXPENSE',
+      category: 'Örs',
+      item: 'Anvil',
+      amount: 40,
+      unitPrice: placedPrice,
+      total: 40 * placedPrice,
+      note: '/orders üzerinden 40 adet toplu örs alımı',
+    });
+  }
 
   log('⏳ 40 adet örsün teslimatı bekleniyor...');
   await waitForOrderComplete(token, placedPrice, anvilOrder);
   await collectItems(token, anvilOrder);
 
-  const anvilCount = bot.inventory.items().filter((i) => i && i.name && i.name.includes('anvil')).reduce((s, i) => s + i.count, 0);
+  anvilCount = bot.inventory.items().filter((i) => i && i.name && i.name.includes('anvil')).reduce((s, i) => s + i.count, 0);
   log(`✅ Toplam ${anvilCount} adet örs teslimat sandığından envantere alındı.`);
 }
 

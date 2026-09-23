@@ -5,7 +5,7 @@ const state = require('../state');
 const { log, dlog } = require('../logger');
 const { bumpStats } = require('../stats');
 const { sleep, humanSleep, titleOf } = require('../utils/text');
-const { snapshotWindow, displayOf, loreOf, extractItemEnchantments } = require('../utils/inspect');
+const { snapshotWindow, displayOf, loreOf, extractItemEnchantments, matchesItemOrder } = require('../utils/inspect');
 const {
   assertActive,
   waitForWindow,
@@ -129,11 +129,11 @@ async function cancelActiveOrder(token, itemOverride) {
   const win = await waitForWindow();
   assertActive(token);
 
-  // Penceredeki ilk aktif siparis slotunu bul
+  // Penceredeki hedeflenen siparis slotunu bul
   let orderSlot = null;
   for (let i = 0; i < win.inventoryStart; i++) {
     const it = win.slots[i];
-    if (it && (it.name === itemCfg.itemId || !it.name.includes('glass'))) {
+    if (it && matchesItemOrder(itemCfg, it)) {
       orderSlot = i;
       break;
     }
@@ -483,6 +483,42 @@ async function waitForOrderComplete(token, placedPrice, itemOverride) {
   }
 }
 
+// /orders -> 51 (Your Orders) menusunde hedeflenen esyanin aktif siparisinin olup olmadigini kontrol eder
+async function hasActiveOrder(token, itemOverride) {
+  const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : state.S);
+  assertActive(token);
+  closeWindowSafe();
+  await humanSleep(300);
+
+  try {
+    await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
+    assertActive(token);
+
+    // Slot 51: Your Orders menusu
+    const yourOrdersPromise = waitForWindow();
+    yourOrdersPromise.catch(() => {});
+    await safeClick(51);
+    const win = await yourOrdersPromise;
+    await humanSleep(300);
+
+    for (let i = 0; i < win.inventoryStart; i++) {
+      const it = win.slots[i];
+      if (it && matchesItemOrder(itemCfg, it)) {
+        closeWindowSafe();
+        await humanSleep(200);
+        return { exists: true, slot: i, item: it };
+      }
+    }
+    closeWindowSafe();
+    await humanSleep(200);
+    return { exists: false };
+  } catch (err) {
+    dlog(`hasActiveOrder hatasi: ${err.message}`);
+    closeWindowSafe();
+    return { exists: false };
+  }
+}
+
 // Eski veya ozel cagrilari runOrderFlow'a yonlendir
 async function runCustomOrderFlow(itemName, amount, price, token) {
   return await runOrderFlow(token, {
@@ -498,6 +534,7 @@ module.exports = {
   fetchOrderReferencePrice,
   computeOrderPrice,
   cancelActiveOrder,
+  hasActiveOrder,
   runOrderFlow,
   runCustomOrderFlow,
   waitForOrderComplete,
