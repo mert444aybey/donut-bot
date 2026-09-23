@@ -47,9 +47,9 @@ async function fetchOrderReferencePrice(token, itemOverride) {
 
   let win;
   try {
-    win = await executeCommandWindow(cmd, CFG.marketWindowTimeoutMs, 2);
+    win = await executeCommandWindow(cmd, CFG.marketWindowTimeoutMs, 3);
   } catch (e) {
-    log(`Siparis panosu penceresi acilmadi (${e.message}), yedek fiyat kullanilacak.`);
+    log(`UYARI: Siparis panosu penceresi acilamadi (${e.message}).`);
     return null;
   }
   assertActive(token);

@@ -1,25 +1,118 @@
 {
   "startedAt": 1790120048041,
-  "totalSpent": 1770300,
-  "totalEarned": 0,
-  "ordersPlaced": 3,
-  "itemsOrdered": 192,
+  "totalSpent": 25027900,
+  "totalEarned": 5292000,
+  "ordersPlaced": 6,
+  "itemsOrdered": 2620,
   "cyclesCompleted": 0,
-  "godHelmetsCrafted": 0,
+  "godHelmetsCrafted": 5,
   "itemsCollected": {},
   "categories": {
     "XP Şişesi": {
-      "spent": 876800,
+      "spent": 12505600,
       "earned": 0,
-      "count": 192
+      "count": 2620
     },
     "Örs": {
       "spent": 16700,
       "earned": 0,
       "count": 1
+    },
+    "God Helmet Satışı": {
+      "spent": 0,
+      "earned": 5292000,
+      "count": 5
     }
   },
   "ledger": [
+    {
+      "id": "1790121614250-x11p",
+      "time": 1790121614250,
+      "type": "INCOME",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 997000,
+      "total": 997000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $872,000)"
+    },
+    {
+      "id": "1790121606903-np6l",
+      "time": 1790121606903,
+      "type": "INCOME",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 998000,
+      "total": 998000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $873,000)"
+    },
+    {
+      "id": "1790121599101-e39y",
+      "time": 1790121599101,
+      "type": "INCOME",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 999000,
+      "total": 999000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $874,000)"
+    },
+    {
+      "id": "1790121591397-on06",
+      "time": 1790121591397,
+      "type": "INCOME",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 1099000,
+      "total": 1099000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $974,000)"
+    },
+    {
+      "id": "1790121583401-522o",
+      "time": 1790121583401,
+      "type": "INCOME",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 1199000,
+      "total": 1199000,
+      "note": "/ah üzerinde satışa konuldu (Tahmini kâr: $1,074,000)"
+    },
+    {
+      "id": "1790121286596-jdig",
+      "time": 1790121286596,
+      "type": "EXPENSE",
+      "category": "XP Şişesi",
+      "item": "Bottle o' Enchanting",
+      "amount": 2300,
+      "unitPrice": 4800,
+      "total": 11040000,
+      "note": "Eksik XP için otomatik /orders alımı"
+    },
+    {
+      "id": "1790121215698-k0bj",
+      "time": 1790121215698,
+      "type": "EXPENSE",
+      "category": "XP Şişesi",
+      "item": "Bottle o' Enchanting",
+      "amount": 64,
+      "unitPrice": 4600,
+      "total": 294400,
+      "note": "Eksik XP için otomatik /orders alımı"
+    },
+    {
+      "id": "1790121182298-9n3w",
+      "time": 1790121182298,
+      "type": "EXPENSE",
+      "category": "XP Şişesi",
+      "item": "Bottle o' Enchanting",
+      "amount": 64,
+      "unitPrice": 4600,
+      "total": 294400,
+      "note": "Eksik XP için otomatik /orders alımı"
+    },
     {
       "id": "1790120921845-agrp",
       "time": 1790120921845,
@@ -125,6 +218,104 @@
       "balance": 12675675,
       "spent": 1770300,
       "orders": 3
+    },
+    {
+      "time": 1790121151396,
+      "balance": 12362075,
+      "spent": 1770300,
+      "orders": 3
+    },
+    {
+      "time": 1790121182296,
+      "balance": 12362075,
+      "spent": 2064700,
+      "orders": 4
+    },
+    {
+      "time": 1790121182299,
+      "balance": 12362075,
+      "spent": 2359100,
+      "orders": 4
+    },
+    {
+      "time": 1790121215695,
+      "balance": 12362075,
+      "spent": 2653500,
+      "orders": 5
+    },
+    {
+      "time": 1790121215698,
+      "balance": 12362075,
+      "spent": 2947900,
+      "orders": 5
+    },
+    {
+      "time": 1790121286594,
+      "balance": 12362075,
+      "spent": 13987900,
+      "orders": 6
+    },
+    {
+      "time": 1790121286596,
+      "balance": 12362075,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790121331435,
+      "balance": 1.1,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790121522847,
+      "balance": 1932275,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790121535463,
+      "balance": 1932275,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790121546768,
+      "balance": 1932275,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790121582496,
+      "balance": 1.1,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790121590516,
+      "balance": 1,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790121598210,
+      "balance": 999,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790121606011,
+      "balance": 998,
+      "spent": 25027900,
+      "orders": 6
+    },
+    {
+      "time": 1790121613346,
+      "balance": 997,
+      "spent": 25027900,
+      "orders": 6
     }
-  ]
+  ],
+  "listingsCreated": 5,
+  "itemsListed": 5
 }

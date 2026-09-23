@@ -103,8 +103,8 @@ function checkHelmetMaterials() {
   }
 
   const xpCount = items.filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
-  if (xpCount < 30 && bot.experience.level < 10) {
-    missing.push(`Yeterli Bottle o' Enchanting (En az 30-60 adet, sende: ${xpCount})`);
+  if (xpCount < 320 && bot.experience.level < 10) {
+    missing.push(`Yeterli Bottle o' Enchanting (Hedef: 6 stack / 384 adet, sende: ${xpCount})`);
   }
 
   return {
@@ -182,8 +182,8 @@ async function collectHelmetMaterials(token) {
   const needMendingCount = Math.max(0, batchTarget - (mendingBooks + s2Books + s3Helmets + godHelmets));
   const needUnbCount = Math.max(0, batchTarget - (unbBooks + s4Books + godHelmets));
   const needAquaCount = Math.max(0, batchTarget - (aquaBooks + s4Books + godHelmets));
-  // 5 kask icin en az 320 adet (5 stack) XP sisesi hedefle
-  const needXpCount = Math.max(0, 320 - xpCount);
+  // 5 kask icin tam 6 stack (384 adet) XP sisesi hedefle
+  const needXpCount = Math.max(0, 384 - xpCount);
 
   const targets = [];
   if (needHelmetCount > 0) targets.push({ id: 'helmet', name: 'Diamond Helmet', predicate: isCleanHelmet, neededCount: needHelmetCount });
@@ -309,8 +309,16 @@ async function collectHelmetMaterials(token) {
     const maxToTake = target.neededCount || 1;
 
     for (let cs = 0; cs < collectWin.inventoryStart; cs++) {
-      if (takenCount >= maxToTake) break;
-      if (bot.inventory.emptySlotCount() === 0 && target.id !== 'xp') break;
+      if (target.id === 'xp') {
+        const curXp = bot.inventory.items().filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
+        if (curXp >= 384) break;
+        if (bot.inventory.emptySlotCount() === 0 && !bot.inventory.items().some((i) => i.name === 'experience_bottle' && i.count < 64)) {
+          break;
+        }
+      } else {
+        if (takenCount >= maxToTake) break;
+        if (bot.inventory.emptySlotCount() === 0) break;
+      }
 
       const it = collectWin.slots[cs];
       if (!it || it.name.includes('glass') || it.name === 'barrier' || it.name === 'arrow' || it.name === 'bedrock') continue;
@@ -373,7 +381,6 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       selectSlot: 0,
       orderSearchQuery: 'diamond helmet',
       orderAmount: batchAmount,
-      initialBid: 5000,
       category: 'Kask',
     });
   }
@@ -463,9 +470,9 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     });
   }
 
-  // XP sisesi depoda siparisi yoksa 3200 adetlik toplu siparis ac (canli /orders panosundan dinamik fiyatla)
+  // XP sisesi depoda siparisi yoksa SAQDECE 3200 adetlik toplu siparis ac (canli /orders panosundan dinamik fiyatla)
   if (!existingOrders.has('xp') && isNeeded('xp')) {
-    const bottleQty = S.xpBottleOrderAmount || 3200;
+    const bottleQty = 3200;
     toOrder.push({
       item: "Bottle o' Enchanting",
       itemId: 'experience_bottle',
@@ -473,7 +480,6 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       selectSlot: 0,
       orderSearchQuery: 'bottle o enchanting',
       orderAmount: bottleQty,
-      initialBid: 250,
       category: 'XP Şişesi',
     });
   }
@@ -482,7 +488,8 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     log(`🚀 TOPLU SIPARIS: Eksik ${toOrder.length} kalem malzeme icin siparisler aciliyor...`);
     for (const itemOrder of toOrder) {
       assertActive(token);
-      log(`Siparis panoya veriliyor: ${itemOrder.orderAmount}x ${itemOrder.item} ($${itemOrder.orderPrice.toLocaleString()})...`);
+      const priceStr = itemOrder.orderPrice ? `$${Number(itemOrder.orderPrice).toLocaleString()}` : 'Canlı /orders fiyatı';
+      log(`Siparis panoya veriliyor: ${itemOrder.orderAmount}x ${itemOrder.item} (${priceStr})...`);
       try {
         const placedPrice = await runOrderFlow(token, itemOrder);
         recordTransaction({

@@ -16,7 +16,23 @@ const {
   closeWindowSafe,
 } = require('../utils/windows');
 
-// 1. XP Seviyesi Saglama
+function totalXpForLevel(level) {
+  if (level <= 16) return level * level + 6 * level;
+  if (level <= 31) return Math.floor(2.5 * level * level - 40.5 * level + 360);
+  return Math.floor(4.5 * level * level - 162.5 * level + 2220);
+}
+
+function currentXpPoints(bot) {
+  const lvl = bot.experience.level || 0;
+  const progress = bot.experience.progress || 0;
+  let pointsForNextLevel;
+  if (lvl <= 15) pointsForNextLevel = 2 * lvl + 7;
+  else if (lvl <= 30) pointsForNextLevel = 5 * lvl - 38;
+  else pointsForNextLevel = 9 * lvl - 158;
+  return totalXpForLevel(lvl) + Math.round(progress * pointsForNextLevel);
+}
+
+// 1. XP Seviyesi Saglama (İsrafsız & Aşımı %100 Önleyen Akıllı Fırlatma)
 async function ensureExperienceLevel(targetLevel, token) {
   const bot = state.bot;
   if (!bot) throw new Error('Bot bagli degil');
@@ -31,13 +47,14 @@ async function ensureExperienceLevel(targetLevel, token) {
 
   let xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
   if (!xpItem) {
-    log('Envanterde XP sisesi bulunamadi. /orders uzerinden otomatik temin ediliyor...');
-    const S = state.S || {};
+    log('Envanterde XP sisesi bulunamadi. /orders uzerinden 3200 adet Bottle o\' Enchanting temin ediliyor...');
     const xpOrder = {
       item: "Bottle o' Enchanting",
       itemId: 'experience_bottle',
-      orderAmount: S.xpBottleOrderAmount || 64,
-      orderPrice: S.xpBottleOrderPrice || 250,
+      signText: "Bottle o' Enchanting",
+      selectSlot: 0,
+      orderSearchQuery: 'bottle o enchanting',
+      orderAmount: 3200,
       category: 'XP Şişesi',
     };
 
@@ -67,18 +84,41 @@ async function ensureExperienceLevel(targetLevel, token) {
     await humanSleep(100);
   }
 
-  // 2. Yere (tam ayak ucuna) bak: +Math.PI / 2 doğrudan aşağı/ayak ucuna bakar.
-  // Bu sayede atılan şişe havada süzülmeden anında ayak ucunda kırılır ve sıfır gecikmeyle XP verir!
+  // 2. Yere (tam ayak ucuna) bak
   try {
     await bot.look(bot.entity.yaw, Math.PI / 2, true);
   } catch (_) {}
 
-  // 3. Ultra Hızlı Şişe Kırma (Fast Splash: 45ms seri tick)
+  // 3. Güvenli Hızlı Seri Burst (Hedef XP'nin altında kalması matematiksel olarak kesin miktar)
+  const targetXp = totalXpForLevel(targetLevel);
+  const currentXp = currentXpPoints(bot);
+  const xpNeeded = Math.max(0, targetXp - currentXp);
+  // Bir şişe en fazla 11 XP verir. Dolayısıyla xpNeeded / 11 kadar şişe fırlatıldığında
+  // hedef seviyenin üstüne çıkılamaz (sıfır aşım garantisi).
+  const safeBurstCount = Math.floor(xpNeeded / 11);
+
+  if (safeBurstCount > 0) {
+    dlog(`XP Güvenli Seri Atış: ${safeBurstCount} adet şişe 45ms hızla fırlatılıyor...`);
+    for (let b = 0; b < safeBurstCount; b++) {
+      assertActive(token);
+      if (!bot.heldItem || bot.heldItem.name !== 'experience_bottle') {
+        const nextXp = bot.inventory.items().find((i) => i.name === 'experience_bottle');
+        if (!nextXp) break;
+        await bot.equip(nextXp, 'hand');
+        await sleep(40);
+      }
+      bot.activateItem();
+      await sleep(45);
+    }
+    // Sunucudan seviye paketinin güncellenmesi için bekle
+    await sleep(180);
+  }
+
+  // 4. Hedefe ulaşana kadar paket onaylı tekil atış (Aşımı ve XP israfını %100 önler)
   const startTime = Date.now();
   while (bot.experience.level < targetLevel) {
     assertActive(token);
 
-    // Eldeki şişe stack'i bittiyse diğer stack'i ele al
     if (!bot.heldItem || bot.heldItem.name !== 'experience_bottle') {
       const nextXp = bot.inventory.items().find((i) => i.name === 'experience_bottle');
       if (!nextXp) {
@@ -89,11 +129,10 @@ async function ensureExperienceLevel(targetLevel, token) {
       await sleep(50);
     }
 
-    // Seri şişe fırlat
     bot.activateItem();
-    await sleep(45);
+    // Sunucu seviye güncellemesi için 140ms bekle
+    await sleep(140);
 
-    // Güvenlik zaman aşımı
     if (Date.now() - startTime > 10000) {
       log('UYARI: XP yükleme zaman aşımına uğradı (10 sn), mevcut seviye ile devam ediliyor.');
       break;
@@ -103,160 +142,123 @@ async function ensureExperienceLevel(targetLevel, token) {
   log(`Hedef seviyeye ulasildi: Seviye ${bot.experience.level} (Hedef ${targetLevel})`);
 }
 
-// 2. Ors Bulma / Yerlestirme / Satin Alma
+// 2. Ors Bulma / 8'li Yerlestirme / 40'lik Siparis Sistemi
 function findAnvilBlock() {
   const bot = state.bot;
   if (!bot) return null;
   return bot.findBlock({
     matching: (b) => b && b.name && b.name.includes('anvil'),
-    maxDistance: 4,
+    maxDistance: 3,
   });
 }
 
-async function placeAnvilFromInventory(token) {
-  const bot = state.bot;
-  assertActive(token);
-
+async function equipAnvil(bot) {
   const anvilItem = bot.inventory.items().find((i) => i && i.name && i.name.includes('anvil'));
   if (!anvilItem) return false;
-
-  log(`Envanterdeki ${anvilItem.name} yerlestiriliyor...`);
-  await bot.equip(anvilItem, 'hand');
-  await humanSleep(250);
-
-  const pos = bot.entity.position.floored();
-  const offsets = [
-    new Vec3(1, -1, 0),
-    new Vec3(-1, -1, 0),
-    new Vec3(0, -1, 1),
-    new Vec3(0, -1, -1),
-    new Vec3(0, -1, 0),
-  ];
-
-  for (const off of offsets) {
-    const groundPos = pos.plus(off);
-    const groundBlock = bot.blockAt(groundPos);
-    const abovePos = groundPos.offset(0, 1, 0);
-    const aboveBlock = bot.blockAt(abovePos);
-
-    if (groundBlock && groundBlock.boundingBox === 'block' && aboveBlock && aboveBlock.name === 'air') {
-      try {
-        await bot.placeBlock(groundBlock, new Vec3(0, 1, 0));
-        await humanSleep(500);
-        const placed = findAnvilBlock();
-        if (placed) {
-          log(`Ors basariyla yerlestirildi: ${placed.name} @ ${placed.position}`);
-          try { await bot.unequip('hand'); } catch (_) {}
-          await humanSleep(300);
-          return true;
-        }
-      } catch (err) {
-        dlog(`Ors yerlestirme denemesi basarisiz (${off}): ${err.message}`);
-      }
-    }
+  if (!bot.heldItem || !bot.heldItem.name.includes('anvil')) {
+    await bot.equip(anvilItem, 'hand');
+    await humanSleep(200);
   }
-
-  return false;
+  return true;
 }
 
-async function buyAnvilFromAh(token) {
+// 40 adet örs siparişi verir ve teslimat sandığından toplar
+async function orderAndCollect40Anvils(token) {
   const bot = state.bot;
-  const S = state.S || {};
   assertActive(token);
-  closeWindowSafe();
-  await humanSleep(400);
+  log('🛒 Etrafta veya envanterde örs kalmadı. /orders üzerinden 40 adet Anvil siparişi veriliyor...');
 
-  const maxPrice = S.godHelmetMaxAnvilPrice || 500000;
-  log(`Etrafta veya envanterde ors yok, /ah anvil pazarindan en ucuz ors araniyor (Tavan: $${maxPrice.toLocaleString()})...`);
+  const anvilOrder = {
+    item: 'Anvil',
+    itemId: 'anvil',
+    signText: 'Anvil',
+    selectSlot: 0,
+    orderSearchQuery: 'anvil',
+    orderAmount: 40,
+    category: 'Örs',
+  };
 
-  const winPromise = waitForWindow(CFG.marketWindowTimeoutMs);
-  winPromise.catch(() => {});
-  bot.chat('/ah anvil');
-
-  let win;
-  try {
-    win = await winPromise;
-  } catch (e) {
-    throw new Error(`/ah anvil penceresi acilmadi: ${e.message}`);
-  }
-  assertActive(token);
-
-  await humanSleep(CFG.marketReadDelayMs);
-  const snap = snapshotWindow(bot.currentWindow || win);
-
-  if (!snap) {
-    closeWindowSafe();
-    throw new Error('AH pencere slotlari okunamadi');
-  }
-
-  let lowestListing = null;
-  for (let i = 0; i < snap.slots.length; i++) {
-    const it = snap.slots[i];
-    if (!it || !it.name.includes('anvil')) continue;
-    for (const p of it.prices) {
-      if (lowestListing === null || p.value < lowestListing.price) {
-        lowestListing = { slot: i, price: p.value, name: it.name, display: it.display };
-      }
-    }
-  }
-
-  if (!lowestListing) {
-    closeWindowSafe();
-    throw new Error('/ah uzerinde satilik ors bulunamadi!');
-  }
-
-  if (lowestListing.price > maxPrice) {
-    closeWindowSafe();
-    throw new Error(`En ucuz ors ($${lowestListing.price.toLocaleString()}) belirlenen tavan fiyatin ($${maxPrice.toLocaleString()}) ustunde! Satin alma iptal edildi.`);
-  }
-
-  log(`En ucuz ors bulundu: ${lowestListing.display || lowestListing.name} - $${lowestListing.price.toLocaleString()} (Slot ${lowestListing.slot}). Satin aliniyor...`);
-
-  const confirmPromise = waitForWindow(5000).catch(() => null);
-  await bot.clickWindow(lowestListing.slot, 0, 0);
-
-  const confirmWin = await confirmPromise;
-  assertActive(token);
-
-  if (confirmWin || (bot.currentWindow && bot.currentWindow !== win)) {
-    const cur = bot.currentWindow || confirmWin;
-    dlog(`AH Satin alma onay penceresi: "${titleOf(cur)}"`);
-    await humanSleep(600);
-
-    let confirmBtnSlot = CFG.ahConfirmSlot;
-    if (cur.slots[confirmBtnSlot] && CFG.ahConfirmItemRegex.test(cur.slots[confirmBtnSlot].name)) {
-      // confirm slot dogru
-    } else {
-      const greenSlot = cur.slots.findIndex((s, idx) => idx < cur.inventoryStart && s && CFG.ahConfirmItemRegex.test(s.name));
-      if (greenSlot >= 0) confirmBtnSlot = greenSlot;
-    }
-
-    dlog(`Onay butonuna tiklaniyor: slot ${confirmBtnSlot}`);
-    await bot.clickWindow(confirmBtnSlot, 0, 0);
-    await humanSleep(1000);
-  }
-
-  // AH satin alma sonrasi sunucunun geri actigi veya acik kalan pencereleri tamamen kapat
-  for (let c = 0; c < 3; c++) {
-    closeWindowSafe();
-    await humanSleep(350);
-  }
-
-  const hasAnvil = bot.inventory.items().some((i) => i.name.includes('anvil'));
-  if (!hasAnvil) {
-    throw new Error('Ors satin alindi fakat envanterde gorunmuyor!');
-  }
-
-  log(`Ors basariyla satin alindi: $${lowestListing.price.toLocaleString()}`);
+  const placedPrice = await runOrderFlow(token, anvilOrder);
   recordTransaction({
     type: 'EXPENSE',
     category: 'Örs',
-    item: lowestListing.display || lowestListing.name || 'Anvil',
-    amount: 1,
-    unitPrice: lowestListing.price,
-    total: lowestListing.price,
-    note: `/ah üzerinden en ucuz örs satın alımı`,
+    item: 'Anvil',
+    amount: 40,
+    unitPrice: placedPrice,
+    total: 40 * placedPrice,
+    note: '/orders üzerinden 40 adet toplu örs alımı',
   });
+
+  log('⏳ 40 adet örsün teslimatı bekleniyor...');
+  await waitForOrderComplete(token, placedPrice, anvilOrder);
+  await collectItems(token);
+
+  const anvilCount = bot.inventory.items().filter((i) => i && i.name && i.name.includes('anvil')).reduce((s, i) => s + i.count, 0);
+  log(`✅ Toplam ${anvilCount} adet örs teslimat sandığından envantere alındı.`);
+}
+
+// Botun etrafına Sağ, Sol, Ön, Arka yönlerinde 2 blok yüksekliğinde (4 yön x 2 blok = 8 adet) örs yerleştirir
+async function placeSurroundingAnvils(token) {
+  const bot = state.bot;
+  assertActive(token);
+
+  const anvilItems = bot.inventory.items().filter((i) => i && i.name && i.name.includes('anvil'));
+  if (anvilItems.length === 0) return false;
+
+  const pos = bot.entity.position.floored();
+  const DIRS = [
+    { name: 'Sağ (Doğu)',  dx: 1, dz: 0 },
+    { name: 'Sol (Batı)',   dx: -1, dz: 0 },
+    { name: 'Ön (Güney)',   dx: 0, dz: 1 },
+    { name: 'Arka (Kuzey)', dx: 0, dz: -1 },
+  ];
+
+  log('🔨 Botun etrafına 4 yönde 2 blok yüksekliğinde 8 adet örs kalesi yerleştiriliyor...');
+  let placedTotal = 0;
+
+  for (const d of DIRS) {
+    assertActive(token);
+
+    // 1. Alt Blok (Y)
+    const lowerPos = pos.offset(d.dx, 0, d.dz);
+    const lowerBlock = bot.blockAt(lowerPos);
+    if (!lowerBlock || !lowerBlock.name.includes('anvil')) {
+      const floorBlock = bot.blockAt(pos.offset(d.dx, -1, d.dz));
+      if (floorBlock && floorBlock.boundingBox === 'block') {
+        const hasItem = await equipAnvil(bot);
+        if (!hasItem) break;
+        try {
+          await bot.placeBlock(floorBlock, new Vec3(0, 1, 0));
+          placedTotal++;
+          await humanSleep(300);
+        } catch (e) {
+          dlog(`Alt örs yerleştirilemedi (${d.name}): ${e.message}`);
+        }
+      }
+    }
+
+    // 2. Üst Blok (Y + 1)
+    const upperPos = pos.offset(d.dx, 1, d.dz);
+    const upperBlock = bot.blockAt(upperPos);
+    const currentLower = bot.blockAt(lowerPos);
+    if ((!upperBlock || !upperBlock.name.includes('anvil')) && currentLower && currentLower.name.includes('anvil')) {
+      const hasItem = await equipAnvil(bot);
+      if (!hasItem) break;
+      try {
+        await bot.placeBlock(currentLower, new Vec3(0, 1, 0));
+        placedTotal++;
+        await humanSleep(300);
+      } catch (e) {
+        dlog(`Üst örs yerleştirilemedi (${d.name}): ${e.message}`);
+      }
+    }
+  }
+
+  try { await bot.unequip('hand'); } catch (_) {}
+  if (placedTotal > 0) {
+    log(`✅ Çevreye ${placedTotal} adet yeni örs yerleştirildi (Toplam 8 yuva dolduruldu).`);
+  }
+  return placedTotal > 0 || !!findAnvilBlock();
 }
 
 async function ensureAnvil(token) {
@@ -264,21 +266,20 @@ async function ensureAnvil(token) {
   let anvilBlock = findAnvilBlock();
   if (anvilBlock) return anvilBlock;
 
-  let placed = await placeAnvilFromInventory(token);
-  if (placed) {
-    anvilBlock = findAnvilBlock();
-    if (anvilBlock) return anvilBlock;
+  // Etrafta örs yoksa (veya hepsi kırıldıysa)
+  const bot = state.bot;
+  const hasAnvilsInInv = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
+  if (!hasAnvilsInInv) {
+    // 40 adet örs siparişi ver ve depodan çek
+    await orderAndCollect40Anvils(token);
   }
 
-  await buyAnvilFromAh(token);
-  placed = await placeAnvilFromInventory(token);
-  if (!placed) {
-    throw new Error('Ors satin alindi ancak yere yerlestirilemedi!');
-  }
+  // 8'li kaleyi yerleştir
+  await placeSurroundingAnvils(token);
 
   anvilBlock = findAnvilBlock();
   if (!anvilBlock) {
-    throw new Error('Yerlestirilen ors bloku bulunamadi!');
+    throw new Error('Örs yerleştirildi fakat etrafta erişilebilir örs bloku tespit edilemedi!');
   }
   return anvilBlock;
 }
