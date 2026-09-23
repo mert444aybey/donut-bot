@@ -1,30 +1,134 @@
 {
   "startedAt": 1790129711547,
-  "totalSpent": 750000,
+  "totalSpent": 24000000,
   "totalEarned": 900000,
   "activeListingValue": 0,
   "activeListingCost": 0,
-  "ordersPlaced": 1,
-  "itemsOrdered": 50,
+  "ordersPlaced": 9,
+  "itemsOrdered": 3600,
   "cyclesCompleted": 0,
   "godHelmetsCrafted": 0,
-  "itemsCollected": {},
+  "itemsCollected": {
+    "anvil": 40
+  },
   "categories": {
+    "Kitap": {
+      "spent": 11200000,
+      "earned": 0,
+      "listingValue": 0,
+      "count": 400
+    },
     "Satış Geliri": {
       "spent": 0,
       "earned": 900000,
       "listingValue": 0,
       "count": 1
     },
-    "Kitap": {
-      "spent": 750000,
+    "XP Şişesi": {
+      "spent": 12800000,
       "earned": 0,
       "listingValue": 0,
-      "count": 50
+      "count": 3200
     }
   },
   "activeListings": [],
   "ledger": [
+    {
+      "id": "1790154822792-gmg1",
+      "time": 1790154822792,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Respiration 3",
+      "amount": 50,
+      "unitPrice": 30600,
+      "total": 1530000,
+      "cost": 1530000,
+      "note": "/orders üzerinden 50x Enchanted Book Respiration 3 alımı"
+    },
+    {
+      "id": "1790154019474-kgyk",
+      "time": 1790154019474,
+      "type": "EXPENSE",
+      "category": "XP Şişesi",
+      "item": "Bottle o' Enchanting",
+      "amount": 3200,
+      "unitPrice": 4000,
+      "total": 12800000,
+      "cost": 12800000,
+      "note": "/orders üzerinden 3200x Bottle o' Enchanting alımı"
+    },
+    {
+      "id": "1790153999043-f6ys",
+      "time": 1790153999043,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Unbreaking 3",
+      "amount": 50,
+      "unitPrice": 46200,
+      "total": 2310000,
+      "cost": 2310000,
+      "note": "/orders üzerinden 50x Enchanted Book Unbreaking 3 alımı"
+    },
+    {
+      "id": "1790153974164-ek9h",
+      "time": 1790153974164,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Aqua Affinity",
+      "amount": 50,
+      "unitPrice": 5300,
+      "total": 265000,
+      "cost": 265000,
+      "note": "/orders üzerinden 50x Enchanted Book Aqua Affinity alımı"
+    },
+    {
+      "id": "1790153951703-h8fz",
+      "time": 1790153951703,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Unbreaking 3",
+      "amount": 50,
+      "unitPrice": 46100,
+      "total": 2305000,
+      "cost": 2305000,
+      "note": "/orders üzerinden 50x Enchanted Book Unbreaking 3 alımı"
+    },
+    {
+      "id": "1790153928192-iu3p",
+      "time": 1790153928192,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Mending",
+      "amount": 50,
+      "unitPrice": 16300,
+      "total": 815000,
+      "cost": 815000,
+      "note": "/orders üzerinden 50x Enchanted Book Mending alımı"
+    },
+    {
+      "id": "1790153903852-vq34",
+      "time": 1790153903852,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Respiration 3",
+      "amount": 50,
+      "unitPrice": 30400,
+      "total": 1520000,
+      "cost": 1520000,
+      "note": "/orders üzerinden 50x Enchanted Book Respiration 3 alımı"
+    },
+    {
+      "id": "1790153878454-a3ey",
+      "time": 1790153878454,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Blast Protection 4",
+      "amount": 50,
+      "unitPrice": 34100,
+      "total": 1705000,
+      "cost": 1705000,
+      "note": "/orders üzerinden 50x Enchanted Book Blast Protection 4 alımı"
+    },
     {
       "id": "1790153241955-3ko1",
       "time": 1790153241955,
@@ -163,6 +267,158 @@
       "earned": 900000,
       "netProfit": 150000,
       "orders": 1
+    },
+    {
+      "time": 1790153833891,
+      "balance": 34864969,
+      "spent": 750000,
+      "earned": 900000,
+      "netProfit": 150000,
+      "orders": 1
+    },
+    {
+      "time": 1790153878427,
+      "balance": 34864969,
+      "spent": 750000,
+      "earned": 900000,
+      "netProfit": 150000,
+      "orders": 2
+    },
+    {
+      "time": 1790153878454,
+      "balance": 34864969,
+      "spent": 2455000,
+      "earned": 900000,
+      "netProfit": -1555000,
+      "orders": 2
+    },
+    {
+      "time": 1790153903850,
+      "balance": 34864969,
+      "spent": 2455000,
+      "earned": 900000,
+      "netProfit": -1555000,
+      "orders": 3
+    },
+    {
+      "time": 1790153903852,
+      "balance": 34864969,
+      "spent": 3975000,
+      "earned": 900000,
+      "netProfit": -3075000,
+      "orders": 3
+    },
+    {
+      "time": 1790153928190,
+      "balance": 34864969,
+      "spent": 3975000,
+      "earned": 900000,
+      "netProfit": -3075000,
+      "orders": 4
+    },
+    {
+      "time": 1790153928192,
+      "balance": 34864969,
+      "spent": 4790000,
+      "earned": 900000,
+      "netProfit": -3890000,
+      "orders": 4
+    },
+    {
+      "time": 1790153951699,
+      "balance": 34864969,
+      "spent": 4790000,
+      "earned": 900000,
+      "netProfit": -3890000,
+      "orders": 5
+    },
+    {
+      "time": 1790153951703,
+      "balance": 34864969,
+      "spent": 7095000,
+      "earned": 900000,
+      "netProfit": -6195000,
+      "orders": 5
+    },
+    {
+      "time": 1790153974161,
+      "balance": 34864969,
+      "spent": 7095000,
+      "earned": 900000,
+      "netProfit": -6195000,
+      "orders": 6
+    },
+    {
+      "time": 1790153974164,
+      "balance": 34864969,
+      "spent": 7360000,
+      "earned": 900000,
+      "netProfit": -6460000,
+      "orders": 6
+    },
+    {
+      "time": 1790153999041,
+      "balance": 34864969,
+      "spent": 7360000,
+      "earned": 900000,
+      "netProfit": -6460000,
+      "orders": 7
+    },
+    {
+      "time": 1790153999043,
+      "balance": 34864969,
+      "spent": 9670000,
+      "earned": 900000,
+      "netProfit": -8770000,
+      "orders": 7
+    },
+    {
+      "time": 1790154019471,
+      "balance": 34864969,
+      "spent": 9670000,
+      "earned": 900000,
+      "netProfit": -8770000,
+      "orders": 8
+    },
+    {
+      "time": 1790154019474,
+      "balance": 34864969,
+      "spent": 22470000,
+      "earned": 900000,
+      "netProfit": -21570000,
+      "orders": 8
+    },
+    {
+      "time": 1790154822790,
+      "balance": 34864969,
+      "spent": 22470000,
+      "earned": 900000,
+      "netProfit": -21570000,
+      "orders": 9
+    },
+    {
+      "time": 1790154822792,
+      "balance": 34864969,
+      "spent": 24000000,
+      "earned": 900000,
+      "netProfit": -23100000,
+      "orders": 9
+    },
+    {
+      "time": 1790155116239,
+      "balance": 11614969,
+      "spent": 24000000,
+      "earned": 900000,
+      "netProfit": -23100000,
+      "orders": 9
+    },
+    {
+      "time": 1790155297288,
+      "balance": 11614969,
+      "spent": 24000000,
+      "earned": 900000,
+      "netProfit": -23100000,
+      "orders": 9
     }
   ]
 }

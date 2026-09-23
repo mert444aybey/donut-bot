@@ -4,9 +4,7 @@ const { Vec3 } = require('vec3');
 const CFG = require('../config');
 const state = require('../state');
 const { log, dlog } = require('../logger');
-const { sleep, humanSleep, titleOf, filledSlots } = require('../utils/text');
-const { loreOf, snapshotWindow } = require('../utils/inspect');
-const { recordTransaction } = require('../stats');
+const { sleep, humanSleep, titleOf } = require('../utils/text');
 const { runOrderFlow, waitForOrderComplete, hasActiveOrder } = require('./order');
 const { collectItems } = require('./collect');
 const {

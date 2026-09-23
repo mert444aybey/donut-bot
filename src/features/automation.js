@@ -4,14 +4,14 @@ const CFG = require('../config');
 const state = require('../state');
 const { log } = require('../logger');
 const { bumpStats } = require('../stats');
-const { sleep, humanSleep } = require('../utils/text');
+const { humanSleep } = require('../utils/text');
 const { assertActive, closeWindowSafe } = require('../utils/windows');
 const { runOrderFlow, waitForOrderComplete } = require('./order');
+const { collectItems } = require('./collect');
 const {
   craftGodHelmet,
   craftGodHelmetOnly,
   collectHelmetMaterials,
-  sellGodHelmet,
   sellAllGodHelmets,
   preOrderNextBatch,
   checkHelmetMaterials,

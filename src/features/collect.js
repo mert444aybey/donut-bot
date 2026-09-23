@@ -8,9 +8,7 @@ const { matchesItemOrder } = require('../utils/inspect');
 const {
   assertActive,
   waitForWindow,
-  waitForSlot,
   safeClick,
-  itemCount,
   closeWindowSafe,
   executeCommandWindow,
 } = require('../utils/windows');

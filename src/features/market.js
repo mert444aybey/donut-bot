@@ -3,7 +3,7 @@
 const CFG = require('../config');
 const state = require('../state');
 const { log, dlog } = require('../logger');
-const { sleep, humanSleep } = require('../utils/text');
+const { humanSleep } = require('../utils/text');
 const { snapshotWindow } = require('../utils/inspect');
 const { assertActive, waitForWindow, closeWindowSafe } = require('../utils/windows');
 

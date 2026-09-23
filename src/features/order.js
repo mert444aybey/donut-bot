@@ -5,7 +5,7 @@ const state = require('../state');
 const { log, dlog } = require('../logger');
 const { bumpStats, recordTransaction, recordRefund } = require('../stats');
 const { sleep, humanSleep, titleOf } = require('../utils/text');
-const { snapshotWindow, displayOf, loreOf, extractItemEnchantments, matchesItemOrder, parsePrices } = require('../utils/inspect');
+const { snapshotWindow, loreOf, extractItemEnchantments, matchesItemOrder, parsePrices } = require('../utils/inspect');
 const {
   assertActive,
   waitForWindow,

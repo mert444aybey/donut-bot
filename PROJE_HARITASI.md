@@ -16,6 +16,8 @@ Claude'a bir degisiklik yaptirirken **sadece ilgili dosyayi** gonder. Ne kadar a
 | AH'ta ilan koyma, onay penceresi, satis bekleme | `src/features/sell.js` |
 | Tam dongu akisi, otomatik yeniden baslatma, hata yonetimi | `src/features/automation.js` |
 | Kesif sayfasinin calismasi (tiklama, chat, tabela) | `src/features/probe.js` |
+| Örs yerlestirme, XP sisesi atma, orsle birlestirme | `src/features/anvil.js` |
+| God Helmet kask & buyu birlestirme, oto-siparis ve satis | `src/features/craft_helmet.js` |
 | Chat mesajlarini yakalama, kick/yeniden baglanma | `src/bot.js` |
 | Kar/zarar istatistikleri | `src/stats.js` (+ `src/web/pages.js` statsPage) |
 | Panelin gorunumu (renk, yerlesim, yeni sayfa) | `src/web/pages.js` |
@@ -39,6 +41,8 @@ src/
     market.js              AH piyasa fiyati
     sell.js                AH'ta ilan koy, satis bekle
     probe.js               kesif sayfasi komutlari
+    anvil.js               ors & XP sisesi yonetimi
+    craft_helmet.js        god helmet uretimi ve satisi
   utils/
     text.js                NBT/metin cevirme, sleep, baslik
     inspect.js             lore/fiyat okuma, pencere snapshot

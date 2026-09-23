@@ -3,7 +3,7 @@
 const CFG = require('../config');
 const state = require('../state');
 const { log, dlog } = require('../logger');
-const { bumpStats, recordListing, recordSale } = require('../stats');
+const { bumpStats, recordListing } = require('../stats');
 const { sleep, humanSleep, titleOf, filledSlots } = require('../utils/text');
 const {
   assertActive,
