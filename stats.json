@@ -1,11 +1,11 @@
 {
   "startedAt": 1790129711547,
-  "totalSpent": 0,
+  "totalSpent": 750000,
   "totalEarned": 900000,
   "activeListingValue": 0,
   "activeListingCost": 0,
-  "ordersPlaced": 0,
-  "itemsOrdered": 0,
+  "ordersPlaced": 1,
+  "itemsOrdered": 50,
   "cyclesCompleted": 0,
   "godHelmetsCrafted": 0,
   "itemsCollected": {},
@@ -15,10 +15,28 @@
       "earned": 900000,
       "listingValue": 0,
       "count": 1
+    },
+    "Kitap": {
+      "spent": 750000,
+      "earned": 0,
+      "listingValue": 0,
+      "count": 50
     }
   },
   "activeListings": [],
   "ledger": [
+    {
+      "id": "1790153241955-3ko1",
+      "time": 1790153241955,
+      "type": "EXPENSE",
+      "category": "Kitap",
+      "item": "Enchanted Book Blast Protection 4",
+      "amount": 50,
+      "unitPrice": 15000,
+      "total": 750000,
+      "cost": 750000,
+      "note": "/orders üzerinden 50x Enchanted Book Blast Protection 4 alımı"
+    },
     {
       "id": "1790130234612-dxdw",
       "time": 1790130234612,
@@ -121,6 +139,30 @@
       "earned": 900000,
       "netProfit": 900000,
       "orders": 0
+    },
+    {
+      "time": 1790153196257,
+      "balance": 34864969,
+      "spent": 0,
+      "earned": 900000,
+      "netProfit": 900000,
+      "orders": 0
+    },
+    {
+      "time": 1790153241927,
+      "balance": 34864969,
+      "spent": 0,
+      "earned": 900000,
+      "netProfit": 900000,
+      "orders": 1
+    },
+    {
+      "time": 1790153241955,
+      "balance": 34864969,
+      "spent": 750000,
+      "earned": 900000,
+      "netProfit": 150000,
+      "orders": 1
     }
   ]
 }

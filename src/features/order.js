@@ -5,7 +5,7 @@ const state = require('../state');
 const { log, dlog } = require('../logger');
 const { bumpStats, recordTransaction, recordRefund } = require('../stats');
 const { sleep, humanSleep, titleOf } = require('../utils/text');
-const { snapshotWindow, displayOf, loreOf, extractItemEnchantments, matchesItemOrder } = require('../utils/inspect');
+const { snapshotWindow, displayOf, loreOf, extractItemEnchantments, matchesItemOrder, parsePrices } = require('../utils/inspect');
 const {
   assertActive,
   waitForWindow,
@@ -56,14 +56,70 @@ function buildSteps(orderPrice, itemOverride) {
   return steps;
 }
 
-// /order <itemId> veya /order enchanted book <büyü> panosunu acar
+function normalizeOrderPriceText(raw) {
+  if (!raw) return null;
+  const clean = String(raw).replace(/,/g, '').trim().toLowerCase();
+  let mult = 1;
+  let numStr = clean;
+  if (clean.endsWith('k')) {
+    mult = 1e3;
+    numStr = clean.slice(0, -1);
+  } else if (clean.endsWith('m')) {
+    mult = 1e6;
+    numStr = clean.slice(0, -1);
+  } else if (clean.endsWith('b')) {
+    mult = 1e9;
+    numStr = clean.slice(0, -1);
+  }
+  const n = parseFloat(numStr);
+  return Number.isNaN(n) ? null : Math.round(n * mult);
+}
+
+function extractUnitPriceFromLore(loreLines) {
+  if (!Array.isArray(loreLines) || loreLines.length === 0) return null;
+
+  for (const line of loreLines) {
+    const clean = line.replace(/§[0-9a-fk-or]/gi, '').trim();
+    if (/\b(total|toplam|balance|bakiye|fee|komisyon)\b/i.test(clean)) continue;
+
+    const m = /(?:price\s*each|unit\s*price|price|fiyat|her\s*biri|tanesi)\s*[:=]?\s*\$\s*([\d,.\s]+[kKmMbB]?)/i.exec(clean);
+    if (m) {
+      const num = normalizeOrderPriceText(m[1]);
+      if (num !== null && num > 0) return num;
+    }
+
+    const m2 = /\$\s*([\d,.\s]+[kKmMbB]?)\s*(?:each|adet|tane|\/ea)/i.exec(clean);
+    if (m2) {
+      const num = normalizeOrderPriceText(m2[1]);
+      if (num !== null && num > 0) return num;
+    }
+  }
+
+  for (const line of loreLines) {
+    const clean = line.replace(/§[0-9a-fk-or]/gi, '').trim();
+    if (/\b(total|toplam|balance|bakiye|fee|komisyon)\b/i.test(clean)) continue;
+    const prices = parsePrices(clean);
+    if (prices.length > 0 && prices[0].value > 0) {
+      return prices[0].value;
+    }
+  }
+
+  const allPrices = parsePrices(loreLines.join(' | ')).map((p) => p.value).filter((v) => v > 0);
+  if (allPrices.length > 0) {
+    return Math.min(...allPrices);
+  }
+
+  return null;
+}
+
+// /order <itemId> veya /order enchanted book <büyü> panosunu acar ve en yuksek teklifi bulur
 async function fetchOrderReferencePrice(token, itemOverride) {
-  const S = state.S;
+  const S = state.S || {};
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   assertActive(token);
 
   const query = itemCfg.orderSearchQuery || itemCfg.item || itemCfg.itemId;
-  const cmd = `${S.orderSearchCmd} ${query}`.trim();
+  const cmd = `${S.orderSearchCmd || '/order'} ${query}`.trim();
   dlog(`Siparis referans fiyati sorgulaniyor: ${cmd}`);
 
   let win;
@@ -86,9 +142,15 @@ async function fetchOrderReferencePrice(token, itemOverride) {
 
   let highest = null;
   for (const it of snap.slots) {
-    if (!it || it.name !== itemCfg.itemId) continue;
-    for (const p of it.prices) {
-      if (highest === null || p.value > highest) highest = p.value;
+    if (!it) continue;
+    if (it.name.includes('glass') || it.name === 'barrier' || it.name === 'arrow' || it.name === 'bedrock') continue;
+    if (itemCfg.itemId && it.name !== itemCfg.itemId && it.name !== 'enchanted_book') continue;
+
+    const unitPrice = extractUnitPriceFromLore(it.lore);
+    if (unitPrice !== null && unitPrice > 0) {
+      if (highest === null || unitPrice > highest) {
+        highest = unitPrice;
+      }
     }
   }
 
@@ -102,20 +164,23 @@ async function fetchOrderReferencePrice(token, itemOverride) {
 
 // Siparis panosundaki en yuksek fiyatin uzerine cikip siparis fiyatini dinamik belirler.
 async function computeOrderPrice(token, itemOverride) {
-  const S = state.S;
+  const S = state.S || {};
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : S);
   
-  if (itemCfg.fixedPrice || itemCfg.orderPrice) {
+  if (itemCfg.fixedPrice) {
     return itemCfg.orderPrice;
   }
 
+  log(`🔍 "${itemCfg.item || itemCfg.itemId}" için /orders panosu taranıyor...`);
   const highest = await fetchOrderReferencePrice(token, itemOverride);
   let price;
+  const markup = itemCfg.orderMarkup !== undefined ? itemCfg.orderMarkup : (S.orderMarkup || 100);
+
   if (highest === null) {
-    const initialBid = itemCfg.initialBid || itemCfg.minOrderPrice || 100;
+    const initialBid = itemCfg.orderPrice || itemCfg.initialBid || itemCfg.minOrderPrice || 10000;
     price = initialBid;
+    log(`ℹ️ /orders panosunda aktif teklif bulunamadı, taban fiyat kullanılıyor: $${price.toLocaleString()}`);
   } else {
-    const markup = itemCfg.orderMarkup !== undefined ? itemCfg.orderMarkup : (S.orderMarkup || 100);
     price = Math.round(highest + markup);
     log(`🎯 /orders panosu tarandı: En yüksek teklif $${highest.toLocaleString()} ➔ Yeni sipariş fiyatı: $${price.toLocaleString()} (+${markup})`);
   }
@@ -123,7 +188,7 @@ async function computeOrderPrice(token, itemOverride) {
   if (price < 1) price = 1;
   const maxPrice = itemCfg.maxOrderPrice !== undefined ? itemCfg.maxOrderPrice : (S.maxOrderPrice || 1000000000000);
   if (price > maxPrice) {
-    log(`UYARI: hesaplanan siparis fiyati ($${price.toLocaleString()}) tavani ($${maxPrice.toLocaleString()}) asiyor, tavana cekildi.`);
+    log(`UYARI: Hesaplanan siparis fiyati ($${price.toLocaleString()}) tavani ($${maxPrice.toLocaleString()}) asiyor, tavana cekildi.`);
     price = maxPrice;
   }
   return price;

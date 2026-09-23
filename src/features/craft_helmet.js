@@ -536,7 +536,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     log(`🚀 TOPLU SIPARIS: Eksik ${toOrder.length} kalem malzeme icin siparisler aciliyor...`);
     for (const itemOrder of toOrder) {
       assertActive(token);
-      const priceStr = itemOrder.orderPrice ? `$${Number(itemOrder.orderPrice).toLocaleString()}` : 'Canlı /orders fiyatı';
+      const priceStr = itemOrder.fixedPrice ? `$${Number(itemOrder.orderPrice).toLocaleString()}` : `Canlı /orders fiyatı (taban: $${Number(itemOrder.orderPrice || 10000).toLocaleString()})`;
       log(`Siparis panoya veriliyor: ${itemOrder.orderAmount}x ${itemOrder.item} (${priceStr})...`);
       try {
         await runOrderFlow(token, itemOrder);
