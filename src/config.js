@@ -1,8 +1,27 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
+
+// .env dosyasini otomatik yukle (varsa)
+const envFile = path.join(ROOT, '.env');
+if (fs.existsSync(envFile)) {
+  try {
+    const lines = fs.readFileSync(envFile, 'utf8').split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eqIdx = trimmed.indexOf('=');
+      if (eqIdx !== -1) {
+        const k = trimmed.slice(0, eqIdx).trim();
+        const v = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '');
+        if (!process.env[k]) process.env[k] = v;
+      }
+    }
+  } catch (_) {}
+}
 
 // SABIT AYARLAR (panelden degismez)
 const CFG = {

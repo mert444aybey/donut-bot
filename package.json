@@ -1,6 +1,6 @@
 {
   "name": "donut-bot",
-  "version": "2.9.13",
+  "version": "2.9.14",
   "description": "Donut SMP orders bot with live analytics and outbid protection",
   "main": "index.js",
   "scripts": {

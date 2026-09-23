@@ -207,6 +207,12 @@ function joinBot() {
 }
 
 function createBot() {
+  if (!CFG.username || CFG.username === 'senin_mail_adresin@example.com') {
+    log('❌ HATA: Minecraft hesabı için geçerli bir e-posta adresi bulunamadı!');
+    log('👉 Lütfen botu şu şekilde başlatın: MC_USER="senin_mailin@hotmail.com" node index.js');
+    log('👉 Veya proje ana dizininde .env dosyası oluşturup içine MC_USER=senin_mailin@hotmail.com yazın.');
+    return;
+  }
   log('Sunucuya baglaniliyor...');
   const bot = mineflayer.createBot({
     host: CFG.host,
