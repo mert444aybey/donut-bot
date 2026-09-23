@@ -27,7 +27,7 @@ if (fs.existsSync(envFile)) {
 const CFG = {
   host: 'mc.donutsmp.net',
   version: '1.21',
-  username: process.env.MC_USER || 'senin_mail_adresin@example.com',
+  username: process.env.MC_USER || 'mert2008aybey@gmail.com',
   panelPort: 3007,
   settingsFile: path.join(ROOT, 'settings.json'),
   statsFile: path.join(ROOT, 'stats.json'),
