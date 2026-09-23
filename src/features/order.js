@@ -20,17 +20,38 @@ const {
 function buildSteps(orderPrice, itemOverride) {
   const itemCfg = itemOverride || (state.getActiveItem ? state.getActiveItem() : state.S);
   const signText = itemCfg.signText || itemCfg.item;
+  const pageClicks = Array.isArray(itemCfg.pageClicks) ? itemCfg.pageClicks : [];
+  const selectSlot = itemCfg.selectSlot !== undefined ? itemCfg.selectSlot : 0;
 
   const steps = [
     { name: 'Siparis menusu',   type: 'CLICK', slot: 51, expectWindow: true },
     { name: 'Alt menu',         type: 'CLICK', slot: 8,  expectWindow: true },
     { name: 'Kategori',         type: 'CLICK', slot: 12, expectWindow: true },
     { name: 'Item arama',       type: 'SIGN',  slot: 50, text: signText },
-    { name: 'Item secimi',      type: 'ITEM_SELECT' },
-    { name: 'Miktar',           type: 'SIGN',  slot: 13, text: String(itemCfg.orderAmount) },
-    { name: 'Fiyat',            type: 'SIGN',  slot: 14, text: String(orderPrice) },
-    { name: 'Siparis onayi',    type: 'CLICK', slot: 16, expectWindow: false }
   ];
+
+  for (let p = 0; p < pageClicks.length; p++) {
+    steps.push({
+      name: `Sayfa degistir (${p + 1}/${pageClicks.length})`,
+      type: 'CLICK',
+      slot: pageClicks[p],
+      expectWindow: true,
+    });
+  }
+
+  steps.push({
+    name: 'Item secimi',
+    type: 'CLICK',
+    slot: selectSlot,
+    expectWindow: true,
+    isItemSelect: true,
+  });
+
+  steps.push(
+    { name: 'Miktar',        type: 'SIGN',  slot: 13, text: String(itemCfg.orderAmount) },
+    { name: 'Fiyat',         type: 'SIGN',  slot: 14, text: String(orderPrice) },
+    { name: 'Siparis onayi', type: 'CLICK', slot: 16, expectWindow: false }
+  );
 
   return steps;
 }

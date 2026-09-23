@@ -285,15 +285,34 @@ async function collectHelmetMaterials(token) {
     await humanSleep(400);
     assertActive(token);
 
+    // Edit Order penceresinin oturmasını bekle
+    const waitEditStart = Date.now();
+    while (!bot.currentWindow && (Date.now() - waitEditStart < 1500)) {
+      await sleep(100);
+    }
+    if (!bot.currentWindow) {
+      log(`⚠️ "Edit Order" penceresi kapalı, ${target.name} atlanıyor.`);
+      closeWindowSafe();
+      continue;
+    }
+
     // 5. Slot 13'e tikla (Chest - "Orders -> Collect Items" acilir)
-    const collectPromise = waitForWindow();
-    collectPromise.catch(() => {});
-    await safeClick(13);
-    let collectWin;
+    const collectPromise = waitForWindow(4000).catch(() => null);
     try {
-      collectWin = await collectPromise;
-    } catch (e) {
-      log(`"Collect Items" teslimat penceresi açılamadı (${e.message}).`);
+      await safeClick(13);
+    } catch (clickErr) {
+      log(`Slot 13 uyarısı (${clickErr.message}), clickWindow ile deneniyor...`);
+      if (bot.currentWindow) {
+        await bot.clickWindow(13, 0, 0);
+      } else {
+        closeWindowSafe();
+        continue;
+      }
+    }
+    let collectWin = await collectPromise;
+    if (!collectWin) collectWin = bot.currentWindow;
+    if (!collectWin) {
+      log(`"Collect Items" teslimat penceresi açılamadı (${target.name}).`);
       closeWindowSafe();
       continue;
     }
@@ -409,6 +428,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       item: 'Diamond Helmet',
       itemId: 'diamond_helmet',
       signText: 'Diamond Helmet',
+      pageClicks: [],
       selectSlot: 0,
       orderSearchQuery: 'diamond helmet',
       orderAmount: batchAmount,
@@ -422,7 +442,9 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     toOrder.push({
       item: 'Enchanted Book Blast Protection 4',
       itemId: 'enchanted_book',
-      signText: 'blast prot',
+      signText: 'enchanted book',
+      pageClicks: [53, 53],
+      selectSlot: 7,
       targetEnchant: 'blast_prot_4',
       matchLore: 'blast protection',
       orderSearchQuery: 'enchanted book blast protection 4',
@@ -436,7 +458,9 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     toOrder.push({
       item: 'Enchanted Book Respiration 3',
       itemId: 'enchanted_book',
-      signText: 'respiration',
+      signText: 'enchanted book',
+      pageClicks: [53, 53],
+      selectSlot: 13,
       targetEnchant: 'resp_3',
       matchLore: 'respiration',
       orderSearchQuery: 'enchanted book respiration 3',
@@ -450,7 +474,9 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     toOrder.push({
       item: 'Enchanted Book Mending',
       itemId: 'enchanted_book',
-      signText: 'mending',
+      signText: 'enchanted book',
+      pageClicks: [53, 53],
+      selectSlot: 8,
       targetEnchant: 'mending',
       matchLore: 'mending',
       orderSearchQuery: 'enchanted book mending',
@@ -464,7 +490,9 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     toOrder.push({
       item: 'Enchanted Book Unbreaking 3',
       itemId: 'enchanted_book',
-      signText: 'unbreaking',
+      signText: 'enchanted book',
+      pageClicks: [53, 53],
+      selectSlot: 37,
       targetEnchant: 'unbreaking_3',
       matchLore: 'unbreaking',
       orderSearchQuery: 'enchanted book unbreaking 3',
@@ -478,7 +506,9 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
     toOrder.push({
       item: 'Enchanted Book Aqua Affinity',
       itemId: 'enchanted_book',
-      signText: 'aqua affinity',
+      signText: 'enchanted book',
+      pageClicks: [53],
+      selectSlot: 16,
       targetEnchant: 'aqua_affinity',
       matchLore: 'aqua affinity',
       orderSearchQuery: 'enchanted book aqua affinity',
@@ -495,6 +525,7 @@ async function ensureMissingOrders(token, specificTargets = null, forcePreOrder 
       item: "Bottle o' Enchanting",
       itemId: 'experience_bottle',
       signText: "Bottle o' Enchanting",
+      pageClicks: [],
       selectSlot: 0,
       orderSearchQuery: 'bottle o enchanting',
       orderAmount: bottleQty,
