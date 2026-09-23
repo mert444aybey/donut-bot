@@ -34,6 +34,7 @@
   "godHelmetUndercut": 1000,
   "godHelmetMinProfit": 25000,
   "godHelmetAutoBuyAnvil": true,
+  "godHelmetMaxAnvilPrice": 500000,
   "anvilOrderAmount": 40,
   "xpBottleOrderAmount": 3200,
   "bookBlastOrderPrice": 15000,

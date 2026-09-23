@@ -412,11 +412,16 @@ async function combineInAnvil(findLeftItemFn, findRightItemFn, token) {
   }
 }
 
+const placeAnvilFromInventory = placeSurroundingAnvils;
+const buyAnvilFromAh = orderAndCollect40Anvils;
+
 module.exports = {
   ensureExperienceLevel,
   findAnvilBlock,
   placeAnvilFromInventory,
+  placeSurroundingAnvils,
   buyAnvilFromAh,
+  orderAndCollect40Anvils,
   ensureAnvil,
   combineInAnvil,
 };
