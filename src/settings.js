@@ -86,7 +86,7 @@ const SCHEMA = {
   itemId:           { type: 'id',    label: 'Item ID' },
   orderAmount:      { type: 'int',   label: 'Siparis adedi',               min: 1,    max: 1000000 },
   orderPrice:       { type: 'int',   label: 'Siparis fiyati (Büyülü/Sabit)', min: 1,    max: 1e12 },
-  sellPrice:        { type: 'int',   label: 'Yedek satis fiyati',          min: 1,    max: 1e12 },
+  sellPrice:        { type: 'int',   label: 'Satis fiyati',                min: 1,    max: 1e12 },
   sellCount:        { type: 'int',   label: 'Turda satilacak toplam adet', min: 1,    max: 100 },
   sellBatch:        { type: 'int',   label: 'Ilan basina adet',            min: 1,    max: 64 },
   sellDelayMs:      { type: 'int',   label: 'Satislar arasi bekleme',      min: 1000, max: 60000 },
@@ -124,7 +124,7 @@ const SCHEMA = {
   portfolioEnabled:      { type: 'bool', label: 'Coklu item / Portfoy modu' },
 
   // God Helmet (Auto-Enchant & Ors)
-  godHelmetSellPrice:     { type: 'int',  label: 'God Helmet Yedek Satis Fiyati',   min: 1, max: 1e12 },
+  godHelmetSellPrice:     { type: 'int',  label: 'God Helmet Satis Fiyati',         min: 1, max: 1e12 },
   godHelmetMinSellPrice:  { type: 'int',  label: 'God Helmet Taban Satis Fiyati',   min: 1, max: 1e12 },
   godHelmetUndercut:      { type: 'int',  label: 'God Helmet Ucuzlatma (Undercut)', min: 0, max: 1e9 },
   godHelmetMinProfit:     { type: 'int',  label: 'God Helmet Minimum Kar Garantisi', min: 0, max: 1e9 },

@@ -9,7 +9,7 @@ const { assertActive, waitForWindow, closeWindowSafe } = require('../utils/windo
 
 // /ah <itemId> penceresini acar, gorunen ilanlar arasindan (itemId'ye
 // uyan slotlardaki lore'dan $ fiyatlari parse edip) en dusuk fiyati dondurur.
-// Bulamazsa null doner (cagiran taraf yedek fiyata dusmeli).
+// Bulamazsa null doner (cagiran taraf belirlenen fiyata dusmeli).
 async function fetchLowestListingPrice(token) {
   const S = state.S;
   const itemCfg = state.getActiveItem ? state.getActiveItem() : S;
@@ -28,7 +28,7 @@ async function fetchLowestListingPrice(token) {
   try {
     win = await winPromise;
   } catch (e) {
-    log(`Piyasa penceresi acilmadi (${e.message}), yedek fiyat kullanilacak.`);
+    log(`Piyasa penceresi acilmadi (${e.message}), belirlenen satis fiyati kullanilacak.`);
     return null;
   }
   assertActive(token);

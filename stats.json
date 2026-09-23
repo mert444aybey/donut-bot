@@ -1,7 +1,7 @@
 {
-  "startedAt": 1790128772789,
+  "startedAt": 1790129711547,
   "totalSpent": 0,
-  "totalEarned": 4500,
+  "totalEarned": 0,
   "activeListingValue": 0,
   "activeListingCost": 0,
   "ordersPlaced": 0,
@@ -9,138 +9,8 @@
   "cyclesCompleted": 0,
   "godHelmetsCrafted": 0,
   "itemsCollected": {},
-  "categories": {
-    "Satış Geliri": {
-      "spent": 0,
-      "earned": 4500,
-      "listingValue": 0,
-      "count": 5
-    }
-  },
+  "categories": {},
   "activeListings": [],
-  "ledger": [
-    {
-      "id": "1790129141814-u86t",
-      "time": 1790129141814,
-      "type": "INCOME",
-      "category": "Satış Geliri",
-      "item": "Diamond Helmet",
-      "amount": 1,
-      "unitPrice": 900,
-      "total": 900,
-      "cost": 120500,
-      "profit": -119600,
-      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $-119,600)"
-    },
-    {
-      "id": "1790129108420-s33i",
-      "time": 1790129108420,
-      "type": "INCOME",
-      "category": "Satış Geliri",
-      "item": "Diamond Helmet",
-      "amount": 1,
-      "unitPrice": 900,
-      "total": 900,
-      "cost": 120500,
-      "profit": -119600,
-      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $-119,600)"
-    },
-    {
-      "id": "1790129006814-0p00",
-      "time": 1790129006814,
-      "type": "INCOME",
-      "category": "Satış Geliri",
-      "item": "Diamond Helmet",
-      "amount": 1,
-      "unitPrice": 900,
-      "total": 900,
-      "cost": 120500,
-      "profit": -119600,
-      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $-119,600)"
-    },
-    {
-      "id": "1790128959364-g5cl",
-      "time": 1790128959364,
-      "type": "INCOME",
-      "category": "Satış Geliri",
-      "item": "Diamond Helmet",
-      "amount": 1,
-      "unitPrice": 900,
-      "total": 900,
-      "cost": 120500,
-      "profit": -119600,
-      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $-119,600)"
-    },
-    {
-      "id": "1790128958669-1ndy",
-      "time": 1790128958669,
-      "type": "INCOME",
-      "category": "Satış Geliri",
-      "item": "Diamond Helmet",
-      "amount": 1,
-      "unitPrice": 900,
-      "total": 900,
-      "cost": 120500,
-      "profit": -119600,
-      "note": "Satış onaylandı (Maliyet: $120,500, Net Kâr: $-119,600)"
-    }
-  ],
-  "history": [
-    {
-      "time": 1790128948218,
-      "balance": 1.8,
-      "spent": 0,
-      "earned": 0,
-      "netProfit": 0,
-      "orders": 0
-    },
-    {
-      "time": 1790128958669,
-      "balance": 1.8,
-      "spent": 0,
-      "earned": 900,
-      "netProfit": 900,
-      "orders": 0
-    },
-    {
-      "time": 1790128958672,
-      "balance": 900,
-      "spent": 0,
-      "earned": 900,
-      "netProfit": 900,
-      "orders": 0
-    },
-    {
-      "time": 1790128959364,
-      "balance": 900,
-      "spent": 0,
-      "earned": 1800,
-      "netProfit": 1800,
-      "orders": 0
-    },
-    {
-      "time": 1790129006814,
-      "balance": 900,
-      "spent": 0,
-      "earned": 2700,
-      "netProfit": 2700,
-      "orders": 0
-    },
-    {
-      "time": 1790129108420,
-      "balance": 900,
-      "spent": 0,
-      "earned": 3600,
-      "netProfit": 3600,
-      "orders": 0
-    },
-    {
-      "time": 1790129141814,
-      "balance": 900,
-      "spent": 0,
-      "earned": 4500,
-      "netProfit": 4500,
-      "orders": 0
-    }
-  ]
+  "ledger": [],
+  "history": []
 }

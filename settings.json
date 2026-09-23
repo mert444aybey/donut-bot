@@ -37,12 +37,12 @@
   "godHelmetMaxAnvilPrice": 500000,
   "anvilOrderAmount": 40,
   "xpBottleOrderAmount": 3200,
+  "diamondHelmetOrderPrice": 15000,
   "bookBlastOrderPrice": 15000,
   "bookRespOrderPrice": 15000,
   "bookMendingOrderPrice": 25000,
   "bookUnbOrderPrice": 15000,
   "bookAquaOrderPrice": 10000,
-  "diamondHelmetOrderPrice": 25000,
   "godHelmetBatchOrderAmount": 50,
   "portfolio": [
     {

@@ -93,7 +93,7 @@ async function computeOrderPrice(token, itemOverride) {
     return itemCfg.orderPrice;
   }
 
-  // Normal eşyalar: Canlı /orders panosundan çekilmek ZORUNDADIR (yedek fiyat yok)
+  // Normal eşyalar: Canlı /orders panosundan çekilmek ZORUNDADIR (canlı panodan dinamik)
   const highest = await fetchOrderReferencePrice(token, itemOverride);
   let price;
   if (highest === null) {
@@ -221,10 +221,13 @@ function matchOrderItem(it, itemCfg) {
   const loreText = (loreOf(it) || []).join(' ').toLowerCase();
   const fullText = `${it.name} ${displayName} ${loreText}`;
 
-  // 1. Enchanted Book ise: Kesin büyü ve seviye dogrulamasi
-  if (it.name === 'enchanted_book') {
+  // 1. Enchanted Book veya Kitap hedefi kontrolü:
+  const isBookTarget = !!(itemCfg.targetEnchant || itemCfg.itemId === 'enchanted_book' || (itemCfg.item && itemCfg.item.toLowerCase().includes('book')));
+  const isBookItem = it.name.includes('book');
+
+  if (isBookTarget || isBookItem) {
     const rawEnchants = extractItemEnchantments(it);
-    const targetEnchant = itemCfg.targetEnchant;
+    const targetEnchant = itemCfg.targetEnchant || '';
     const targetName = (itemCfg.item || '').toLowerCase();
 
     // Mending: Kesinlikle Mending olmali, Curse veya baska büyü olmamali
@@ -251,17 +254,21 @@ function matchOrderItem(it, itemCfg) {
     }
 
     // Blast Protection 4:
-    if (targetEnchant === 'blast_prot_4' || targetName.includes('blast protection')) {
+    if (targetEnchant === 'blast_prot_4' || targetName.includes('blast protection') || targetName.includes('blast prot')) {
       return rawEnchants.some((e) => e.name === 'blast_protection' && Number(e.lvl) >= 4) ||
              (fullText.includes('blast') && (fullText.includes('iv') || fullText.includes(' 4')));
     }
 
     // Aqua Affinity:
     if (targetEnchant === 'aqua_affinity' || targetName.includes('aqua affinity')) {
-      return rawEnchants.some((e) => e.name === 'aqua_affinity') || fullText.includes('aqua affinity');
+      return rawEnchants.some((e) => e.name === 'aqua_affinity') || fullText.includes('aqua affinity') || fullText.includes('aqua');
     }
 
     if (itemCfg.matchLore && fullText.includes(itemCfg.matchLore.toLowerCase())) {
+      return true;
+    }
+    // Kitap hedeflenmiş ve kitap tipi eşleşiyorsa (tabela araması zaten filtrelediği için):
+    if (isBookTarget && isBookItem) {
       return true;
     }
     return false;
@@ -339,10 +346,24 @@ async function selectOrderItem(token, itemCfg) {
     }
   }
 
-  // 3. Hala bulunamadıysa yedek selectSlot (varsa)
+  // 3. Hala bulunamadıysa varsayılan selectSlot (varsa)
   if (targetSlot === -1 && itemCfg.selectSlot !== undefined) {
     targetSlot = itemCfg.selectSlot;
+    targetItem = win.slots[targetSlot] || null;
     log(`⚠️ Dinamik taramada eşya bulunamadı, varsayılan slot ${targetSlot} deneniyor.`);
+  }
+
+  // 4. Hala bulunamadıysa ve arama penceresinde geçerli bir eşya varsa (özellikle slot 0'da arama sonucu geldiyse):
+  if (targetSlot === -1) {
+    for (let s = 0; s < win.inventoryStart; s++) {
+      const it = win.slots[s];
+      if (it && !it.name.includes('glass') && it.name !== 'barrier' && it.name !== 'arrow' && it.name !== 'bedrock') {
+        targetSlot = s;
+        targetItem = it;
+        log(`ℹ️ Spesifik filtre tam eşleşmedi, arama panosundaki ilk geçerli eşya seçildi: Slot ${s} (${it.name})`);
+        break;
+      }
+    }
   }
 
   if (targetSlot === -1) {
@@ -385,56 +406,62 @@ async function runOrderFlow(token, itemOverride) {
   const steps = buildSteps(orderPrice, itemOverride);
   log(`Siparis veriliyor: ${itemCfg.orderAmount}x ${itemCfg.item} @ $${orderPrice}`);
 
-  await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
+  try {
+    await executeCommandWindow('/orders', CFG.windowTimeoutMs, 2);
 
-  for (let i = 0; i < steps.length; i++) {
-    const step = steps[i];
-    assertActive(token);
-    dlog(`Adim ${i + 1}/${steps.length}: ${step.name}`);
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      assertActive(token);
+      dlog(`Adim ${i + 1}/${steps.length}: ${step.name}`);
 
-    try {
-      if (step.type === 'ITEM_SELECT') {
-        await selectOrderItem(token, itemCfg);
-      }
+      try {
+        if (step.type === 'ITEM_SELECT') {
+          await selectOrderItem(token, itemCfg);
+        }
 
-      if (step.type === 'CLICK') {
-        const nextWin = step.expectWindow ? waitForWindow() : null;
-        if (nextWin) nextWin.catch(() => {});
-        await safeClick(step.slot);
-        if (nextWin) await nextWin;
+        if (step.type === 'CLICK') {
+          const nextWin = step.expectWindow ? waitForWindow() : null;
+          if (nextWin) nextWin.catch(() => {});
+          await safeClick(step.slot);
+          if (nextWin) await nextWin;
 
-        // Eger item secimi yapildiysa ve farkli bir ekran (büyü secim ekrani vb.) acildiysa:
-        if (step.isItemSelect && bot.currentWindow) {
-          const title = (titleOf(bot.currentWindow) || '').toLowerCase();
-          if (title.includes('enchant') || (!title.includes('new order') && !title.includes('your orders'))) {
-            await handlePickEnchantments(token, itemCfg);
+          // Eger item secimi yapildiysa ve farkli bir ekran (büyü secim ekrani vb.) acildiysa:
+          if (step.isItemSelect && bot.currentWindow) {
+            const title = (titleOf(bot.currentWindow) || '').toLowerCase();
+            if (title.includes('enchant') || (!title.includes('new order') && !title.includes('your orders'))) {
+              await handlePickEnchantments(token, itemCfg);
+            }
           }
         }
-      }
 
-      if (step.type === 'SIGN') {
-        const signPromise = waitForSignEditor();
-        signPromise.catch(() => {});
-        await safeClick(step.slot);
+        if (step.type === 'SIGN') {
+          const signPromise = waitForSignEditor();
+          signPromise.catch(() => {});
+          await safeClick(step.slot);
 
-        const signPacket = await signPromise;
-        dlog(`Tabelaya yaziliyor: ${step.text}`);
-        await sleep(CFG.signTypeDelayMs);
+          const signPacket = await signPromise;
+          dlog(`Tabelaya yaziliyor: ${step.text}`);
+          await sleep(CFG.signTypeDelayMs);
 
-        const reopen = waitForWindow(CFG.reopenWaitMs);
-        reopen.catch(() => {});
-        submitSign(signPacket, step.text);
+          const reopen = waitForWindow(CFG.reopenWaitMs);
+          reopen.catch(() => {});
+          submitSign(signPacket, step.text);
 
-        try {
-          await reopen;
-        } catch (_) {
-          throw new Error('tabela gonderildi ama menu yeniden acilmadi');
+          try {
+            await reopen;
+          } catch (_) {
+            throw new Error('tabela gonderildi ama menu yeniden acilmadi');
+          }
         }
+      } catch (e) {
+        if (e.message === 'iptal edildi') throw e;
+        throw new Error(`[${step.name}] ${e.message}`);
       }
-    } catch (e) {
-      if (e.message === 'iptal edildi') throw e;
-      throw new Error(`[${step.name}] ${e.message}`);
     }
+  } catch (err) {
+    closeWindowSafe();
+    await humanSleep(500);
+    throw err;
   }
 
   log(`Siparis verildi: ${itemCfg.orderAmount}x ${itemCfg.item} @ $${orderPrice}`);

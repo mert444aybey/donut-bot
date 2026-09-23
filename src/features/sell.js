@@ -277,7 +277,7 @@ async function sellAll(token) {
       if (lowest !== null) {
         dlog(`Piyasa tarandi: en dusuk ${lowest} -> satis fiyati ${sellPrice} olarak belirlendi.`);
       } else {
-        dlog(`Piyasada ilan bulunamadi, yedek fiyat kullaniliyor: ${sellPrice}`);
+        dlog(`Piyasada ilan bulunamadi, belirlenen satis fiyati kullaniliyor: ${sellPrice}`);
       }
     }
     state.lastSellPrice = sellPrice;
