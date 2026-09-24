@@ -132,41 +132,6 @@ function normalizeNumber(raw) {
   return Number.isNaN(n) ? null : Math.round(n * multiplier);
 }
 
-// Oyuncunun bota /pay ile para atma mesajini ayristirir (Deposit)
-function parseIncomingPayMessage(rawText) {
-  if (!rawText || typeof rawText !== 'string') return null;
-  const text = rawText
-    .replace(/§[0-9a-fk-or]/gi, '')
-    .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ')
-    .trim();
-
-  // Ornek: [Player -> You] $1,000,000 veya [Player -> me] $1,000,000
-  let m = /\[\s*([a-zA-Z0-9_]{3,16})\s*->\s*(?:You|me)\s*\]\s*\$?\s*([\d,.\s]+[kKmMbB]?)/i.exec(text);
-  if (m) {
-    const player = m[1].trim();
-    const amount = normalizeNumber(m[2]);
-    if (player && amount && amount > 0) return { player, amount };
-  }
-
-  // Ornek: Player paid you $1,000,000 veya Player has sent you $1,000,000
-  m = /([a-zA-Z0-9_]{3,16})\s+(?:paid\s+you|has\s+sent\s+you|sent\s+you)\s+\$?\s*([\d,.\s]+[kKmMbB]?)/i.exec(text);
-  if (m) {
-    const player = m[1].trim();
-    const amount = normalizeNumber(m[2]);
-    if (player && amount && amount > 0) return { player, amount };
-  }
-
-  // Ornek: You received $1,000,000 from Player
-  m = /you\s+(?:have\s+)?received\s+\$?\s*([\d,.\s]+[kKmMbB]?)\s+from\s+([a-zA-Z0-9_]{3,16})/i.exec(text);
-  if (m) {
-    const amount = normalizeNumber(m[1]);
-    const player = m[2].trim();
-    if (player && amount && amount > 0) return { player, amount };
-  }
-
-  return null;
-}
-
 function queryBalance() {
   if (state.bot && state.bot.entity) {
     state.bot.chat('/bal');
@@ -274,10 +239,6 @@ function createBot() {
     log('🟢 Bot oyunda. Panelden bir islem secebilirsin.');
     startAntiAfk();
     setTimeout(() => queryBalance(), 3000);
-    try {
-      const casinoEngine = require('./features/casino/engine');
-      casinoEngine.processPayoutQueue();
-    } catch (_) {}
     if (balanceTimer) clearInterval(balanceTimer);
     balanceTimer = setInterval(() => {
       if (!state.bot || !state.bot.currentWindow || state.bot.currentWindow === state.bot.inventory) {
@@ -352,17 +313,6 @@ function createBot() {
     if (parsedBal !== null) {
       state.setBalance(parsedBal);
       dlog(`Bakiye guncellendi: $${parsedBal.toLocaleString()}`);
-    }
-
-    // Casino Deposit: Oyunculardan bota gelen /pay transferlerini algila
-    const payDeposit = parseIncomingPayMessage(m);
-    if (payDeposit) {
-      try {
-        const casinoEngine = require('./features/casino/engine');
-        casinoEngine.handleDeposit(payDeposit.player, payDeposit.amount);
-      } catch (err) {
-        log(`Casino deposit hatası: ${err.message}`);
-      }
     }
 
     if (state.S && (state.S.verbose || CHAT_INTERESTING.test(m))) {

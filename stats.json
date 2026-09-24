@@ -435,6 +435,14 @@
       "earned": 900000,
       "netProfit": -23100000,
       "orders": 9
+    },
+    {
+      "time": 1790159394975,
+      "balance": 13134969,
+      "spent": 24000000,
+      "earned": 900000,
+      "netProfit": -23100000,
+      "orders": 9
     }
   ]
 }
