@@ -2,17 +2,29 @@
   "startedAt": 1790129711547,
   "totalSpent": 24283000,
   "totalEarned": 900000,
-  "activeListingValue": 18585000,
-  "activeListingCost": 2070000,
+  "activeListingValue": 20385000,
+  "activeListingCost": 2300000,
   "ordersPlaced": 10,
   "itemsOrdered": 3610,
-  "cyclesCompleted": 6,
-  "godHelmetsCrafted": 18,
+  "cyclesCompleted": 8,
+  "godHelmetsCrafted": 23,
   "itemsCollected": {
     "anvil": 40,
-    "experience_bottle": 960
+    "experience_bottle": 1280
   },
   "categories": {
+    "God Helmet Satışı": {
+      "spent": 0,
+      "earned": 0,
+      "listingValue": 20385000,
+      "count": 20
+    },
+    "Malzeme Alımı": {
+      "spent": 283000,
+      "earned": 0,
+      "listingValue": 0,
+      "count": 10
+    },
     "Kitap": {
       "spent": 11200000,
       "earned": 0,
@@ -30,21 +42,35 @@
       "earned": 900000,
       "listingValue": 0,
       "count": 1
-    },
-    "Malzeme Alımı": {
-      "spent": 283000,
-      "earned": 0,
-      "listingValue": 0,
-      "count": 10
-    },
-    "God Helmet Satışı": {
-      "spent": 0,
-      "earned": 0,
-      "listingValue": 18585000,
-      "count": 18
     }
   },
   "activeListings": [
+    {
+      "id": "1790520284617-2fof",
+      "time": 1790520284617,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 115000,
+      "profit": 785000,
+      "note": "/ah üzerinde satışa sunuldu (Maliyet: $115,000, Beklenen Kâr: $785,000)"
+    },
+    {
+      "id": "1790520196550-2h97",
+      "time": 1790520196550,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 115000,
+      "profit": 785000,
+      "note": "/ah üzerinde satışa sunuldu (Maliyet: $115,000, Beklenen Kâr: $785,000)"
+    },
     {
       "id": "1790252913423-3bmv",
       "time": 1790252913423,
@@ -281,6 +307,32 @@
     }
   ],
   "ledger": [
+    {
+      "id": "1790520284617-2fof",
+      "time": 1790520284617,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 115000,
+      "profit": 785000,
+      "note": "/ah üzerinde satışa sunuldu (Maliyet: $115,000, Beklenen Kâr: $785,000)"
+    },
+    {
+      "id": "1790520196550-2h97",
+      "time": 1790520196550,
+      "type": "LISTING",
+      "category": "God Helmet Satışı",
+      "item": "God Helmet (5 Büyülü)",
+      "amount": 1,
+      "unitPrice": 900000,
+      "total": 900000,
+      "cost": 115000,
+      "profit": 785000,
+      "note": "/ah üzerinde satışa sunuldu (Maliyet: $115,000, Beklenen Kâr: $785,000)"
+    },
     {
       "id": "1790252913423-3bmv",
       "time": 1790252913423,
@@ -650,62 +702,6 @@
     }
   ],
   "history": [
-    {
-      "time": 1790130786866,
-      "balance": 3,
-      "spent": 0,
-      "earned": 900000,
-      "netProfit": 900000,
-      "orders": 0
-    },
-    {
-      "time": 1790130790014,
-      "balance": 23610759,
-      "spent": 0,
-      "earned": 900000,
-      "netProfit": 900000,
-      "orders": 0
-    },
-    {
-      "time": 1790130924459,
-      "balance": 8,
-      "spent": 0,
-      "earned": 900000,
-      "netProfit": 900000,
-      "orders": 0
-    },
-    {
-      "time": 1790130964361,
-      "balance": 31206759,
-      "spent": 0,
-      "earned": 900000,
-      "netProfit": 900000,
-      "orders": 0
-    },
-    {
-      "time": 1790152711317,
-      "balance": 31207369,
-      "spent": 0,
-      "earned": 900000,
-      "netProfit": 900000,
-      "orders": 0
-    },
-    {
-      "time": 1790153196257,
-      "balance": 34864969,
-      "spent": 0,
-      "earned": 900000,
-      "netProfit": 900000,
-      "orders": 0
-    },
-    {
-      "time": 1790153241927,
-      "balance": 34864969,
-      "spent": 0,
-      "earned": 900000,
-      "netProfit": 900000,
-      "orders": 1
-    },
     {
       "time": 1790153241955,
       "balance": 34864969,
@@ -1129,8 +1125,64 @@
       "earned": 900000,
       "netProfit": -23383000,
       "orders": 10
+    },
+    {
+      "time": 1790519965829,
+      "balance": 21386560,
+      "spent": 24283000,
+      "earned": 900000,
+      "netProfit": -23383000,
+      "orders": 10
+    },
+    {
+      "time": 1790520101090,
+      "balance": 21386560,
+      "spent": 24283000,
+      "earned": 900000,
+      "netProfit": -23383000,
+      "orders": 10
+    },
+    {
+      "time": 1790520127404,
+      "balance": 21386560,
+      "spent": 24283000,
+      "earned": 900000,
+      "netProfit": -23383000,
+      "orders": 10
+    },
+    {
+      "time": 1790520144573,
+      "balance": 21386560,
+      "spent": 24283000,
+      "earned": 900000,
+      "netProfit": -23383000,
+      "orders": 10
+    },
+    {
+      "time": 1790520196539,
+      "balance": 21386560,
+      "spent": 24283000,
+      "earned": 900000,
+      "netProfit": -23383000,
+      "orders": 10
+    },
+    {
+      "time": 1790520238966,
+      "balance": 21386560,
+      "spent": 24283000,
+      "earned": 900000,
+      "netProfit": -23383000,
+      "orders": 10
+    },
+    {
+      "time": 1790520284614,
+      "balance": 21386560,
+      "spent": 24283000,
+      "earned": 900000,
+      "netProfit": -23383000,
+      "orders": 10
     }
   ],
-  "listingsCreated": 18,
-  "itemsListed": 18
+  "listingsCreated": 20,
+  "itemsListed": 20
 }

@@ -823,7 +823,7 @@ async function fetchLowestGodHelmetPrice(token) {
   const bot = state.bot;
   assertActive(token);
 
-  const cmd = '/ah diamond_helmet Blast Protection 4 Respiration 3 Mending Unbreaking 3 Aqua Affinity';
+  const cmd = '/ah diamond_helmet';
   dlog(`God Helmet piyasa fiyati sorgulaniyor: ${cmd}`);
 
   let win;
