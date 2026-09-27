@@ -9,18 +9,19 @@ const { pushSnapshot } = require('./features/probe');
 const { recordSale } = require('./stats');
 const { parseSaleMessage } = require('./features/sell');
 
-// Proxy yapılandırması varsa Microsoft Auth (fetch) isteklerini tünelle
-if (CFG.proxyUrl) {
+// İsteğe bağlı: Microsoft Auth için özel proxy (Microsoft Tor'u engellediği için normalde doğrudan bağlanır)
+if (process.env.AUTH_PROXY_URL) {
   try {
-    let pUrl = CFG.proxyUrl.trim();
-    if (!pUrl.includes('://')) pUrl = `socks5://${pUrl}`;
+    let aUrl = process.env.AUTH_PROXY_URL.trim();
+    if (!aUrl.includes('://')) aUrl = `socks5://${aUrl}`;
     const { setGlobalDispatcher, ProxyAgent } = require('undici');
-    setGlobalDispatcher(new ProxyAgent(pUrl));
-    log(`🌐 Microsoft Auth için proxy aktif edildi: ${pUrl.replace(/:[^:@]+@/, ':****@')}`);
+    setGlobalDispatcher(new ProxyAgent(aUrl));
+    log(`🌐 Microsoft Auth için özel proxy aktif edildi: ${aUrl.replace(/:[^:@]+@/, ':****@')}`);
   } catch (err) {
-    log(`⚠️ Undici ProxyAgent ayarlanamadı: ${err.message}`);
+    log(`⚠️ Undici Auth ProxyAgent ayarlanamadı: ${err.message}`);
   }
 }
+
 
 
 const CHAT_INTERESTING = /order|listed|listing|sold|auction|limit|cooldown|not enough|cannot|can't|invalid|error|do not repeat|full|too fast|purchased|bought|balance|bakiye|unknown|disabled|slow down|wait|limbo|lobby|hub|realm/i;
@@ -268,6 +269,14 @@ async function createBot() {
     version: CFG.version,
     username: CFG.username,
     auth: 'microsoft',
+    onMsaCode: (data) => {
+      log('═══════════════════════════════════════════════════════════');
+      log('🔑 MICROSOFT GİRİŞ ONAYI GEREKİYOR:');
+      log(`👉 Tarayıcıda açın: ${data.verification_uri || 'https://www.microsoft.com/link'}`);
+      log(`👉 Kodu girin:      ${data.user_code}`);
+      log('═══════════════════════════════════════════════════════════');
+      state.io.emit('probe:chat', `Giriş Kodu: ${data.user_code} (${data.verification_uri || 'https://www.microsoft.com/link'})`);
+    },
   };
 
   if (CFG.proxyUrl) {
