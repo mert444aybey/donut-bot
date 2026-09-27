@@ -31,7 +31,7 @@
   "portfolioEnabled": false,
   "godHelmetSellPrice": 900000,
   "godHelmetMinSellPrice": 100000,
-  "godHelmetUndercut": 1000,
+  "godHelmetUndercut": 0,
   "godHelmetMinProfit": 25000,
   "godHelmetAutoBuyAnvil": true,
   "godHelmetMaxAnvilPrice": 500000,
@@ -46,12 +46,12 @@
   "godHelmetBatchOrderAmount": 50,
   "portfolio": [
     {
-      "item": "Block of Gold",
-      "itemId": "gold_block",
-      "orderAmount": 10,
+      "item": "tnt",
+      "itemId": "tnt",
+      "orderAmount": 64,
       "orderPrice": 26000,
-      "sellPrice": 49000,
-      "sellCount": 10,
+      "sellPrice": 2000,
+      "sellCount": 1,
       "sellBatch": 1,
       "undercutAmount": 100,
       "minSellPrice": 1

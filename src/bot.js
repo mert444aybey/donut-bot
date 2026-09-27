@@ -9,6 +9,20 @@ const { pushSnapshot } = require('./features/probe');
 const { recordSale } = require('./stats');
 const { parseSaleMessage } = require('./features/sell');
 
+// Proxy yapılandırması varsa Microsoft Auth (fetch) isteklerini tünelle
+if (CFG.proxyUrl) {
+  try {
+    let pUrl = CFG.proxyUrl.trim();
+    if (!pUrl.includes('://')) pUrl = `socks5://${pUrl}`;
+    const { setGlobalDispatcher, ProxyAgent } = require('undici');
+    setGlobalDispatcher(new ProxyAgent(pUrl));
+    log(`🌐 Microsoft Auth için proxy aktif edildi: ${pUrl.replace(/:[^:@]+@/, ':****@')}`);
+  } catch (err) {
+    log(`⚠️ Undici ProxyAgent ayarlanamadı: ${err.message}`);
+  }
+}
+
+
 const CHAT_INTERESTING = /order|listed|listing|sold|auction|limit|cooldown|not enough|cannot|can't|invalid|error|do not repeat|full|too fast|purchased|bought|balance|bakiye|unknown|disabled|slow down|wait|limbo|lobby|hub|realm/i;
 
 let balanceTimer = null;
@@ -212,12 +226,101 @@ function createBot() {
     return;
   }
   log('Sunucuya baglaniliyor...');
-  const bot = mineflayer.createBot({
+
+  const botOptions = {
     host: CFG.host,
+    port: CFG.port,
     version: CFG.version,
     username: CFG.username,
     auth: 'microsoft',
-  });
+  };
+
+  if (CFG.proxyUrl) {
+    try {
+      let pUrl = CFG.proxyUrl.trim();
+      if (!pUrl.includes('://')) pUrl = `socks5://${pUrl}`;
+      const proxy = new URL(pUrl);
+      const isSocks = proxy.protocol.startsWith('socks');
+
+      botOptions.connect = (client) => {
+        const masked = pUrl.replace(/:[^:@]+@/, ':****@');
+        log(`🌐 Proxy üzerinden Minecraft sunucusuna bağlanılıyor (${masked})...`);
+
+        if (isSocks) {
+          const { SocksClient } = require('socks');
+          const socksOptions = {
+            proxy: {
+              host: proxy.hostname,
+              port: parseInt(proxy.port, 10) || 1080,
+              type: proxy.protocol.includes('4') ? 4 : 5,
+              ...(proxy.username ? {
+                userId: decodeURIComponent(proxy.username),
+                password: decodeURIComponent(proxy.password || ''),
+              } : {})
+            },
+            command: 'connect',
+            destination: {
+              host: CFG.host,
+              port: CFG.port || 25565
+            },
+            timeout: 20000
+          };
+
+          SocksClient.createConnection(socksOptions, (err, info) => {
+            if (err) {
+              log(`❌ SOCKS Proxy bağlantı hatası: ${err.message}`);
+              client.emit('error', err);
+              return;
+            }
+            client.setSocket(info.socket);
+            client.emit('connect');
+          });
+        } else {
+          // HTTP / HTTPS CONNECT tünelleme
+          const httpModule = proxy.protocol === 'https:' ? require('https') : require('http');
+          const reqOptions = {
+            host: proxy.hostname,
+            port: parseInt(proxy.port, 10) || (proxy.protocol === 'https:' ? 443 : 8080),
+            method: 'CONNECT',
+            path: `${CFG.host}:${CFG.port || 25565}`,
+            headers: {
+              Host: `${CFG.host}:${CFG.port || 25565}`
+            },
+            timeout: 20000
+          };
+
+          if (proxy.username) {
+            const auth = Buffer.from(`${decodeURIComponent(proxy.username)}:${decodeURIComponent(proxy.password || '')}`).toString('base64');
+            reqOptions.headers['Proxy-Authorization'] = `Basic ${auth}`;
+          }
+
+          const req = httpModule.request(reqOptions);
+          req.on('connect', (res, socket) => {
+            if (res.statusCode !== 200) {
+              const err = new Error(`HTTP CONNECT başarısız: HTTP ${res.statusCode} ${res.statusMessage}`);
+              log(`❌ HTTP Proxy tünel hatası: ${err.message}`);
+              client.emit('error', err);
+              return;
+            }
+            client.setSocket(socket);
+            client.emit('connect');
+          });
+          req.on('timeout', () => {
+            req.destroy(new Error('Proxy bağlantı zaman aşımı (20s)'));
+          });
+          req.on('error', (err) => {
+            log(`❌ HTTP Proxy bağlantı hatası: ${err.message}`);
+            client.emit('error', err);
+          });
+          req.end();
+        }
+      };
+    } catch (err) {
+      log(`⚠️ PROXY_URL biçimi geçersiz (${err.message}), doğrudan bağlanılıyor.`);
+    }
+  }
+
+  const bot = mineflayer.createBot(botOptions);
   state.bot = bot;
 
   // Sunucu dinamik registry verilerini (enchantment vb.) canli yakala

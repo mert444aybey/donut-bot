@@ -26,8 +26,10 @@ if (fs.existsSync(envFile)) {
 // SABIT AYARLAR (panelden degismez)
 const CFG = {
   host: 'mc.donutsmp.net',
+  port: parseInt(process.env.MC_PORT || '25565', 10),
   version: '1.21',
   username: process.env.MC_USER || 'mert2008aybey@gmail.com',
+  proxyUrl: process.env.PROXY_URL || '',
   panelPort: 3007,
   settingsFile: path.join(ROOT, 'settings.json'),
   statsFile: path.join(ROOT, 'stats.json'),
