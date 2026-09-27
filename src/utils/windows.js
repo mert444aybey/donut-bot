@@ -12,15 +12,46 @@ function assertActive(token) {
 function waitForWindow(timeoutMs = CFG.windowTimeoutMs) {
   return new Promise((resolve, reject) => {
     const bot = state.bot;
-    const timer = setTimeout(() => {
+    if (!bot) return reject(new Error('Bot bagli degil'));
+
+    let resolved = false;
+    let fallbackTimer = null;
+
+    const cleanup = () => {
+      clearTimeout(timer);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
       bot.removeListener('windowOpen', onOpen);
+      if (bot._client) bot._client.removeListener('open_window', onRawOpen);
+    };
+
+    const timer = setTimeout(() => {
+      cleanup();
+      if (bot.currentWindow && bot.currentWindow !== bot.inventory) {
+        return resolve(bot.currentWindow);
+      }
       reject(new Error('pencere acilmadi (zaman asimi)'));
     }, timeoutMs);
+
     function onOpen(win) {
-      clearTimeout(timer);
+      if (resolved) return;
+      resolved = true;
+      cleanup();
       setTimeout(() => resolve(win), 350);
     }
+
+    function onRawOpen() {
+      if (fallbackTimer) return;
+      fallbackTimer = setTimeout(() => {
+        if (!resolved && bot.currentWindow && bot.currentWindow !== bot.inventory) {
+          resolved = true;
+          cleanup();
+          resolve(bot.currentWindow);
+        }
+      }, 800);
+    }
+
     bot.once('windowOpen', onOpen);
+    if (bot._client) bot._client.once('open_window', onRawOpen);
   });
 }
 
