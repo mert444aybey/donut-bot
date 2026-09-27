@@ -220,11 +220,46 @@ function joinBot() {
   createBot();
 }
 
-function createBot() {
+function ensureLocalProxy(port = 9050) {
+  return new Promise((resolve) => {
+    const net = require('net');
+    const sock = new net.Socket();
+    sock.setTimeout(1200);
+    sock.on('connect', () => {
+      sock.destroy();
+      resolve(true);
+    });
+    sock.on('error', () => {
+      try {
+        const { spawnSync } = require('child_process');
+        const torPath = '/sbin/tor';
+        if (require('fs').existsSync(torPath)) {
+          log(`🌐 Yerel SOCKS5 proxy (Port ${port}) otomatik başlatılıyor...`);
+          spawnSync(torPath, ['--SocksPort', String(port), '--DataDirectory', '/tmp/tor_data', '--RunAsDaemon', '1']);
+          setTimeout(() => resolve(true), 2500);
+          return;
+        }
+      } catch (_) {}
+      resolve(false);
+    });
+    sock.on('timeout', () => {
+      sock.destroy();
+      resolve(false);
+    });
+    sock.connect(port, '127.0.0.1');
+  });
+}
+
+async function createBot() {
   if (!CFG.username) {
     log('❌ HATA: Minecraft hesabı için e-posta adresi bulunamadı!');
     return;
   }
+
+  if (CFG.proxyUrl && (CFG.proxyUrl.includes('9050') || CFG.proxyUrl.includes('127.0.0.1') || CFG.proxyUrl.includes('localhost'))) {
+    await ensureLocalProxy(9050);
+  }
+
   log('Sunucuya baglaniliyor...');
 
   const botOptions = {
