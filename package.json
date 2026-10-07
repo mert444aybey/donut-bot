@@ -1,10 +1,12 @@
 {
   "name": "donut-bot",
-  "version": "2.12.0",
-  "description": "Donut SMP orders bot with live analytics and outbid protection",
-  "main": "index.js",
+  "version": "2.13.0",
+  "description": "Donut SMP 1B Empire Desktop Application with live analytics, auto-crafting and outbid protection",
+  "main": "desktop/main.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "electron desktop/main.js",
+    "app": "electron desktop/main.js",
+    "cli": "node index.js"
   },
   "dependencies": {
     "express": "^4.19.2",
@@ -13,5 +15,8 @@
     "socket.io": "^4.7.5",
     "socks": "^2.8.10",
     "undici": "^8.11.2"
+  },
+  "devDependencies": {
+    "electron": "^44.6.0"
   }
 }

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Donut Bot (1B Empire)
+Comment=DonutSMP 1 Milyar $ Otomasyon Masaüstü Uygulaması
+Exec=/home/parrot/Downloads/donut-bot/start.sh
+Path=/home/parrot/Downloads/donut-bot
+Icon=applications-games
+Terminal=false
+StartupNotify=true
+Categories=Game;Network;

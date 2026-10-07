@@ -452,6 +452,14 @@ async function createBot() {
         total: sQty * sPrice,
       });
       log(`💰 SATIŞ ONAYLANDI: ${sQty}x ${sItem} @ $${sPrice.toLocaleString()} satıldı! (Net Kâr: $${(tx && tx.profit !== undefined ? tx.profit : 0).toLocaleString()})`);
+      if (state.io) {
+        state.io.emit('notify:sale', {
+          item: sItem,
+          amount: sQty,
+          price: sPrice,
+          profit: (tx && tx.profit !== undefined) ? tx.profit : 0,
+        });
+      }
       setTimeout(() => queryBalance(), 1500);
     }
 
@@ -493,6 +501,14 @@ async function createBot() {
           total: sQty * sPrice,
         });
         log(`💰 SATIŞ ONAYLANDI (ActionBar): ${sQty}x ${sItem} @ $${sPrice.toLocaleString()} satıldı! (Net Kâr: $${(tx && tx.profit !== undefined ? tx.profit : 0).toLocaleString()})`);
+        if (state.io) {
+          state.io.emit('notify:sale', {
+            item: sItem,
+            amount: sQty,
+            price: sPrice,
+            profit: (tx && tx.profit !== undefined) ? tx.profit : 0,
+          });
+        }
         setTimeout(() => queryBalance(), 1500);
       }
 
@@ -504,12 +520,24 @@ async function createBot() {
     state.setBotConnected(false);
     safeReconnect(`kick: ${typeof r === 'string' ? r : JSON.stringify(r)}`);
   });
-  bot.on('error', (e) => log(`error: ${e.message}`));
+  bot.on('error', (e) => {
+    if (e.message && e.message.includes('array size is abnormally large')) {
+      dlog(`Protokol paket atlama: ${e.message}`);
+    } else {
+      log(`error: ${e.message}`);
+    }
+  });
   bot.on('end', (r) => {
     state.setBotConnected(false);
     safeReconnect(`end: ${r}`);
   });
-  bot._client.on('error', (e) => log(`client error: ${e.message}`));
+  bot._client.on('error', (e) => {
+    if (e.message && e.message.includes('array size is abnormally large')) {
+      dlog(`Sunucu özel paket yapısı atlandı (DonutSMP RGB/Lore): ${e.message}`);
+    } else {
+      log(`client error: ${e.message}`);
+    }
+  });
 }
 
 module.exports = { createBot, safeReconnect, quitBot, joinBot, queryBalance, parseBalance, normalizeNumber };

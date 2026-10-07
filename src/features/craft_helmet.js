@@ -911,7 +911,8 @@ function computeGodHelmetSellPrice(lowest) {
   return Math.round(price);
 }
 
-async function sellGodHelmet(token) {
+// Tek bir God Helmet'ı satışa sunar (priceOverride verilirse tekrar /ah açıp fiyat aramaz)
+async function sellGodHelmet(token, priceOverride = null) {
   const bot = state.bot;
   assertActive(token);
   closeWindowSafe();
@@ -931,7 +932,9 @@ async function sellGodHelmet(token) {
 
   let sellPrice;
   const S = state.S || {};
-  if (S.autoPriceEnabled) {
+  if (priceOverride !== null && priceOverride !== undefined) {
+    sellPrice = priceOverride;
+  } else if (S.autoPriceEnabled) {
     const lowest = await fetchLowestGodHelmetPrice(token);
     sellPrice = computeGodHelmetSellPrice(lowest);
   } else {
@@ -999,6 +1002,21 @@ async function sellAllGodHelmets(token) {
   let soldCount = 0;
   const initialTotal = helmets.length;
 
+  // Piyasa fiyatını toplu satış öncesi BİR KEZ tara (her kask için ayrı ayrı /ah açıp sunucuyu boğma)
+  let batchSellPrice = null;
+  const S = state.S || {};
+  if (S.autoPriceEnabled) {
+    try {
+      const lowest = await fetchLowestGodHelmetPrice(token);
+      batchSellPrice = computeGodHelmetSellPrice(lowest);
+    } catch (err) {
+      dlog(`Toplu fiyat tespiti hatası: ${err.message}`);
+    }
+  }
+  if (!batchSellPrice) {
+    batchSellPrice = S.godHelmetSellPrice || 900000;
+  }
+
   while (true) {
     assertActive(token);
     const targetHelmet = bot.inventory.items().find(isGodHelmet);
@@ -1006,7 +1024,7 @@ async function sellAllGodHelmets(token) {
 
     soldCount++;
     log(`[${soldCount}/${initialTotal}] God Helmet ilana koyuluyor...`);
-    await sellGodHelmet(token);
+    await sellGodHelmet(token, batchSellPrice);
     await humanSleep(1500);
   }
 

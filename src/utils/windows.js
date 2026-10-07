@@ -123,7 +123,11 @@ function closeWindowSafe() {
   try {
     state.lastSignPacket = null;
     const bot = state.bot;
-    if (bot && bot.currentWindow) bot.closeWindow(bot.currentWindow);
+    if (bot && bot.currentWindow) {
+      const win = bot.currentWindow;
+      bot.currentWindow = null;
+      bot.closeWindow(win);
+    }
   } catch (_) {}
 }
 
