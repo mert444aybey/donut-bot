@@ -397,6 +397,17 @@ async function createBot() {
     try {
       bot.inventory.on('updateSlot', () => scheduleSnapshot(150));
     } catch (_) {}
+
+    // Kullanıcı başında olmasa dahi 1B hedefini kesintisiz sürdür
+    setTimeout(() => {
+      if (!state.running && !state.manualStop) {
+        log('🚀 [Otonom Başlatma] Bot oyuna giriş yaptı, 1B İmparatorluk Modu otomatik olarak devreye alınıyor...');
+        try {
+          const { startAutomation } = require('./features/automation');
+          startAutomation('billionaire');
+        } catch (_) {}
+      }
+    }, 4500);
   });
 
   bot.on('windowOpen', async (w) => {
@@ -468,6 +479,18 @@ async function createBot() {
     if (parsedBal !== null) {
       state.setBalance(parsedBal);
       dlog(`Bakiye guncellendi: $${parsedBal.toLocaleString()}`);
+    }
+
+    // Limbo / Lobby kontrolü (AFK atılınca otomatik oyuna dön)
+    if (/limbo|sending you to|type \/lobby|use \/smp|play\.donutsmp/i.test(m)) {
+      setTimeout(() => {
+        try {
+          if (state.bot && state.botConnected) {
+            log('🔄 [Limbo Koruması] Bot lobi veya limboda tespit edildi, /smp gönderiliyor...');
+            state.bot.chat('/smp');
+          }
+        } catch (_) {}
+      }, 3500);
     }
 
     if (state.S && (state.S.verbose || CHAT_INTERESTING.test(m))) {

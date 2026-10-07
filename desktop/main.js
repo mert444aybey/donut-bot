@@ -13,6 +13,7 @@ const { log } = require('../logger');
 const web = require('../src/web/server');
 const { createBot, quitBot, joinBot } = require('../src/bot');
 const { startAutomation, stopAutomation } = require('../src/features/automation');
+const { startWatchdog } = require('../src/features/watchdog');
 
 let mainWindow = null;
 let appTray = null;
@@ -230,7 +231,10 @@ if (!gotTheLock) {
     // 3. Masaüstü penceresini oluştur
     createMainWindow();
 
-    // 4. Canlı satışlarda masaüstü bildirimi gönder
+    // 4. 24/7 Otonom Bekçi Motorunu başlat
+    startWatchdog();
+
+    // 5. Canlı satışlarda masaüstü bildirimi gönder
     if (state.io) {
       state.io.on('connection', (socket) => {
         socket.on('notify:sale', (info) => {

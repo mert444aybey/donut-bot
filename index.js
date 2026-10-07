@@ -20,6 +20,7 @@ require('./src/stats');    // stats.json'u yukler
 const { log } = require('./src/logger');
 const web = require('./src/web/server');
 const { createBot } = require('./src/bot');
+const { startWatchdog } = require('./src/features/watchdog');
 
 process.on('unhandledRejection', (e) => log(`unhandledRejection: ${e && e.message}`));
 process.on('uncaughtException', (e) => log(`uncaughtException: ${e.message}`));
@@ -27,3 +28,4 @@ process.on('uncaughtException', (e) => log(`uncaughtException: ${e.message}`));
 web.start();
 log('💻 Masaüstü Uygulaması: ./start.sh veya npm run app ile doğrudan açabilirsiniz.');
 createBot();
+startWatchdog();

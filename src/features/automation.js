@@ -47,8 +47,8 @@ function scheduleAutoRestart(mode, reason) {
   if (state.manualStop) return;
   if (mode !== 'full' && mode !== 'god_helmet' && mode !== 'billionaire') return; // Tek seferlik test modlari oto yeniden baslamaz
   if (state.autoRestartTimer) return; // zaten bir yeniden baslatma planli
-  const mins = Math.round(CFG.autoRestartDelayMs / 60000);
-  log(`Otomasyon ${mins} dk sonra otomatik olarak yeniden baslatilacak (${reason}). Iptal icin DURDUR'a basabilirsin.`);
+  const secs = Math.round(CFG.autoRestartDelayMs / 1000);
+  log(`Otomasyon ${secs} sn sonra otomatik olarak yeniden baslatilacak (${reason}). Iptal icin DURDUR'a basabilirsin.`);
   state.autoRestartTimer = setTimeout(() => {
     state.autoRestartTimer = null;
     if (state.manualStop) return;
