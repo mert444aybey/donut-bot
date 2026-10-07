@@ -40,7 +40,7 @@ async function makeInventorySpaceForXp(token) {
 
   // 1. İşe yaramaz çöp ve maden molozlarını yere at
   const junkItems = bot.inventory.items().filter((i) =>
-    i && /cobblestone|dirt|arrow|rotten_flesh|string|bone|glass_bottle|bowl|deepslate|netherrack|tuff|slab|rail/i.test(i.name)
+    i && /cobblestone|dirt|arrow|rotten_flesh|string|bone|glass_bottle|bowl|deepslate|netherrack|tuff|slab|rail|minecart|torch/i.test(i.name)
   );
   for (const junk of junkItems) {
     try {
@@ -284,6 +284,9 @@ async function orderAndCollect40Anvils(token) {
   };
 
   log('🔍 Örs siparişi vermeden önce mevcut siparişler ve teslimat sandığı taranıyor...');
+  if (bot.inventory.emptySlotCount() === 0) {
+    await makeInventorySpaceForXp(token);
+  }
   // 1. Önce teslimat sandığına bak (önceden sipariş edilmiş ve hazır örs var mı?)
   await collectItems(token, anvilOrder);
 
@@ -306,6 +309,9 @@ async function orderAndCollect40Anvils(token) {
 
   log('⏳ 40 adet örsün teslimatı bekleniyor...');
   await waitForOrderComplete(token, placedPrice, anvilOrder);
+  if (bot.inventory.emptySlotCount() === 0) {
+    await makeInventorySpaceForXp(token);
+  }
   await collectItems(token, anvilOrder);
 
   anvilCount = bot.inventory.items().filter((i) => i && i.name && i.name.includes('anvil')).reduce((s, i) => s + i.count, 0);

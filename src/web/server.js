@@ -40,6 +40,18 @@ app.get('/api/inventory', (_req, res) => {
   });
 });
 
+app.post('/api/chat', (req, res) => {
+  const { message } = req.body || {};
+  if (!state.bot || !state.bot.entity) {
+    return res.status(400).json({ ok: false, error: 'Bot henüz sunucuda değil' });
+  }
+  const cmd = String(message || '').trim();
+  if (!cmd) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz' });
+  state.bot.chat(cmd);
+  log(`💬 Manuel komut gönderildi: ${cmd}`);
+  res.json({ ok: true, message: cmd });
+});
+
 app.post('/api/stats/reset', (_req, res) => {
   const stats = resetStats();
   res.json({ ok: true, stats });
