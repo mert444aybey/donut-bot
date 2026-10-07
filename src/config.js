@@ -34,8 +34,8 @@ const CFG = {
   settingsFile: path.join(ROOT, 'settings.json'),
   statsFile: path.join(ROOT, 'stats.json'),
 
-  reconnectDelayMs: 15000,
-  autoRestartDelayMs: 15 * 1000,
+  reconnectDelayMs: 20000,
+  autoRestartDelayMs: 20 * 1000,
   windowTimeoutMs: 12000,
   signWaitMs: 7000,
   signTypeDelayMs: 900,

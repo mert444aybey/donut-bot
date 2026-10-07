@@ -32,13 +32,7 @@ function startWatchdog() {
 
       // 1. KONTROL: Bot oyunda mı?
       if (!bot || !bot.entity || !state.botConnected) {
-        dlog('🛡️ [Bekçi] Bot oyunda değil veya bağlantı kopuk, yeniden bağlantı tetikleniyor...');
-        if (!state.reconnecting) {
-          try {
-            const { createBot } = require('../bot');
-            createBot();
-          } catch (_) {}
-        }
+        dlog('🛡️ [Bekçi] Bot oyunda değil veya bağlantı kopuk, bağlantı motorunun oturumu açması bekleniyor...');
         return;
       }
 
