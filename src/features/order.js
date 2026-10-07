@@ -560,7 +560,12 @@ async function waitForOrderComplete(token, placedPrice, itemOverride) {
   let lastOutbidCheck = Date.now();
 
   while (true) {
-    assertActive(token);
+    // 0. Bakiye yetersizliği kontrolü (sunucu siparişi reddettiyse hemen çık)
+    if (state.notEnoughMoney) {
+      state.notEnoughMoney = false;
+      log(`⚠️ Bakiye yetersiz olduğu için sipariş açılamadı, bekleme derhal sonlandırılıyor: ${itemName}`);
+      return { completed: false, reason: 'not_enough_money' };
+    }
 
     // 1. Eşyaya özel tamamlanma kontrolü
     if (state.isOrderCompletedFor ? state.isOrderCompletedFor(itemCfg, start) : state.orderComplete) {

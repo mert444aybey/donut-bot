@@ -451,6 +451,10 @@ async function createBot() {
     }
 
     if (/do not repeat|similar\) message|too fast|slow down/i.test(m)) state.spamSeen = true;
+    if (/don't have enough money|not enough money|insufficient funds/i.test(m)) {
+      state.notEnoughMoney = true;
+      dlog('⚠️ Yetersiz bakiye algılandı (Chat).');
+    }
 
     // Satış gerçekleşme mesajını yakala ve muhasebeye gerçek gelir/net kâr olarak işle
     const saleInfo = parseSaleMessage(m);

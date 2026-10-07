@@ -187,16 +187,39 @@ async function runBillionaireCycle(token, cycleNumber) {
   // 3. FAZ: HIZLI PvP FLIPPING (Boşta Kalmama & Yüksek Nakit Akışı)
   // DonutSMP'de saniyede tükenen PvP sarf malzemelerinden sıradaki ürünü flip et
   const flipIndex = (cycleNumber - 1) % BILLIONAIRE_FLIP_CATALOG.length;
-  const flipItem = BILLIONAIRE_FLIP_CATALOG[flipIndex];
+  const flipTemplate = BILLIONAIRE_FLIP_CATALOG[flipIndex];
 
-  log(`⚡ [Sütun 2] Hızlı PvP Flipping Başlıyor: ${flipItem.item} (${flipIndex + 1}/${BILLIONAIRE_FLIP_CATALOG.length})...`);
+  // Bakiye kontrolü ve dinamik bütçe ölçekleme
+  const estimatedUnitPrice = flipTemplate.orderPrice || 25000;
+  let targetOrderQty = flipTemplate.orderAmount || 64;
+
+  if (state.balance !== null) {
+    const totalCost = targetOrderQty * estimatedUnitPrice;
+    if (state.balance < totalCost) {
+      const affordableQty = Math.floor(state.balance / estimatedUnitPrice);
+      if (affordableQty < 5) {
+        log(`ℹ️ [Flipping] Mevcut bakiye ($${state.balance.toLocaleString()}) ${flipTemplate.item} için yetersiz, kask üretim ve satışına odaklanılıyor.`);
+        bumpStats({ cyclesCompleted: 1 });
+        const updatedMetrics = getBillionaireMetrics();
+        state.io.emit('billionaire:update', updatedMetrics);
+        await humanSleep(CFG.cycleDelayMs || 3000);
+        return;
+      }
+      targetOrderQty = affordableQty;
+      log(`ℹ️ [Flipping] Bakiye nedeniyle ${flipTemplate.item} miktarı ${targetOrderQty} adede ayarlandı.`);
+    }
+  }
+
+  const flipItem = { ...flipTemplate, orderAmount: targetOrderQty };
+
+  log(`⚡ [Sütun 2] Hızlı PvP Flipping Başlıyor: ${flipItem.orderAmount}x ${flipItem.item} (${flipIndex + 1}/${BILLIONAIRE_FLIP_CATALOG.length})...`);
   try {
     // 3a. /orders üzerinden piyasa altı fiyattan buy order ver
     const buyPrice = await runOrderFlow(token, flipItem);
     assertActive(token);
 
     // 3b. Siparişin dolmasını bekle (outbid olursa hemen güncelle)
-    const orderStatus = await waitForOrderComplete(token, buyPrice, flipItem);
+    let orderStatus = await waitForOrderComplete(token, buyPrice, flipItem);
     assertActive(token);
 
     let outbidTries = 0;
@@ -205,24 +228,28 @@ async function runBillionaireCycle(token, cycleNumber) {
       log(`⚡ [Sütun 3] Outbid yakalandı! ${flipItem.item} siparişi yenileniyor (${outbidTries}/2)...`);
       await humanSleep(1200);
       const newPrice = await runOrderFlow(token, flipItem);
-      await waitForOrderComplete(token, newPrice, flipItem);
+      orderStatus = await waitForOrderComplete(token, newPrice, flipItem);
     }
 
-    // 3c. Satın alınan eşyaları depodan çek
-    await collectItems(token, flipItem);
-    await humanSleep(1000);
-    assertActive(token);
+    if (orderStatus && orderStatus.completed) {
+      // 3c. Satın alınan eşyaları depodan çek
+      await collectItems(token, flipItem);
+      await humanSleep(1000);
+      assertActive(token);
 
-    // 3d. /ah üzerinde piyasa fiyatından hemen satışa sun
-    state.activeItemIndex = flipIndex;
-    const previousActiveGetter = state.getActiveItem;
-    state.getActiveItem = () => flipItem;
-    try {
-      await sellAll(token);
-    } finally {
-      state.getActiveItem = previousActiveGetter;
+      // 3d. /ah üzerinde piyasa fiyatından hemen satışa sun
+      state.activeItemIndex = flipIndex;
+      const previousActiveGetter = state.getActiveItem;
+      state.getActiveItem = () => flipItem;
+      try {
+        await sellAll(token);
+      } finally {
+        state.getActiveItem = previousActiveGetter;
+      }
+      log(`✅ [Sütun 2] ${flipItem.item} satışı tamamlandı, nakit kasaya girdi!`);
+    } else {
+      log(`ℹ️ [Flipping] ${flipItem.item} siparişi tamamlanamadı (${orderStatus ? orderStatus.reason : 'bilinmiyor'}), sonraki döngüye geçiliyor.`);
     }
-    log(`✅ [Sütun 2] ${flipItem.item} satışı tamamlandı, nakit kasaya girdi!`);
   } catch (err) {
     log(`Bilgi [Flipping]: ${flipItem.item} işleminde (${err.message}), döngüye devam ediliyor.`);
     closeWindowSafe();

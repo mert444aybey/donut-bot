@@ -18,6 +18,7 @@ const state = {
   spamSeen: false,
   listedSeen: false,
   lastSignPacket: null,
+  notEnoughMoney: false,
 
   // Satis takibi
   salesTracking: false,

@@ -1,11 +1,11 @@
 {
   "startedAt": 1790129711547,
-  "totalSpent": 41788300,
+  "totalSpent": 43452300,
   "totalEarned": 14343600,
   "activeListingValue": 47044000,
   "activeListingCost": 5290000,
-  "ordersPlaced": 17,
-  "itemsOrdered": 7100,
+  "ordersPlaced": 18,
+  "itemsOrdered": 7164,
   "cyclesCompleted": 16,
   "godHelmetsCrafted": 46,
   "itemsCollected": {
@@ -54,6 +54,12 @@
       "earned": 0,
       "listingValue": 0,
       "count": 10
+    },
+    "PvP Mühimmat": {
+      "spent": 1664000,
+      "earned": 0,
+      "listingValue": 0,
+      "count": 64
     }
   },
   "activeListings": [
@@ -657,6 +663,18 @@
     }
   ],
   "ledger": [
+    {
+      "id": "1791405238892-xgya",
+      "time": 1791405238892,
+      "type": "EXPENSE",
+      "category": "PvP Mühimmat",
+      "item": "TNT",
+      "amount": 64,
+      "unitPrice": 26000,
+      "total": 1664000,
+      "cost": 1664000,
+      "note": "/orders üzerinden 64x TNT alımı"
+    },
     {
       "id": "1791404593952-6n95",
       "time": 1791404593952,
@@ -1670,206 +1688,6 @@
   ],
   "history": [
     {
-      "time": 1790558647427,
-      "balance": 10,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1790558862065,
-      "balance": 28,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1790559479008,
-      "balance": 42,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791398618128,
-      "balance": 754652,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791399215091,
-      "balance": 754652,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791399290728,
-      "balance": 754652,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404289397,
-      "balance": 754652,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404293731,
-      "balance": 36,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404310392,
-      "balance": 36,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404325136,
-      "balance": 36,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404376928,
-      "balance": 754652,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404376936,
-      "balance": 36,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404395611,
-      "balance": 36,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404409779,
-      "balance": 36,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404422545,
-      "balance": 37,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404436410,
-      "balance": 37,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404449012,
-      "balance": 37,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404463658,
-      "balance": 37,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404477319,
-      "balance": 35,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404503931,
-      "balance": 35,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404503960,
-      "balance": 754652,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404504544,
-      "balance": 35,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404517847,
-      "balance": 35,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404531837,
-      "balance": 35,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
-      "time": 1791404547101,
-      "balance": 34,
-      "spent": 41388300,
-      "earned": 14343600,
-      "netProfit": -27044700,
-      "orders": 16
-    },
-    {
       "time": 1791404560463,
       "balance": 35,
       "spent": 41388300,
@@ -2148,6 +1966,206 @@
       "earned": 14343600,
       "netProfit": -27444700,
       "orders": 17
+    },
+    {
+      "time": 1791405064591,
+      "balance": 354652,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405068691,
+      "balance": 34,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405081858,
+      "balance": 34,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405095862,
+      "balance": 34,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405110857,
+      "balance": 34,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405122749,
+      "balance": 34,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405135575,
+      "balance": 34,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405150971,
+      "balance": 33,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405165265,
+      "balance": 33,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405177892,
+      "balance": 33,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405191371,
+      "balance": 33,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405204197,
+      "balance": 33,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405216778,
+      "balance": 33,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405230339,
+      "balance": 33,
+      "spent": 41788300,
+      "earned": 14343600,
+      "netProfit": -27444700,
+      "orders": 17
+    },
+    {
+      "time": 1791405238892,
+      "balance": 33,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405257162,
+      "balance": 30,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405270049,
+      "balance": 30,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405284311,
+      "balance": 29,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405304520,
+      "balance": 29,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405322807,
+      "balance": 29,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405335638,
+      "balance": 29,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405349235,
+      "balance": 29,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405362188,
+      "balance": 29,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405374878,
+      "balance": 28,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
+    },
+    {
+      "time": 1791405389650,
+      "balance": 28,
+      "spent": 43452300,
+      "earned": 14343600,
+      "netProfit": -29108700,
+      "orders": 18
     }
   ],
   "listingsCreated": 46,
