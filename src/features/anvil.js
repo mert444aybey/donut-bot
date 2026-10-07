@@ -522,8 +522,39 @@ async function combineInAnvil(findLeftItemFn, findRightItemFn, token) {
     }
 
     log(`🔨 Örs çıktısı hazır: ${outItem.displayName || outItem.name} (Slot 2). Envantere alınıyor...`);
-    await bot.clickWindow(2, 0, 1); // shift-click
-    await humanSleep(600);
+    
+    // Yöntem 1: Shift-Click ile doğrudan envantere çekmeyi dene
+    await bot.clickWindow(2, 0, 1);
+    await humanSleep(400);
+
+    // Çıktı hâlâ slot 2'de duruyorsa veya mouse imlecinde kaldıysa:
+    if (curWin.slots[2] || bot.inventory.selectedItem) {
+      dlog('Slot 2 shift-click ile boşalmadı, normal sol tık ile cursor/envanter denemesi yapılıyor...');
+      // Eğer imleç boşsa önce slot 2'ye sol tıklayıp imlece al
+      if (!bot.inventory.selectedItem && curWin.slots[2]) {
+        await bot.clickWindow(2, 0, 0);
+        await humanSleep(300);
+      }
+      // İmleçte eşya varsa ilk boş envanter slotuna bırak
+      if (bot.inventory.selectedItem) {
+        const emptySlot = curWin.firstEmptyInventorySlot();
+        if (emptySlot !== null && emptySlot !== undefined) {
+          dlog(`İmleçteki çıktı boş envanter slotuna (${emptySlot}) bırakılıyor...`);
+          await bot.clickWindow(emptySlot, 0, 0);
+          await humanSleep(300);
+        } else {
+          // Boş slot yoksa envanterin son slotuna tıkla
+          const lastSlot = curWin.inventoryEnd - 1;
+          await bot.clickWindow(lastSlot, 0, 0);
+          await humanSleep(300);
+        }
+      }
+    }
+
+    // Doğrulama: Slot 2 boşalmış olmalı
+    if (curWin.slots[2]) {
+      throw new Error(`Örs çıktısı (${outItem.name}) envantere alınamadı! Slot 2 boşalmadı.`);
+    }
 
     log(`✅ Örste birleştirildi: ${outItem.displayName || outItem.name}`);
     return true;

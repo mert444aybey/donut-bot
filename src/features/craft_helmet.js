@@ -712,7 +712,7 @@ async function craftGodHelmetOnly(token) {
 
   // Adim 1: Helmet + Book (Blast Protection 4) [8 lv]
   let s1Count = 0;
-  while (true) {
+  while (s1Count < 10) {
     assertActive(token);
     const cleanHelmet = bot.inventory.items().find(isCleanHelmet);
     const blastBook = bot.inventory.items().find(isBlastProt4Book);
@@ -728,7 +728,7 @@ async function craftGodHelmetOnly(token) {
 
   // Adim 2: Book (Respiration 3) + Book (Mending) [2 lv]
   let s2Count = 0;
-  while (true) {
+  while (s2Count < 10) {
     assertActive(token);
     const respBook = bot.inventory.items().find(isResp3Book);
     const mendingBook = bot.inventory.items().find(isMendingBook);
@@ -744,7 +744,7 @@ async function craftGodHelmetOnly(token) {
 
   // Adim 3: Helmet (Blast Prot 4) + Book (Resp 3, Mending) [10 lv]
   let s3Count = 0;
-  while (true) {
+  while (s3Count < 10) {
     assertActive(token);
     const s1Helmet = bot.inventory.items().find((it) => isStep1Helmet(it) || (it && it.name === 'diamond_helmet' && getEnchants(it).includes('blast_prot_4') && !getEnchants(it).includes('resp_3')));
     const s2Book = bot.inventory.items().find((it) => isStep2Book(it) || (it && it.name === 'enchanted_book' && getEnchants(it).includes('resp_3') && getEnchants(it).includes('mending')));
@@ -764,7 +764,7 @@ async function craftGodHelmetOnly(token) {
 
   // Adim 4: Book (Unbreaking 3) + Book (Aqua Affinity) [2 lv]
   let s4Count = 0;
-  while (true) {
+  while (s4Count < 10) {
     assertActive(token);
     const unbBook = bot.inventory.items().find(isUnbreaking3Book);
     const aquaBook = bot.inventory.items().find(isAquaAffinityBook);
@@ -780,7 +780,7 @@ async function craftGodHelmetOnly(token) {
 
   // Adim 5: Final God Helmet [9 lv]
   let s5Count = 0;
-  while (true) {
+  while (s5Count < 10) {
     assertActive(token);
     const s3Helmet = bot.inventory.items().find((it) => isStep3Helmet(it) || (it && it.name === 'diamond_helmet' && getEnchants(it).includes('blast_prot_4') && getEnchants(it).includes('resp_3') && getEnchants(it).includes('mending') && !getEnchants(it).includes('unbreaking_3')));
     const s4Book = bot.inventory.items().find((it) => isStep4Book(it) || (it && it.name === 'enchanted_book' && getEnchants(it).includes('unbreaking_3') && getEnchants(it).includes('aqua_affinity')));
