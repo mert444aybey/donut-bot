@@ -27,8 +27,9 @@ const {
   isStep3Helmet,
   isStep4Book,
 } = require('./craft_helmet');
+const { runBillionaireCycle } = require('./billionaire');
 
-const MODES = ['full', 'collect', 'god_helmet', 'god_helmet_craft', 'god_helmet_collect', 'god_helmet_sell', 'resume'];
+const MODES = ['full', 'collect', 'god_helmet', 'god_helmet_craft', 'god_helmet_collect', 'god_helmet_sell', 'billionaire', 'resume'];
 const MODE_LABELS = {
   full: 'tam dongu',
   collect: 'sadece topla',
@@ -36,6 +37,7 @@ const MODE_LABELS = {
   god_helmet_craft: 'sadece ors / buyu yap (test)',
   god_helmet_collect: 'sadece depodan topla (test)',
   god_helmet_sell: 'sadece god helmet sat (test)',
+  billionaire: '🚀 haftalık 1b imparatorluk modu (god helmet + pvp flipping)',
   resume: 'kaldigin yerden devam et',
 };
 
@@ -43,7 +45,7 @@ const MODE_LABELS = {
 // otomasyon kendini yeniden baslatir (sadece surekli donguler icin).
 function scheduleAutoRestart(mode, reason) {
   if (state.manualStop) return;
-  if (mode !== 'full' && mode !== 'god_helmet') return; // Tek seferlik test modlari oto yeniden baslamaz
+  if (mode !== 'full' && mode !== 'god_helmet' && mode !== 'billionaire') return; // Tek seferlik test modlari oto yeniden baslamaz
   if (state.autoRestartTimer) return; // zaten bir yeniden baslatma planli
   const mins = Math.round(CFG.autoRestartDelayMs / 60000);
   log(`Otomasyon ${mins} dk sonra otomatik olarak yeniden baslatilacak (${reason}). Iptal icin DURDUR'a basabilirsin.`);
@@ -69,7 +71,7 @@ async function startAutomation(mode) {
   const token = ++state.cancelToken;
   log(`Basladi: ${MODE_LABELS[mode]}`);
 
-  if (mode !== 'resume' && (mode === 'full' || mode === 'god_helmet')) {
+  if (mode !== 'resume' && (mode === 'full' || mode === 'god_helmet' || mode === 'billionaire')) {
     state.lastActiveMode = mode;
   }
 
@@ -78,10 +80,10 @@ async function startAutomation(mode) {
     await humanSleep(1500);
 
     if (mode === 'resume') {
-      const targetMode = state.lastActiveMode || 'god_helmet';
+      const targetMode = state.lastActiveMode || 'billionaire';
       log(`⏯️ Kaldığın yerden devam ediliyor (Hedef Mod: ${targetMode})...`);
 
-      if (targetMode === 'god_helmet') {
+      if (targetMode === 'god_helmet' || targetMode === 'billionaire') {
         const bot = state.bot;
         // 1. Envanterde zaten tamamlanmış God Helmet var mı?
         const existingGodHelmets = bot.inventory.items().filter(isGodHelmet);
@@ -106,7 +108,7 @@ async function startAutomation(mode) {
           await sellAllGodHelmets(token);
         }
 
-        mode = 'god_helmet';
+        mode = targetMode;
       } else {
         mode = 'full';
       }
@@ -159,6 +161,22 @@ async function startAutomation(mode) {
           break;
         }
         await humanSleep(CFG.cycleDelayMs);
+      }
+      return;
+    }
+
+    if (mode === 'billionaire') {
+      let bCycle = 0;
+      const S = state.S || {};
+      while (true) {
+        assertActive(token);
+        bCycle++;
+        await runBillionaireCycle(token, bCycle);
+        if (S.maxCycles > 0 && bCycle >= S.maxCycles) {
+          log('Dongu sayisina ulasildi.');
+          break;
+        }
+        await humanSleep(CFG.cycleDelayMs || 5000);
       }
       return;
     }

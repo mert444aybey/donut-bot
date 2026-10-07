@@ -93,6 +93,11 @@ input[type=checkbox],input[type=radio]{transform:scale(1.2);margin-right:7px;acc
 .unit-item .u-val{font-size:15px;font-weight:800;color:var(--text);margin-top:4px}
 .search-box{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;width:100%;max-width:320px}
 .search-box:focus{outline:none;border-color:var(--accent)}
+.billionaire-card{background:linear-gradient(135deg,rgba(234,179,8,.1),rgba(168,85,247,.08));border:1px solid rgba(234,179,8,.35);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.billionaire-progress-bg{background:rgba(255,255,255,.08);border-radius:999px;height:14px;overflow:hidden;margin:10px 0 6px;border:1px solid var(--border)}
+.billionaire-progress-bar{background:linear-gradient(90deg,#eab308,#a855f7,#3b82f6);height:100%;width:0%;transition:width .4s ease-out;border-radius:999px}
+.gold-btn{background:linear-gradient(135deg,#eab308,#ca8a04);color:#0b0d10;font-weight:800;border:1px solid #fde047;text-shadow:0 1px 0 rgba(255,255,255,.3)}
+.gold-btn:hover{filter:brightness(1.15)}
 @media(max-width:640px){.wrap{padding:18px 14px 40px}.cell{font-size:9px;min-height:46px}}
 `;
 
@@ -160,16 +165,55 @@ ${navHtml('/')}
   </div>
 </div>
 
+<div class="billionaire-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:24px">👑</span>
+      <div>
+        <div style="font-size:15px;font-weight:800;color:#fde047;letter-spacing:.02em">HAFTALIK 1 MİLYAR $ İMPARATORLUK HEDEFİ</div>
+        <div style="font-size:12px;color:var(--muted)">DonutSMP 50'li God Helmet Seri Üretimi + Yüksek Hızlı PvP Flipping Motoru</div>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <span id="bProgressPct" style="font-size:20px;font-weight:800;color:#fde047">0.00%</span>
+      <div style="font-size:11px;color:var(--muted)">1B HEDEF ORANI</div>
+    </div>
+  </div>
+  <div class="billionaire-progress-bg">
+    <div class="billionaire-progress-bar" id="bProgressBar" style="width:0%"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:10px">
+    <div style="background:rgba(0,0,0,.28);padding:8px 10px;border-radius:6px;border:1px solid var(--border)">
+      <div style="font-size:10.5px;color:var(--muted)">HAFTALIK HEDEF</div>
+      <div style="font-size:13.5px;font-weight:700;color:#e8eaed" id="bTargetVal">$1,000,000,000</div>
+    </div>
+    <div style="background:rgba(0,0,0,.28);padding:8px 10px;border-radius:6px;border:1px solid var(--border)">
+      <div style="font-size:10.5px;color:var(--muted)">KAZANILAN CİRO</div>
+      <div style="font-size:13.5px;font-weight:700;color:var(--green)" id="bEarnedVal">$0</div>
+    </div>
+    <div style="background:rgba(0,0,0,.28);padding:8px 10px;border-radius:6px;border:1px solid var(--border)">
+      <div style="font-size:10.5px;color:var(--muted)">GEREKEN SAATLİK HIZ</div>
+      <div style="font-size:13.5px;font-weight:700;color:var(--amber)" id="bHourlyReq">~$5.95M / sa</div>
+    </div>
+    <div style="background:rgba(0,0,0,.28);padding:8px 10px;border-radius:6px;border:1px solid var(--border)">
+      <div style="font-size:10.5px;color:var(--muted)">ÖNGÖRÜLEN GÜNLÜK</div>
+      <div style="font-size:13.5px;font-weight:700;color:#a855f7" id="bDailyProj">~$142.8M / gün</div>
+    </div>
+  </div>
+</div>
+
 <div class="card section">
   <div style="font-size:13px;font-weight:600;margin-bottom:8px">⚡ Ana Otomasyon Modları</div>
   <div class="btn-group">
+    <button class="gold-btn" id="billionaire">🚀 1B Hedef Modunu Başlat (Billionaire Auto)</button>
     <button class="blue" id="resume" style="background:#0284c7;color:#fff">⏯️ Kaldığın Yerden Devam Et</button>
     <button class="amber" id="godHelmet">✨ God Helmet Tam Döngü</button>
     <button class="green" id="start">▶ Tam Dongu</button>
     <button class="red" id="stop">■ Durdur</button>
   </div>
-  <p class="btn-desc"><b>Kaldığın Yerden Devam Et:</b> Envanter ve depo durumunu analiz eder; yarım kalan örs birleştirmesini, satışını veya döngüsünü akıllıca kaldığı aşamadan sürdürür.<br>
-  <b>God Helmet:</b> 5'li toplu malzeme siparişi/toplama + 5 adımlı örs birleştirme + AH satışı.</p>
+  <p class="btn-desc"><b>🚀 1B Hedef Modu (Billionaire Auto):</b> Haftalık 1 Milyar $ hedefi için optimize edilmiş 3 sütunlu motor. God Helmet seri üretimini 50'li partiler halinde yürütür, kasklar satıştayken aralarda TNT, Totem, Notch Apple ve Wither Kafa gibi yüksek hızlı PvP sarf malzemelerini flip ederek parayı 24/7 katlar.<br>
+  <b>Kaldığın Yerden Devam Et:</b> Envanter ve depo durumunu analiz eder; yarım kalan örs birleştirmesini, satışını veya döngüsünü akıllıca kaldığı aşamadan sürdürür.<br>
+  <b>God Helmet:</b> 50'li toplu malzeme siparişi/toplama + 5 adımlı örs birleştirme + AH satışı.</p>
 </div>
 
 <div class="card section">
@@ -265,7 +309,27 @@ fetch('/api/stats').then(function(r){ return r.json(); }).then(function(st){
   }
 });
 
+function updateBillionaireUI(m) {
+  if (!m) return;
+  var pct = m.progressPct || 0;
+  var bar = document.getElementById('bProgressBar');
+  if (bar) bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+  var pctEl = document.getElementById('bProgressPct');
+  if (pctEl) pctEl.textContent = Number(pct).toFixed(2) + '%';
+  var earnedEl = document.getElementById('bEarnedVal');
+  if (earnedEl) earnedEl.textContent = '$' + Math.round(m.earned || 0).toLocaleString('tr-TR');
+  var targetEl = document.getElementById('bTargetVal');
+  if (targetEl) targetEl.textContent = '$' + Math.round(m.weeklyTarget || 1000000000).toLocaleString('tr-TR');
+  var reqEl = document.getElementById('bHourlyReq');
+  if (reqEl) reqEl.textContent = '$' + Math.round(m.hourlyRate || 5952381).toLocaleString('tr-TR') + ' / sa';
+  var dailyEl = document.getElementById('bDailyProj');
+  if (dailyEl) dailyEl.textContent = '$' + Math.round(m.dailyRate || 142857143).toLocaleString('tr-TR') + ' / gün';
+}
+s.on('billionaire:update', updateBillionaireUI);
+fetch('/api/billionaire').then(function(r){ return r.json(); }).then(updateBillionaireUI).catch(function(){});
+
 document.getElementById('refreshBal').onclick = function(){ s.emit('queryBalance'); };
+document.getElementById('billionaire').onclick = function(){ s.emit('start','billionaire'); };
 document.getElementById('resume').onclick = function(){ s.emit('resume'); };
 document.getElementById('start').onclick = function(){ s.emit('start','full'); };
 document.getElementById('godHelmet').onclick = function(){ s.emit('start','god_helmet'); };
@@ -460,6 +524,11 @@ ${navHtml('/settings')}
       <input type="number" id="godHelmetMaxAnvilPrice">
       <span class="hint">Örs yoksa /ah üzerinden alınabilecek maksimum örs fiyatı</span>
     </div>
+    <div style="flex:1">
+      <label>👑 1B Modu Haftalık Ciro Hedefi ($)</label>
+      <input type="number" id="billionaireTargetWeekly">
+      <span class="hint">Billionaire otomasyonunun hedeflediği haftalık ciro (Varsayılan: 1,000,000,000)</span>
+    </div>
   </div>
   <div class="row" style="margin-top:12px">
     <div class="field checkbox-field" style="margin:0">
@@ -556,7 +625,8 @@ var FIELDS = [
   ['bookRespOrderPrice', 'number'],
   ['bookMendingOrderPrice', 'number'],
   ['bookUnbOrderPrice', 'number'],
-  ['bookAquaOrderPrice', 'number']
+  ['bookAquaOrderPrice', 'number'],
+  ['billionaireTargetWeekly', 'number']
 ];
 
 var inputs = {};

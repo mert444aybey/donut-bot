@@ -11,6 +11,7 @@ const { DEFAULT_SETTINGS, sanitize, saveSettings } = require('../settings');
 const { resetStats, calculateUnitEconomics } = require('../stats');
 const { snapshotFull } = require('../utils/inspect');
 const { startAutomation, stopAutomation } = require('../features/automation');
+const { getBillionaireMetrics } = require('../features/billionaire');
 const { probeAction } = require('../features/probe');
 const pages = require('./pages');
 
@@ -31,6 +32,7 @@ app.get('/stats', (_req, res) => res.send(pages.statsPage()));
 app.get('/api/stats', (_req, res) => res.json(state.STATS));
 app.get('/api/ledger', (_req, res) => res.json(state.STATS.ledger || []));
 app.get('/api/economics', (_req, res) => res.json(calculateUnitEconomics()));
+app.get('/api/billionaire', (_req, res) => res.json(getBillionaireMetrics()));
 
 app.post('/api/stats/reset', (_req, res) => {
   const stats = resetStats();
@@ -77,6 +79,7 @@ io.on('connection', (socket) => {
   socket.emit('botStatus', state.botConnected);
   socket.emit('stats', state.STATS);
   socket.emit('balance', state.balance);
+  socket.emit('billionaire:update', getBillionaireMetrics());
   if (state.bot) socket.emit('probe:snapshot', snapshotFull());
 
   socket.on('start', (mode) => startAutomation(mode));

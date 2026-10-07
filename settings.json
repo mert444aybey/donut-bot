@@ -44,6 +44,7 @@
   "bookUnbOrderPrice": 15000,
   "bookAquaOrderPrice": 10000,
   "godHelmetBatchOrderAmount": 50,
+  "billionaireTargetWeekly": 1000000000,
   "portfolio": [
     {
       "item": "tnt",

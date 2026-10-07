@@ -79,6 +79,7 @@ const DEFAULT_SETTINGS = {
   bookAquaOrderPrice: 10000,
   diamondHelmetOrderPrice: 25000,
   godHelmetBatchOrderAmount: 50,
+  billionaireTargetWeekly: 1000000000,
 };
 
 const SCHEMA = {
@@ -139,6 +140,7 @@ const SCHEMA = {
   bookUnbOrderPrice:       { type: 'int',  label: 'Unbreaking 3 Kitap Siparis ($)',  min: 1, max: 1e8 },
   bookAquaOrderPrice:      { type: 'int',  label: 'Aqua Affinity Kitap Siparis ($)', min: 1, max: 1e8 },
   godHelmetBatchOrderAmount: { type: 'int', label: 'God Helmet Toplu Siparis Miktari', min: 1, max: 1000 },
+  billionaireTargetWeekly:   { type: 'int', label: 'Billionaire Haftalık Hedef ($)',   min: 1000000, max: 1e12 },
 };
 
 function sanitize(input, base) {
