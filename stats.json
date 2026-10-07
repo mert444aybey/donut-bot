@@ -10,7 +10,7 @@
   "godHelmetsCrafted": 46,
   "itemsCollected": {
     "anvil": 40,
-    "experience_bottle": 2560
+    "experience_bottle": 2624
   },
   "categories": {
     "Kitap": {
@@ -1652,70 +1652,6 @@
   ],
   "history": [
     {
-      "time": 1790523082742,
-      "balance": 15255560,
-      "spent": 38363000,
-      "earned": 9398600,
-      "netProfit": -28964400,
-      "orders": 11
-    },
-    {
-      "time": 1790523137848,
-      "balance": 15255560,
-      "spent": 38363000,
-      "earned": 9398600,
-      "netProfit": -28964400,
-      "orders": 11
-    },
-    {
-      "time": 1790523155134,
-      "balance": 15255560,
-      "spent": 38363000,
-      "earned": 9398600,
-      "netProfit": -28964400,
-      "orders": 11
-    },
-    {
-      "time": 1790523179974,
-      "balance": 15255560,
-      "spent": 38363000,
-      "earned": 9398600,
-      "netProfit": -28964400,
-      "orders": 11
-    },
-    {
-      "time": 1790523188010,
-      "balance": 991,
-      "spent": 38363000,
-      "earned": 9398600,
-      "netProfit": -28964400,
-      "orders": 11
-    },
-    {
-      "time": 1790523196110,
-      "balance": 990,
-      "spent": 38363000,
-      "earned": 9398600,
-      "netProfit": -28964400,
-      "orders": 11
-    },
-    {
-      "time": 1790523204439,
-      "balance": 989,
-      "spent": 38363000,
-      "earned": 9398600,
-      "netProfit": -28964400,
-      "orders": 11
-    },
-    {
-      "time": 1790523212869,
-      "balance": 988,
-      "spent": 38363000,
-      "earned": 9398600,
-      "netProfit": -28964400,
-      "orders": 11
-    },
-    {
       "time": 1790523220906,
       "balance": 987,
       "spent": 38363000,
@@ -2126,6 +2062,70 @@
     {
       "time": 1791404325136,
       "balance": 36,
+      "spent": 41388300,
+      "earned": 14343600,
+      "netProfit": -27044700,
+      "orders": 16
+    },
+    {
+      "time": 1791404376928,
+      "balance": 754652,
+      "spent": 41388300,
+      "earned": 14343600,
+      "netProfit": -27044700,
+      "orders": 16
+    },
+    {
+      "time": 1791404376936,
+      "balance": 36,
+      "spent": 41388300,
+      "earned": 14343600,
+      "netProfit": -27044700,
+      "orders": 16
+    },
+    {
+      "time": 1791404395611,
+      "balance": 36,
+      "spent": 41388300,
+      "earned": 14343600,
+      "netProfit": -27044700,
+      "orders": 16
+    },
+    {
+      "time": 1791404409779,
+      "balance": 36,
+      "spent": 41388300,
+      "earned": 14343600,
+      "netProfit": -27044700,
+      "orders": 16
+    },
+    {
+      "time": 1791404422545,
+      "balance": 37,
+      "spent": 41388300,
+      "earned": 14343600,
+      "netProfit": -27044700,
+      "orders": 16
+    },
+    {
+      "time": 1791404436410,
+      "balance": 37,
+      "spent": 41388300,
+      "earned": 14343600,
+      "netProfit": -27044700,
+      "orders": 16
+    },
+    {
+      "time": 1791404449012,
+      "balance": 37,
+      "spent": 41388300,
+      "earned": 14343600,
+      "netProfit": -27044700,
+      "orders": 16
+    },
+    {
+      "time": 1791404463658,
+      "balance": 37,
       "spent": 41388300,
       "earned": 14343600,
       "netProfit": -27044700,

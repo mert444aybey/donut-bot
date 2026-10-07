@@ -387,20 +387,21 @@ async function collectHelmetMaterials(token) {
 
     if (takenCount > 0) {
       log(`✅ ${takenCount} adet ${target.name} başarıyla depodan envantere alındı.`);
-      if (target.id === 'xp' && bot.experience.level < 35) {
-        log(`⚡ Toplanan XP şişeleri hemen seviyeye dönüştürülüyor (Envanter yuvaları boşaltılıyor)...`);
-        try {
-          await ensureExperienceLevel(35, token);
-        } catch (e) {
-          log(`XP seviye dönüştürme uyarısı: ${e.message}`);
-        }
-      }
     } else {
       log(`⏳ ${target.name} teslimat sandığında henüz hazır ürün yok (oyuncuların teslim etmesi bekleniyor).`);
     }
 
     closeWindowSafe();
     await humanSleep(400);
+
+    if (takenCount > 0 && target.id === 'xp' && bot.experience.level < 35) {
+      log(`⚡ Toplanan XP şişeleri hemen seviyeye dönüştürülüyor (Envanter yuvaları boşaltılıyor)...`);
+      try {
+        await ensureExperienceLevel(35, token);
+      } catch (e) {
+        log(`XP seviye dönüştürme uyarısı: ${e.message}`);
+      }
+    }
   }
 
   // Eger depoda henuz siparisi acilmamis malzemeler varsa HEMEN ac (sonsuz 30 sn beklemesini onler)
