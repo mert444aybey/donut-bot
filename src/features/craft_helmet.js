@@ -969,6 +969,10 @@ async function sellGodHelmet(token, priceOverride = null) {
 
   log(`God Helmet satışa sunuluyor: $${sellPrice.toLocaleString()}`);
 
+  const beforeCount = bot.inventory.items().filter(isGodHelmet).length;
+  state.listedSeen = false;
+  state.spamSeen = false;
+
   const winPromise = waitForWindow(CFG.confirmWaitMs);
   winPromise.catch(() => {});
 
@@ -993,8 +997,39 @@ async function sellGodHelmet(token, priceOverride = null) {
 
     dlog(`Onay butonuna tiklaniyor: slot ${btnSlot}`);
     await bot.clickWindow(btnSlot, 0, 0);
-    await sleep(1000);
+    
+    // Ilanin sunucu tarafindan kabul edildigini dogrula (envanterden eksilme veya listedSeen)
+    const startVerify = Date.now();
+    let verified = false;
+    while (Date.now() - startVerify < (CFG.sellVerifyMs || 5000)) {
+      assertActive(token);
+      await sleep(250);
+      const currentCount = bot.inventory.items().filter(isGodHelmet).length;
+      if (state.listedSeen || currentCount < beforeCount) {
+        verified = true;
+        break;
+      }
+      if (state.spamSeen) break;
+    }
+
     closeWindowSafe();
+
+    if (!verified) {
+      const currentCount = bot.inventory.items().filter(isGodHelmet).length;
+      if (currentCount < beforeCount) {
+        verified = true;
+      }
+    }
+
+    if (!verified) {
+      log('⚠️ God Helmet onay butonuna tıklandı ancak ilan doğrulanamadı (ilan slotu dolu veya sunucu reddetti).');
+      return false;
+    }
+  } else {
+    // Onay penceresi acilmadi - sunucu komutu reddetti veya ilan limiti dolu
+    log(`⚠️ /ah onay penceresi acilmadi (ilan limiti dolu veya sunucu yanit vermedi).`);
+    closeWindowSafe();
+    return false;
   }
 
   log(`God Helmet basariyla ilana koyuldu: $${sellPrice.toLocaleString()}`);
@@ -1011,6 +1046,7 @@ async function sellGodHelmet(token, priceOverride = null) {
     totalCost: totalCost,
     note: `/ah üzerinde satışa sunuldu (Maliyet: $${totalCost.toLocaleString()}, Beklenen Kâr: $${(sellPrice - totalCost).toLocaleString()})`,
   });
+  return true;
 }
 
 // Envanterdeki tüm God Helmet'ları sırayla satışa sunar
@@ -1043,18 +1079,23 @@ async function sellAllGodHelmets(token) {
     batchSellPrice = S.godHelmetSellPrice || 900000;
   }
 
-  while (true) {
+  for (let attempt = 1; attempt <= initialTotal; attempt++) {
     assertActive(token);
     const targetHelmet = bot.inventory.items().find(isGodHelmet);
     if (!targetHelmet) break;
 
-    soldCount++;
-    log(`[${soldCount}/${initialTotal}] God Helmet ilana koyuluyor...`);
-    await sellGodHelmet(token, batchSellPrice);
-    await humanSleep(1500);
+    log(`[${attempt}/${initialTotal}] God Helmet ilana koyuluyor...`);
+    const success = await sellGodHelmet(token, batchSellPrice);
+    if (success) {
+      soldCount++;
+      await humanSleep(2000);
+    } else {
+      log(`⚠️ İlan koyma başarısız veya açık artırma slotları dolu. Kalan kasklar sonraki tura saklanıyor.`);
+      break;
+    }
   }
 
-  log(`✅ Toplam ${soldCount} adet God Helmet başarıyla satışa sunuldu.`);
+  log(`✅ Toplam ${soldCount}/${initialTotal} adet God Helmet başarıyla satışa sunuldu.`);
 }
 
 module.exports = {
