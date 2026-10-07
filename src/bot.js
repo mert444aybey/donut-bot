@@ -434,6 +434,9 @@ async function createBot() {
   bot.on('messagestr', (m) => {
     if (!m.trim()) return;
     state.io.emit('probe:chat', m);
+    if (!/listed 1 Block of Gold/i.test(m)) {
+      log(`💬 [Sohbet] ${m}`);
+    }
 
     // Sipariş tamamlama mesajını yakala ve eşya bazında kaydet
     const compMatch = m.match(/your\s+(?:order\s+for\s+|order\s+of\s+)?(.+?)\s+order\s+(?:is\s+complete|has\s+been\s+fulfilled)/i)

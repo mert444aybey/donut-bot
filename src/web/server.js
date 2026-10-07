@@ -46,10 +46,18 @@ app.post('/api/chat', (req, res) => {
     return res.status(400).json({ ok: false, error: 'Bot henüz sunucuda değil' });
   }
   const cmd = String(message || '').trim();
-  if (!cmd) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz' });
   state.bot.chat(cmd);
   log(`💬 Manuel komut gönderildi: ${cmd}`);
   res.json({ ok: true, message: cmd });
+});
+
+app.post('/api/rtp', (_req, res) => {
+  if (!state.bot || !state.bot.entity) {
+    return res.status(400).json({ ok: false, error: 'Bot henüz sunucuda değil' });
+  }
+  const { rtpToWild } = require('../features/rtp');
+  rtpToWild().catch((e) => log(`RTP hatası: ${e.message}`));
+  res.json({ ok: true, message: 'RTP işlemi başlatıldı' });
 });
 
 app.post('/api/stats/reset', (_req, res) => {
