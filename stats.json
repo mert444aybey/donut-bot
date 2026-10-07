@@ -13,6 +13,12 @@
     "experience_bottle": 2560
   },
   "categories": {
+    "Kitap": {
+      "spent": 13475300,
+      "earned": 0,
+      "listingValue": 0,
+      "count": 600
+    },
     "God Helmet Satışı": {
       "spent": 0,
       "earned": 0,
@@ -42,12 +48,6 @@
       "earned": 0,
       "listingValue": 0,
       "count": 10
-    },
-    "Kitap": {
-      "spent": 13475300,
-      "earned": 0,
-      "listingValue": 0,
-      "count": 600
     }
   },
   "activeListings": [
@@ -1652,14 +1652,6 @@
   ],
   "history": [
     {
-      "time": 1790522850141,
-      "balance": 27349560,
-      "spent": 24283000,
-      "earned": 7412600,
-      "netProfit": -16870400,
-      "orders": 10
-    },
-    {
       "time": 1790522881374,
       "balance": 27349560,
       "spent": 24283000,
@@ -2126,6 +2118,14 @@
     {
       "time": 1790559479008,
       "balance": 42,
+      "spent": 41388300,
+      "earned": 14343600,
+      "netProfit": -27044700,
+      "orders": 16
+    },
+    {
+      "time": 1791398618128,
+      "balance": 754652,
       "spent": 41388300,
       "earned": 14343600,
       "netProfit": -27044700,

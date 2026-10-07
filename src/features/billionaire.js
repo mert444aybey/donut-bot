@@ -209,7 +209,7 @@ async function runBillionaireCycle(token, cycleNumber) {
     }
 
     // 3c. Satın alınan eşyaları depodan çek
-    await collectItems(token);
+    await collectItems(token, flipItem);
     await humanSleep(1000);
     assertActive(token);
 

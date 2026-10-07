@@ -33,6 +33,12 @@ app.get('/api/stats', (_req, res) => res.json(state.STATS));
 app.get('/api/ledger', (_req, res) => res.json(state.STATS.ledger || []));
 app.get('/api/economics', (_req, res) => res.json(calculateUnitEconomics()));
 app.get('/api/billionaire', (_req, res) => res.json(getBillionaireMetrics()));
+app.get('/api/inventory', (_req, res) => {
+  if (!state.bot || !state.bot.inventory) return res.json({ items: [] });
+  res.json({
+    items: state.bot.inventory.items().map(i => ({ slot: i.slot, name: i.name, count: i.count, displayName: i.displayName }))
+  });
+});
 
 app.post('/api/stats/reset', (_req, res) => {
   const stats = resetStats();
