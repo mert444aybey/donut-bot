@@ -38,20 +38,20 @@ async function makeInventorySpaceForXp(token) {
 
   log('⚠️ Envanter tamamen dolu! XP şişesi alabilmek için yer açılıyor...');
 
-  // 1. İşe yaramaz çöp eşyaları yere at
+  // 1. İşe yaramaz çöp ve maden molozlarını yere at
   const junkItems = bot.inventory.items().filter((i) =>
-    i && /cobblestone|dirt|arrow|rotten_flesh|string|bone|glass_bottle|bowl/i.test(i.name)
+    i && /cobblestone|dirt|arrow|rotten_flesh|string|bone|glass_bottle|bowl|deepslate|netherrack|tuff|slab|rail/i.test(i.name)
   );
   for (const junk of junkItems) {
     try {
-      log(`🗑️ Çöp eşya atılıyor: ${junk.name} (${junk.count}x)`);
+      log(`🗑️ Çöp/maden atığı atılıyor: ${junk.name} (${junk.count}x)`);
       if (typeof bot.tossStack === 'function') {
         await bot.tossStack(junk);
       } else {
         await bot.toss(junk.type, null, junk.count);
       }
       await sleep(200);
-      if (bot.inventory.emptySlotCount() > 0) return true;
+      if (bot.inventory.emptySlotCount() >= 5) return true;
     } catch (_) {}
   }
 
