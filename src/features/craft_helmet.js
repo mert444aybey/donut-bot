@@ -7,7 +7,7 @@ const { bumpStats, recordTransaction, recordListing } = require('../stats');
 const { sleep, humanSleep, titleOf } = require('../utils/text');
 const { loreOf, snapshotWindow, extractItemEnchantments } = require('../utils/inspect');
 const { assertActive, waitForWindow, closeWindowSafe, executeCommandWindow, safeClick } = require('../utils/windows');
-const { ensureExperienceLevel, combineInAnvil } = require('./anvil');
+const { ensureExperienceLevel, combineInAnvil, makeInventorySpaceForXp } = require('./anvil');
 const { runOrderFlow, waitForOrderComplete } = require('./order');
 const { collectItems } = require('./collect');
 
@@ -176,30 +176,47 @@ async function collectHelmetMaterials(token) {
 
   const xpCount = items.filter((i) => i.name === 'experience_bottle').reduce((sum, i) => sum + i.count, 0);
 
+  // Envanterde zaten XP şişesi varsa ve seviye 35 altındaysa hemen seviyeye dönüştürerek envanteri rahatlat
+  if (xpCount > 0 && bot.experience.level < 35) {
+    log(`⚡ Envanterdeki mevcut XP şişeleri seviyeye dönüştürülüyor (Seviye: ${bot.experience.level} ➔ Hedef: 35)...`);
+    try {
+      await ensureExperienceLevel(35, token);
+    } catch (_) {}
+  }
+
+  // Envanter tamamen doluysa ve XP seviyesi düşükse, XP alabilmek için yer aç
+  if (bot.inventory.emptySlotCount() === 0 && bot.experience.level < 30) {
+    try {
+      await makeInventorySpaceForXp(token);
+    } catch (_) {}
+  }
+
   const needHelmetCount = Math.max(0, batchTarget - totalHelmets);
   const needBlastCount = Math.max(0, batchTarget - (blastBooks + s1Helmets + s3Helmets + godHelmets));
   const needRespCount = Math.max(0, batchTarget - (respBooks + s2Books + s3Helmets + godHelmets));
   const needMendingCount = Math.max(0, batchTarget - (mendingBooks + s2Books + s3Helmets + godHelmets));
   const needUnbCount = Math.max(0, batchTarget - (unbBooks + s4Books + godHelmets));
   const needAquaCount = Math.max(0, batchTarget - (aquaBooks + s4Books + godHelmets));
+
   const targets = [];
+
+  // XP Şişesi (1. ÖNCELİK): Envanter boşken önce XP şişeleri çekilir ve seviyeye dönüştürülür!
+  const hasAnvil = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
+  const anvilReserve = hasAnvil ? 0 : 1;
+  const freeSlotsForXp = Math.max(0, bot.inventory.emptySlotCount() - anvilReserve);
+  const maxAllowedXpStacks = Math.min(5, freeSlotsForXp);
+  const targetXpTotal = 5 * 64; // Daima envanterde toplam 5 stack (320 adet) hedeflenir
+  if ((xpCount < targetXpTotal || bot.experience.level < 30) && freeSlotsForXp > 0) {
+    const needXp = Math.min(targetXpTotal - xpCount, Math.max(1, maxAllowedXpStacks) * 64);
+    targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: needXp });
+  }
+
   if (needHelmetCount > 0) targets.push({ id: 'helmet', name: 'Diamond Helmet', predicate: isCleanHelmet, neededCount: needHelmetCount });
   if (needBlastCount > 0) targets.push({ id: 'blast', name: 'Blast Protection 4 Kitabı', predicate: isBlastProt4Book, neededCount: needBlastCount });
   if (needRespCount > 0) targets.push({ id: 'resp', name: 'Respiration 3 Kitabı', predicate: isResp3Book, neededCount: needRespCount });
   if (needMendingCount > 0) targets.push({ id: 'mending', name: 'Mending Kitabı', predicate: isMendingBook, neededCount: needMendingCount });
   if (needUnbCount > 0) targets.push({ id: 'unb', name: 'Unbreaking 3 Kitabı', predicate: isUnbreaking3Book, neededCount: needUnbCount });
   if (needAquaCount > 0) targets.push({ id: 'aqua', name: 'Aqua Affinity Kitabı', predicate: isAquaAffinityBook, neededCount: needAquaCount });
-
-  // XP Şişesi: En fazla 5 stack (320 adet) xp bottle alınır, örs için 1 slot rezerve edilir
-  const hasAnvil = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
-  const anvilReserve = hasAnvil ? 0 : 1;
-  const freeSlotsForXp = Math.max(0, bot.inventory.emptySlotCount() - anvilReserve);
-  const maxAllowedXpStacks = Math.min(5, freeSlotsForXp);
-  const targetXpTotal = 5 * 64; // Daima envanterde toplam 5 stack (320 adet) hedeflenir
-  if (xpCount < targetXpTotal && freeSlotsForXp > 0) {
-    const needXp = Math.min(targetXpTotal - xpCount, maxAllowedXpStacks * 64);
-    targets.push({ id: 'xp', name: "Bottle o' Enchanting", predicate: (it) => it && it.name === 'experience_bottle', neededCount: needXp });
-  }
 
   if (targets.length === 0) {
     log(`✅ God Helmet için hedeflenen ${batchTarget} kasklık tüm malzemeler zaten üstünde/envanterde mevcut.`);
@@ -370,6 +387,14 @@ async function collectHelmetMaterials(token) {
 
     if (takenCount > 0) {
       log(`✅ ${takenCount} adet ${target.name} başarıyla depodan envantere alındı.`);
+      if (target.id === 'xp' && bot.experience.level < 35) {
+        log(`⚡ Toplanan XP şişeleri hemen seviyeye dönüştürülüyor (Envanter yuvaları boşaltılıyor)...`);
+        try {
+          await ensureExperienceLevel(35, token);
+        } catch (e) {
+          log(`XP seviye dönüştürme uyarısı: ${e.message}`);
+        }
+      }
     } else {
       log(`⏳ ${target.name} teslimat sandığında henüz hazır ürün yok (oyuncuların teslim etmesi bekleniyor).`);
     }

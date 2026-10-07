@@ -30,6 +30,77 @@ function currentXpPoints(bot) {
   return totalXpForLevel(lvl) + Math.round(progress * pointsForNextLevel);
 }
 
+// Envanter tamamen dolduğunda XP şişesi çekebilmek için akıllıca yer açar
+async function makeInventorySpaceForXp(token) {
+  const bot = state.bot;
+  if (!bot || !bot.inventory) return false;
+  if (bot.inventory.emptySlotCount() > 0) return true;
+
+  log('⚠️ Envanter tamamen dolu! XP şişesi alabilmek için yer açılıyor...');
+
+  // 1. İşe yaramaz çöp eşyaları yere at
+  const junkItems = bot.inventory.items().filter((i) =>
+    i && /cobblestone|dirt|arrow|rotten_flesh|string|bone|glass_bottle|bowl/i.test(i.name)
+  );
+  for (const junk of junkItems) {
+    try {
+      log(`🗑️ Çöp eşya atılıyor: ${junk.name} (${junk.count}x)`);
+      if (typeof bot.tossStack === 'function') {
+        await bot.tossStack(junk);
+      } else {
+        await bot.toss(junk.type, null, junk.count);
+      }
+      await sleep(200);
+      if (bot.inventory.emptySlotCount() > 0) return true;
+    } catch (_) {}
+  }
+
+  // 2. Eğer envanterde örs varsa, örsü yere koyarak 1 slot aç
+  const anvilItem = bot.inventory.items().find((i) => i && i.name && i.name.includes('anvil'));
+  if (anvilItem) {
+    try {
+      log('🔨 Envanterdeki örs yerleştirilerek envanterde 1 slot açılıyor...');
+      await placeSurroundingAnvils(token);
+      await sleep(200);
+      if (bot.inventory.emptySlotCount() > 0) return true;
+    } catch (_) {}
+  }
+
+  // 3. Sol el (off-hand, slot 45) boşsa, 1 eşyayı sol ele aktar
+  try {
+    const offhandItem = bot.inventory.slots[45];
+    if (!offhandItem) {
+      const itemToMove = bot.inventory.items().find(
+        (i) => i && i.name !== 'experience_bottle' && i.slot >= 9 && i.slot < 45
+      );
+      if (itemToMove) {
+        log(`🧤 1 adet eşya (${itemToMove.name}) sol ele (off-hand) aktarılarak ana envanterde 1 slot açılıyor...`);
+        await bot.equip(itemToMove, 'off-hand');
+        await sleep(200);
+        if (bot.inventory.emptySlotCount() > 0) return true;
+      }
+    }
+  } catch (_) {}
+
+  // 4. Kask takılı değilse, 1 adet kaskı başlığa tak (head slot 5)
+  try {
+    const headItem = bot.inventory.slots[5];
+    if (!headItem) {
+      const helmetToWear = bot.inventory.items().find(
+        (i) => i && i.name.includes('helmet') && i.slot >= 9 && i.slot < 45
+      );
+      if (helmetToWear) {
+        log(`🪖 1 adet kask başlığa takılarak ana envanterde 1 slot açılıyor...`);
+        await bot.equip(helmetToWear, 'head');
+        await sleep(200);
+        if (bot.inventory.emptySlotCount() > 0) return true;
+      }
+    }
+  } catch (_) {}
+
+  return bot.inventory.emptySlotCount() > 0;
+}
+
 // 1. XP Seviyesi Saglama (İsrafsız & Aşımı %100 Önleyen Akıllı Fırlatma)
 async function ensureExperienceLevel(targetLevel, token) {
   const bot = state.bot;
@@ -45,6 +116,9 @@ async function ensureExperienceLevel(targetLevel, token) {
 
   let xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
   if (!xpItem) {
+    if (bot.inventory.emptySlotCount() === 0) {
+      await makeInventorySpaceForXp(token);
+    }
     const hasAnvilNow = bot.inventory.items().some((i) => i && i.name && i.name.includes('anvil'));
     const anvilSlotReserve = hasAnvilNow ? 0 : 1;
     const freeSlots = Math.max(1, bot.inventory.emptySlotCount() - anvilSlotReserve);
@@ -75,10 +149,17 @@ async function ensureExperienceLevel(targetLevel, token) {
       }
 
       await waitForOrderComplete(token, placedPrice, xpOrder);
+      if (bot.inventory.emptySlotCount() === 0) {
+        await makeInventorySpaceForXp(token);
+      }
       await collectItems(token, xpOrder, takeStacks);
 
       xpItem = bot.inventory.items().find((i) => i.name === 'experience_bottle');
       if (!xpItem) {
+        if (bot.experience.level >= targetLevel) {
+          log(`ℹ️ XP şişesi bulunamadı ancak mevcut seviye (${bot.experience.level}) zaten hedef seviyede (${targetLevel}).`);
+          return;
+        }
         throw new Error('XP sisesi siparis edildi ve toplandi ancak envanterde experience_bottle bulunamadi!');
       }
     }
@@ -451,6 +532,7 @@ const buyAnvilFromAh = orderAndCollect40Anvils;
 
 module.exports = {
   ensureExperienceLevel,
+  makeInventorySpaceForXp,
   findAnvilBlock,
   placeAnvilFromInventory,
   placeSurroundingAnvils,

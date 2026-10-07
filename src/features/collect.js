@@ -165,7 +165,9 @@ async function collectItems(token, itemOverride, maxStacks = null) {
       assertActive(token);
       if (!bot.currentWindow || !bot.currentWindow.slots[slot]) continue;
       if (maxStacks !== null && takenStacks >= maxStacks) break;
-      if (bot.inventory.emptySlotCount() === 0) {
+      const isStackable = itemCfg && (itemCfg.itemId === 'experience_bottle' || itemCfg.item === "Bottle o' Enchanting");
+      const hasPartialStack = isStackable && bot.inventory.items().some((i) => i.name === 'experience_bottle' && i.count < 64);
+      if (bot.inventory.emptySlotCount() === 0 && !hasPartialStack) {
         log('⚠️ Envanter tamamen dolu, toplama durduruldu.');
         break;
       }

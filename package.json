@@ -1,6 +1,6 @@
 {
   "name": "donut-bot",
-  "version": "2.14.1",
+  "version": "2.14.2",
   "description": "Donut SMP 1B Empire Desktop Application with live analytics, auto-crafting and outbid protection",
   "main": "desktop/main.js",
   "scripts": {
